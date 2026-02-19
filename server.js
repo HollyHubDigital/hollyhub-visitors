@@ -2,6 +2,8 @@
 require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
+// Optional S3 / R2 support (use env vars to enable)
+const AWS = require('aws-sdk');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
@@ -393,9 +395,55 @@ if(!fs.existsSync(settingsJson)) fs.writeFileSync(settingsJson, '{}');
 if(!fs.existsSync(analyticsJson)) fs.writeFileSync(analyticsJson, '[]');
 if(!fs.existsSync(pagesIndexJson)) fs.writeFileSync(pagesIndexJson, '{}');
 
-const storage = multer.diskStorage({ destination: uploadDir, filename: (req,file,cb)=>{ const safe = Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g,'_'); cb(null, safe); } });
+// S3 configuration
+const S3_BUCKET = process.env.S3_BUCKET || '';
+const S3_REGION = process.env.S3_REGION || process.env.AWS_REGION || 'us-east-1';
+const S3_ENDPOINT = process.env.S3_ENDPOINT || '';
+const S3_ACCESS_KEY_ID = process.env.S3_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID || '';
+const S3_SECRET_ACCESS_KEY = process.env.S3_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY || '';
+const S3_ENABLED = !!S3_BUCKET;
+let s3 = null;
+if (S3_ENABLED) {
+  const s3conf = { region: S3_REGION };
+  if (S3_ENDPOINT) s3conf.endpoint = S3_ENDPOINT;
+  if (S3_ACCESS_KEY_ID && S3_SECRET_ACCESS_KEY) s3conf.credentials = new AWS.Credentials(S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY);
+  s3 = new AWS.S3(s3conf);
+}
+
 const MAX_UPLOAD_MB = parseInt(process.env.MAX_UPLOAD_MB || '200', 10);
+// Use memory storage when S3 is enabled to avoid writing to local disk
+const storage = S3_ENABLED ? multer.memoryStorage() : multer.diskStorage({ destination: uploadDir, filename: (req,file,cb)=>{ const safe = Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g,'_'); cb(null, safe); } });
 const upload = multer({ storage, limits: { fileSize: MAX_UPLOAD_MB * 1024 * 1024 } });
+
+// Helper to read/write JSON metadata either from local fs or S3
+async function readStoreJson(name, fallback) {
+  if (!S3_ENABLED) {
+    try { return JSON.parse(fs.readFileSync(path.join(dataDir, name), 'utf8') || (fallback || '[]')); } catch (e) { return fallback || [] }
+  }
+  try {
+    const r = await s3.getObject({ Bucket: S3_BUCKET, Key: `data/${name}` }).promise();
+    return JSON.parse(r.Body.toString('utf8') || (fallback || '[]'));
+  } catch (e) {
+    if (e.code === 'NoSuchKey' || e.code === 'NoSuchBucket' || e.statusCode === 404) return fallback || [];
+    throw e;
+  }
+}
+
+async function writeStoreJson(name, data) {
+  if (!S3_ENABLED) {
+    fs.writeFileSync(path.join(dataDir, name), JSON.stringify(data, null, 2), 'utf8');
+    return;
+  }
+  await s3.putObject({ Bucket: S3_BUCKET, Key: `data/${name}`, Body: JSON.stringify(data, null, 2), ContentType: 'application/json' }).promise();
+}
+
+async function uploadToStore(fileBuffer, filename, mime) {
+  if (!S3_ENABLED) throw new Error('S3 not enabled');
+  const Key = `uploads/${filename}`;
+  await s3.putObject({ Bucket: S3_BUCKET, Key, Body: fileBuffer, ContentType: mime || 'application/octet-stream' }).promise();
+  const pub = process.env.S3_PUBLIC_URL || '';
+  return pub ? `${pub.replace(/\/$/, '')}/uploads/${encodeURIComponent(filename)}` : filename;
+}
 
 function authRequired(req,res,next){
   const h = req.headers.authorization; if(!h) return res.status(401).send('Missing token');
