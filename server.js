@@ -245,6 +245,37 @@ app.get(/\.(css|js|png|jpg|jpeg|gif|svg|ico|webp|mp4|weba|webm)$/, (req, res, ne
   return next();
 });
 
+// Clean URL handler: serve pages like /about -> about.html
+app.get('/:page', (req, res, next) => {
+  try {
+    const p = req.params.page;
+    // ignore API and static-like requests
+    if (!p || p.startsWith('api') || p.indexOf('.') !== -1) return next();
+    const pageMap = { index: 'index.html', about: 'about.html', services: 'services.html', portfolio: 'portfolio.html', blog: 'blog.html', marketing: 'marketing.html', contact: 'contact.html', terms: 'terms.html' };
+    const f = pageMap[p];
+    const fp = f ? path.join(__dirname, f) : path.join(__dirname, p + '.html');
+    if (!fs.existsSync(fp)) return next();
+    let html = fs.readFileSync(fp, 'utf8');
+    // inject scripts from apps-config
+    const appsConfigPath = path.join(dataDir, 'apps-config.json');
+    let appsCfg = { enabled: {} };
+    try{ if(fs.existsSync(appsConfigPath)) appsCfg = JSON.parse(fs.readFileSync(appsConfigPath,'utf8') || '{}'); }catch(e){ appsCfg = { enabled: {} }; }
+    try{
+      const { getApp } = require('./api/app-registry');
+      let injectScripts = '';
+      for(const [appId, cfg] of Object.entries(appsCfg.enabled || {})){
+        const appDef = getApp(appId);
+        if(appDef && typeof appDef.scriptInjection === 'function'){
+          try{ const s = appDef.scriptInjection(cfg || {}); if(s && s.length) injectScripts += '\n' + s + '\n'; }catch(e){ /* ignore */ }
+        }
+      }
+      if(injectScripts && html.indexOf('</head>') !== -1) html = html.replace('</head>', injectScripts + '\n</head>');
+    }catch(e){}
+    res.setHeader('Content-Type','text/html');
+    return res.send(html);
+  }catch(e){ return next(); }
+});
+
 // Serve other static assets
 const _serveStatic = express.static(path.join(__dirname));
 app.use((req, res, next) => {
