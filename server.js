@@ -51,7 +51,7 @@ app.use((req, res, next) => {
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Permissions-Policy', 'geolocation=(), microphone=()');
-    res.setHeader('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; worker-src 'self' blob:; connect-src 'self' https: wss:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:");
+    res.setHeader('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://paystack.com https://js.paystack.co; worker-src 'self' blob:; connect-src 'self' https: wss:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https: https://paystack.com https://js.paystack.co;");
   }catch(e){}
   next();
 });
@@ -194,14 +194,36 @@ const validate = (schema) => (req, res, next) => {
 // Static files - must come before HTML handlers
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
-// Serve static assets (CSS, JS, images, etc) with correct MIME types
-const _serveStatic = express.static(path.join(__dirname), {
-  setHeaders: (res, path) => {
-    if (path.endsWith('.css')) res.setHeader('Content-Type', 'text/css; charset=UTF-8');
-    if (path.endsWith('.js')) res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
-    if (path.endsWith('.json')) res.setHeader('Content-Type', 'application/json; charset=UTF-8');
-  }
+// Explicit routes for CSS, JS, and other static assets with correct MIME types
+app.get(/\.(css|js|png|jpg|jpeg|gif|svg|ico|webp|mp4|weba|webm)$/, (req, res, next) => {
+  try {
+    const filePath = path.join(__dirname, req.path);
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      const ext = path.extname(filePath).toLowerCase();
+      const mimeTypes = {
+        '.css': 'text/css; charset=UTF-8',
+        '.js': 'application/javascript; charset=UTF-8',
+        '.json': 'application/json',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.gif': 'image/gif',
+        '.svg': 'image/svg+xml',
+        '.ico': 'image/x-icon',
+        '.webp': 'image/webp',
+        '.mp4': 'video/mp4',
+        '.webm': 'video/webm',
+        '.weba': 'audio/webp'
+      };
+      res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
+      return res.sendFile(filePath);
+    }
+  } catch (e) { console.error('Static file error:', e); }
+  return next();
 });
+
+// Serve other static assets
+const _serveStatic = express.static(path.join(__dirname));
 app.use((req, res, next) => {
   // Skip API routes, let them be handled later
   if (req.path && req.path.startsWith('/api')) return next();
