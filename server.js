@@ -27,6 +27,9 @@ const ALLOWED_ORIGINS = [
   'http://127.0.0.1:3000'
 ];
 
+// Allow the public visitors domain (production) and common Vercel preview patterns if needed
+ALLOWED_ORIGINS.push('https://hollyhubdigital.vercel.app');
+
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || ALLOWED_ORIGINS.includes(origin)) {
