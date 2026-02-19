@@ -1,0 +1,350 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>Blog - Holly</title>
+	<link rel="stylesheet" href="styles.css">
+	<style>
+		.blog-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:1rem; }
+		.blog-post { background:var(--card-bg,#0b0b0b); padding:1rem; border-radius:10px; border:1px solid rgba(255,255,255,0.04); }
+		.blog-post h3 { margin:0 0 0.5rem 0; color:var(--primary-accent); }
+		.blog-meta { font-size:0.9rem; opacity:0.75; margin-bottom:0.6rem; }
+		.blog-excerpt { opacity:0.9; margin-bottom:0.6rem; }
+		.post-actions { display:flex; gap:8px; align-items:center; }
+		.comment-list { margin-top:0.75rem; border-top:1px dashed rgba(255,255,255,0.04); padding-top:0.75rem; }
+		.comment { margin-bottom:0.6rem; }
+		.btn-like, .btn-secondary { background:transparent; border:1px solid var(--primary-accent); color:var(--primary-accent); padding:6px 10px; border-radius:6px; cursor:pointer; }
+		.btn-comment, .btn-primary { background:transparent; border:1px solid var(--secondary-accent); color:var(--secondary-accent); padding:6px 10px; border-radius:6px; cursor:pointer; }
+		.btn-view-comments { background:transparent; border:1px solid var(--secondary-accent); color:var(--secondary-accent); padding:6px 10px; border-radius:6px; cursor:pointer; }
+		.show-more { color:var(--primary-accent); cursor:pointer; font-weight:600; }
+	</style>
+</head>
+<body>
+	<header class="sticky-header" id="header">
+		<div class="header-container">
+			<div class="header-logo">
+				<a href="index.html" class="logo-link">
+					<img src="hollyhub.jpg" class="logo-img" alt="HollyHub" />
+					<h1 class="brand">HOLLY<span class="brandkit">DEV</span></h1>
+				</a>
+			</div>
+			<nav class="desktop-nav">
+				<a href="marketing.html" class="nav-link">MARKETING</a>
+				<a href="portfolio.html" class="nav-link">PORTFOLIO</a>
+				<a href="index.html" class="nav-link">HOME</a>
+				<a href="about.html" class="nav-link">ABOUT</a>
+			</nav>
+			<div class="search-container">
+				<input type="text" id="searchInput" class="search-input" placeholder="Search..." />
+				<button id="searchBtn" class="search-btn">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+						<circle cx="11" cy="11" r="8"></circle>
+						<path d="m21 21-4.35-4.35"></path>
+					</svg>
+				</button>
+			</div>
+			<!-- Translator & Auth -->
+      <div class="header-actions">
+        <select id="languageSelect" class="language-select" aria-label="Select language">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="zh-CN">中文 (简体)</option>
+          <option value="zh-TW">中文 (繁體)</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="ru">Русский</option>
+          <option value="pt">Português</option>
+          <option value="it">Italiano</option>
+          <option value="nl">Nederlands</option>
+          <option value="sv">Svenska</option>
+          <option value="no">Norsk</option>
+          <option value="da">Dansk</option>
+          <option value="fi">Suomi</option>
+          <option value="pl">Polski</option>
+          <option value="tr">Türkçe</option>
+          <option value="ar">العربية</option>
+          <option value="hi">हिन्दी</option>
+          <option value="bn">বাংলা</option>
+          <option value="pa">ਪੰਜਾਬੀ</option>
+          <option value="ur">اردو</option>
+          <option value="vi">Tiếng Việt</option>
+          <option value="th">ไทย</option>
+          <option value="id">Bahasa Indonesia</option>
+          <option value="ms">Bahasa Melayu</option>
+          <option value="he">עברית</option>
+          <option value="el">Ελληνικά</option>
+          <option value="ro">Română</option>
+          <option value="hu">Magyar</option>
+          <option value="cs">Čeština</option>
+          <option value="sk">Slovenčina</option>
+          <option value="bg">Български</option>
+          <option value="uk">Українська</option>
+          <option value="hr">Hrvatski</option>
+          <option value="sr">Српски</option>
+          <option value="sl">Slovenščina</option>
+          <option value="lt">Lietuvių</option>
+          <option value="lv">Latviešu</option>
+          <option value="et">Eesti</option>
+          <option value="mk">Македонски</option>
+          <option value="sq">Shqip</option>
+          <option value="az">Azərbaycan</option>
+          <option value="hy">Հայերեն</option>
+          <option value="ka">ქართული</option>
+          <option value="mn">Монгол</option>
+        </select>
+					<!-- Hidden Google Translate container (script will initialize the widget) -->
+					<div id="google_translate_element" style="display:none"></div>
+				<a href="login.html" class="btn-login">LOGIN</a>
+				<a href="signup.html" class="btn-signup">SIGN UP</a>
+			</div>
+			<button class="hamburger-btn" id="hamburger" aria-expanded="false" aria-label="Toggle menu">
+				<span></span><span></span><span></span>
+			</button>
+		</div>
+         <!-- Mobile Menu -->
+    <nav class="mobile-menu" id="mobile-menu">
+      <a href="contact.html" class="mobile-nav-link">CONTACT</a>
+      <a href="services.html" class="mobile-nav-link">SERVICES</a>
+      <a href="marketing.html" class="mobile-nav-link">MARKETING</a>
+      <a href="portfolio.html" class="mobile-nav-link">PORTFOLIO</a>
+      <a href="blog.html" class="mobile-nav-link">BLOG</a>
+      <a href="index.html" class="mobile-nav-link">HOME</a>
+      <a href="terms.html" class="mobile-nav-link">TERMS</a>
+      <div class="mobile-auth">
+        <a href="login.html" class="btn-login">LOGIN</a>
+        <a href="signup.html" class="btn-signup">SIGN UP</a>
+      </div>
+    </nav>
+	</header>
+
+	<!-- SEARCH RESULTS MODAL -->
+	<div id="searchModal" class="search-modal">
+		<div class="search-modal-content">
+			<button class="search-modal-close" id="searchClose">&times;</button>
+			<h2>Search Results</h2>
+			<div id="searchResults" class="search-results-list"></div>
+		</div>
+	</div>
+
+	<main class="container" style="padding:2rem;">
+		<h1>Blog</h1>
+		<div id="blogList" class="blog-list"></div>
+	</main>
+
+	<template id="postTemplate">
+		<article class="blog-post">
+			<h3 class="post-title"></h3>
+			<div class="blog-meta"></div>
+			<div class="blog-excerpt"></div>
+			<div class="post-actions">
+				<button class="btn-like">Like (<span class="like-count">0</span>)</button>
+				<button class="btn-view-comments">View comments (<span class="comment-count">0</span>)</button>
+			</div>
+		</article>
+	</template>
+
+	<script>
+		function ensureCommentModal(){
+			let m = document.getElementById('commentModal');
+			if(m) return m;
+			m = document.createElement('div');
+			m.id = 'commentModal';
+			m.style.position = 'fixed'; m.style.left = 0; m.style.top = 0; m.style.right = 0; m.style.bottom = 0;
+			m.style.background = 'rgba(0,0,0,0.7)'; m.style.display = 'none'; m.style.zIndex = 4000;
+			m.innerHTML = `<div class="modal-inner" style="max-width:900px;margin:6vh auto;background:#0b0b0b;border-radius:10px;padding:1rem;position:relative;max-height:85vh;overflow:auto;">
+				<button class="modal-close" style="position:absolute;right:12px;top:8px;font-size:20px;background:transparent;border:none;color:#fff;cursor:pointer;z-index:5000">×</button>
+				<div class="modal-body" style="padding-top:1.5rem"></div>
+				<div class="modal-comment-form" style="margin-top:1.5rem;border-top:1px solid rgba(255,255,255,0.1);padding-top:1rem;display:none">
+					<h4 style="margin-top:0;color:var(--primary-accent)">Post a Comment</h4>
+					<input class="modal-comment-author form-input" placeholder="Your name" style="width:100%;padding:8px;margin-bottom:0.5rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;border-radius:4px;box-sizing:border-box"/>
+					<textarea class="modal-comment-content form-input" placeholder="Your comment" style="width:100%;padding:8px;margin-bottom:0.5rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;border-radius:4px;box-sizing:border-box;min-height:80px"></textarea>
+					<div style="display:flex;gap:8px">
+						<button class="modal-submit-comment btn-primary" style="padding:8px 14px">Post Comment</button>
+						<button class="modal-cancel-comment btn-secondary" style="padding:8px 14px">Cancel</button>
+					</div>
+				</div>
+			</div>`;
+			document.body.appendChild(m);
+			m.querySelector('.modal-close').addEventListener('click', ()=>{ m.style.display='none'; });
+			m.addEventListener('click', (e)=>{ if(e.target===m) m.style.display='none'; });
+			const cancelBtn = m.querySelector('.modal-cancel-comment');
+			cancelBtn.addEventListener('click', ()=>{ m.querySelector('.modal-comment-form').style.display='none'; });
+			return m;
+		}
+
+		async function fetchPosts(){
+			const r = await fetch('/api/blog');
+			if(!r.ok) return console.error('Failed to load posts');
+			const posts = await r.json();
+			const list = document.getElementById('blogList');
+			list.innerHTML = '';
+			for(const p of posts){
+				const tpl = document.getElementById('postTemplate');
+					const node = tpl.content.cloneNode(true);
+					const el = node.querySelector('.blog-post');
+					el.querySelector('.post-title').textContent = p.title;
+					el.querySelector('.blog-meta').textContent = (p.category||'') + ' • ' + new Date(p.createdAt).toLocaleDateString();
+					const excerptEl = el.querySelector('.blog-excerpt');
+				const full = (p.content||'').trim();
+				if(full.length > 300){
+					excerptEl.textContent = full.slice(0,300) + '...';
+					const more = document.createElement('span'); more.textContent = ' Show more'; more.className='show-more';
+					more.addEventListener('click', ()=>{
+						if(more.textContent.includes('more')){ excerptEl.textContent = full; more.textContent = ' Hide'; } else { excerptEl.textContent = full.slice(0,300)+'...'; more.textContent = ' Show more'; }
+					});
+					excerptEl.appendChild(more);
+				} else { excerptEl.textContent = full; }
+
+				// Render media (image or video) if provided
+				if(p.image){
+					let imageVal = (p.image||'').trim();
+					let imageUrl = imageVal;
+					if(imageVal && !imageVal.startsWith('http') && !imageVal.startsWith('/')){
+						imageUrl = '/uploads/' + encodeURIComponent(imageVal);
+					}
+					if(imageUrl){
+						const lower = imageUrl.toLowerCase();
+						let mediaHTML = '';
+						if(lower.match(/\.(mp4|webm|ogg)$/)){
+							mediaHTML = `<div style="margin-bottom:0.6rem;"><video controls style="width:100%; height:220px; object-fit:cover; border-radius:8px;"><source src="${imageUrl}"></video></div>`;
+						} else {
+							mediaHTML = `<div style="margin-bottom:0.6rem; height:220px; background-image:url('${imageUrl}'); background-size:cover; background-position:center; border-radius:8px;"></div>`;
+						}
+						// insert media above the excerpt
+						const wrapper = document.createElement('div'); wrapper.innerHTML = mediaHTML;
+						excerptEl.parentNode.insertBefore(wrapper, excerptEl);
+					}
+				}
+
+				// likes
+				const likeBtn = el.querySelector('.btn-like');
+				const likeCountEl = el.querySelector('.like-count');
+				async function loadLikes(){ const lr = await fetch('/api/blog/likes?postId='+encodeURIComponent(p.id)); if(lr.ok){ const d = await lr.json(); likeCountEl.textContent = d.count||0; } }
+				loadLikes();
+				likeBtn.addEventListener('click', async ()=>{ const r = await fetch('/api/blog/like',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ postId: p.id })}); if(r.ok){ const d = await r.json(); likeCountEl.textContent = d.count; } });
+
+				// comments - load for modal only
+
+				async function loadComments(opts){
+					opts = opts || {};
+					const forModal = !!opts.forModal;
+					const adminToken = localStorage.getItem('adminToken') || localStorage.getItem('authToken') || localStorage.getItem('token');
+					let url = '/api/blog/comments?postId='+encodeURIComponent(p.id);
+					if(forModal && adminToken) url += '&includeMuted=1';
+					const headers = {};
+					if(forModal && adminToken) headers['Authorization'] = 'Bearer ' + adminToken;
+					const cr = await fetch(url, { headers });
+					if(!cr.ok) return [];
+					const cs = await cr.json();
+					// Always update the comment count
+					const countEl = el.querySelector('.comment-count'); if(countEl) countEl.textContent = cs.filter(x=>!x.muted).length || 0;
+					return cs;
+				}
+				// Load comments count on initial render
+				const updateCommentCount = async () => {
+					const cs = await fetch('/api/blog/comments?postId='+encodeURIComponent(p.id)).then(r => r.ok ? r.json() : []);
+					const countEl = el.querySelector('.comment-count'); 
+					if(countEl) countEl.textContent = cs.filter(x=>!x.muted).length || 0;
+				};
+				updateCommentCount();
+
+				const viewBtn = el.querySelector('.btn-view-comments');
+				viewBtn.addEventListener('click', async ()=>{
+					const cs = await loadComments({ forModal: true });
+					const modal = ensureCommentModal();
+					const body = modal.querySelector('.modal-body');
+					body.innerHTML = `<h2 style="margin-top:0">Comments for: ${p.title}</h2><div style="margin-top:0.5rem;opacity:0.8">${cs.length} comment(s)</div><button class="btn-primary" id="toggleModalCommentForm" style="margin-top:0.5rem;padding:6px 12px">Add Comment</button><div style="margin-top:1rem" id="modalComments"></div>`;
+					const container = body.querySelector('#modalComments');
+					const toggleFormBtn = body.querySelector('#toggleModalCommentForm');
+
+					// Create or reuse an inline comment form inside the modal body so it appears above the comments
+					const templateForm = modal.querySelector('.modal-comment-form');
+					let inlineForm = body.querySelector('.modal-comment-form-inline');
+					if(!inlineForm){
+						inlineForm = templateForm.cloneNode(true);
+						inlineForm.classList.add('modal-comment-form-inline');
+						inlineForm.style.display = 'none';
+						// ensure the template itself stays hidden
+						if(templateForm) templateForm.style.display = 'none';
+						body.insertBefore(inlineForm, container);
+						// wire cancel for the inline form
+						const cancelBtnInline = inlineForm.querySelector('.modal-cancel-comment');
+						if(cancelBtnInline) cancelBtnInline.addEventListener('click', ()=>{ inlineForm.style.display = 'none'; });
+					}
+					toggleFormBtn.addEventListener('click', ()=>{ inlineForm.style.display = inlineForm.style.display === 'none' ? 'block' : 'none'; });
+
+					const renderModalComments = (comments)=>{
+						container.innerHTML = '';
+						if(comments.length===0){ container.innerHTML = '<p style="opacity:0.8">No comments yet.</p>'; return; }
+						const adminToken = localStorage.getItem('adminToken') || localStorage.getItem('authToken') || localStorage.getItem('token');
+						comments.forEach(c=>{
+							const d = document.createElement('div'); d.style.marginBottom='0.75rem';
+							let content = c.content;
+							if(content.length>300){ const short = content.slice(0,300)+'...'; d.innerHTML = `<strong style="color:var(--primary-accent)">${c.author}</strong> <span style="opacity:0.7">• ${new Date(c.createdAt).toLocaleString()}</span><div class="comment-body">${short}</div><div class="show-more">Show more</div>`; const sm = d.querySelector('.show-more'); const bodyDiv = d.querySelector('.comment-body'); sm.addEventListener('click', ()=>{ if(sm.textContent.includes('more')){ bodyDiv.textContent = content; sm.textContent='Hide'; } else { bodyDiv.textContent = short; sm.textContent='Show more'; } }); } else { d.innerHTML = `<strong style="color:var(--primary-accent)">${c.author}</strong> <span style="opacity:0.7">• ${new Date(c.createdAt).toLocaleString()}</span><div class="comment-body">${content}</div>`; }
+							if(adminToken){
+								const wrap = document.createElement('div'); wrap.style.marginTop='6px'; wrap.style.display='flex'; wrap.style.gap='8px';
+								const del = document.createElement('button'); del.textContent='Delete'; del.className='btn-danger'; del.style.padding='4px 8px'; del.style.fontSize='0.9em';
+								del.addEventListener('click', async ()=>{
+									if(!confirm('Delete this comment?')) return;
+									try{
+										const dr = await fetch('/api/blog/comment?id='+encodeURIComponent(c.id), { method:'DELETE', headers: { Authorization: 'Bearer '+adminToken } });
+										if(!dr.ok) throw new Error(await dr.text());
+										const newCs = await loadComments({ forModal: true });
+										renderModalComments(newCs);
+									}catch(e){ alert('Delete failed: '+e.message); }
+								});
+								const mute = document.createElement('button'); mute.textContent = c.muted ? 'Unmute' : 'Mute'; mute.className='btn-secondary'; mute.style.padding='4px 8px'; mute.style.fontSize='0.9em';
+								mute.addEventListener('click', async ()=>{
+									try{
+										const mr = await fetch('/api/blog/comment/mute', { method:'POST', headers: { 'Content-Type':'application/json', Authorization: 'Bearer '+adminToken }, body: JSON.stringify({ id: c.id, mute: !c.muted }) });
+										if(!mr.ok) throw new Error(await mr.text());
+										const newCs = await loadComments({ forModal: true });
+										renderModalComments(newCs);
+									}catch(e){ alert('Mute failed: '+e.message); }
+								});
+								wrap.appendChild(del); wrap.appendChild(mute); d.appendChild(wrap);
+							}
+							container.appendChild(d);
+						});
+					};
+					renderModalComments(cs);
+
+					// Wire the inline form submit to post comments without hiding the modal or comments
+					const modalSubmitInline = inlineForm.querySelector('.modal-submit-comment');
+					const modalAuthorInput = inlineForm.querySelector('.modal-comment-author');
+					const modalContentInput = inlineForm.querySelector('.modal-comment-content');
+					modalSubmitInline.onclick = async ()=>{
+						const author = (modalAuthorInput.value || 'Anonymous').trim();
+						const content = (modalContentInput.value || '').trim();
+						if(!content) return alert('Enter comment');
+						try {
+							const r = await fetch('/api/blog/comment',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ postId: p.id, author, content }) });
+							if(!r.ok) throw new Error(await r.text());
+							// Clear form
+							modalAuthorInput.value=''; modalContentInput.value='';
+							inlineForm.style.display='none';
+							// Refresh modal comments display AND update comment count on post
+							const newCs = await loadComments({ forModal: true });
+							renderModalComments(newCs);
+							const countLabel = body.querySelector('div:nth-of-type(2)'); if(countLabel) countLabel.textContent = newCs.length + ' comment(s)';
+							const outerCount = el.querySelector('.comment-count');
+							if(outerCount) outerCount.textContent = newCs.filter(x=>!x.muted).length || 0;
+						} catch(e) { alert('Post failed: '+e.message); }
+					};
+
+					modal.style.display = 'block';
+				});
+
+				list.appendChild(node);
+			}
+		}
+
+		document.addEventListener('DOMContentLoaded', fetchPosts);
+	</script>
+	<script src="script.js"></script>
+	<script src="app-loader.js"></script>
+</body>
+</html>

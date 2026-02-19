@@ -1,0 +1,47 @@
+[
+  {
+    "id": "1771098687862",
+    "email": "igeadedigba3@gmail.com",
+    "fullname": "Adedigba999",
+    "passwordHash": "$2a$10$Hx9YPGkGxDlC2XcQoFGFaujw2EZu..5wIqCgA1hRfrR51PisX4u42",
+    "createdAt": "2026-02-14T19:51:27.991Z",
+    "oauthProvider": "github",
+    "username": "HollyHubDigital",
+    "updatedAt": "2026-02-14T23:00:23.996Z"
+  },
+  {
+    "username": "HollyHubDigital",
+    "passwordHash": "$2a$10$v9dwQ4Ky3/SGJ3V/ukyNdeJum4TJD8vYF44CRNtw.mG89iaNZyTne",
+    "createdAt": "2026-02-12T13:46:43.015Z"
+  },
+  {
+    "id": "1771092212213",
+    "email": "magiceden487@gmail.com",
+    "fullname": "Magicc1",
+    "passwordHash": "$2a$10$nVlZ0iV5SLl3sXOugSQLIuUWtyOLIOlYxLlBANNR5kHakXTuFbH2e",
+    "createdAt": "2026-02-14T18:03:32.444Z",
+    "oauthProvider": "github"
+  },
+  {
+    "id": "1771091724104",
+    "email": "vaultcrypto86@gmail.com",
+    "fullname": "Vaulti86",
+    "passwordHash": "$2a$10$r.WSDCg69RrPa3rylMReRuxemJpIoeMVxzD2mMdOUnDAbYzfapCEi",
+    "createdAt": "2026-02-14T17:55:24.337Z",
+    "oauthProvider": "github"
+  },
+  {
+    "id": "1770918219115",
+    "email": "hollyhub146@gmail.com",
+    "fullname": "Taoreed Ige",
+    "passwordHash": "$2a$10$TP5I4MGEXPjKgqIw58ehu.7lPOjfzLAkhiKA381gX99TD73jxBV/K",
+    "createdAt": "2026-02-12T17:43:39.115Z"
+  },
+  {
+    "id": "test-1",
+    "email": "tester@example.com",
+    "fullname": "Test User",
+    "passwordHash": "$2a$10$XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "createdAt": "2026-02-14T09:45:00.000Z"
+  }
+]

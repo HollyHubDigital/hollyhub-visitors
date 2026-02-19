@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Terms and Conditions for Holly's web development and digital marketing services." />
+  <title>Terms & Conditions - Holly</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .terms-content { max-width: 800px; margin: 0 auto; padding: 2rem; }
+    .terms-section { margin-bottom: 2.5rem; }
+    .terms-section h2 { color: var(--primary-accent); margin-bottom: 1rem; font-size: 1.5rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+    .terms-section h3 { color: var(--secondary-accent); margin-top: 1.5rem; margin-bottom: 0.75rem; font-size: 1.1rem; }
+    .terms-section p { line-height: 1.7; opacity: 0.9; margin-bottom: 1rem; }
+    .terms-section ul, .terms-section ol { margin: 1rem 0 1rem 2rem; opacity: 0.9; line-height: 1.7; }
+    .terms-section li { margin-bottom: 0.5rem; }
+    .terms-highlight { background: rgba(255, 0, 0, 0.1); padding: 1rem; border-left: 4px solid var(--primary-accent); border-radius: 5px; margin: 1rem 0; }
+    .last-updated { text-align: center; opacity: 0.7; font-style: italic; margin-bottom: 2rem; }
+  </style>
+</head>
+<body>
+  <header class="sticky-header" id="header">
+    <div class="header-container">
+      <div class="header-logo">
+        <a href="index.html" class="logo-link"><div class="logo-icon">H</div><h1 class="brand">HOLLY<span class="brandkit">DEV</span></h1></a>
+      </div>
+      <nav class="desktop-nav">
+        <a href="index.html" class="nav-link">HOME</a>
+        <a href="services.html" class="nav-link">SERVICES</a>
+        <a href="portfolio.html" class="nav-link">PORTFOLIO</a>
+        <a href="about.html" class="nav-link">ABOUT</a>
+      </nav>
+      <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search..." />
+        <button id="searchBtn" class="search-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
+      <!-- Translator & Auth -->
+      <div class="header-actions">
+        <select id="languageSelect" class="language-select" aria-label="Select language">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="zh-CN">中文 (简体)</option>
+          <option value="zh-TW">中文 (繁體)</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="ru">Русский</option>
+          <option value="pt">Português</option>
+          <option value="it">Italiano</option>
+          <option value="nl">Nederlands</option>
+          <option value="sv">Svenska</option>
+          <option value="no">Norsk</option>
+          <option value="da">Dansk</option>
+          <option value="fi">Suomi</option>
+          <option value="pl">Polski</option>
+          <option value="tr">Türkçe</option>
+          <option value="ar">العربية</option>
+          <option value="hi">हिन्दी</option>
+          <option value="bn">বাংলা</option>
+          <option value="pa">ਪੰਜਾਬੀ</option>
+          <option value="ur">اردو</option>
+          <option value="vi">Tiếng Việt</option>
+          <option value="th">ไทย</option>
+          <option value="id">Bahasa Indonesia</option>
+          <option value="ms">Bahasa Melayu</option>
+          <option value="he">עברית</option>
+          <option value="el">Ελληνικά</option>
+          <option value="ro">Română</option>
+          <option value="hu">Magyar</option>
+          <option value="cs">Čeština</option>
+          <option value="sk">Slovenčina</option>
+          <option value="bg">Български</option>
+          <option value="uk">Українська</option>
+          <option value="hr">Hrvatski</option>
+          <option value="sr">Српски</option>
+          <option value="sl">Slovenščina</option>
+          <option value="lt">Lietuvių</option>
+          <option value="lv">Latviešu</option>
+          <option value="et">Eesti</option>
+          <option value="mk">Македонски</option>
+          <option value="sq">Shqip</option>
+          <option value="az">Azərbaycan</option>
+          <option value="hy">Հայերեն</option>
+          <option value="ka">ქართული</option>
+          <option value="mn">Монгол</option>
+        </select>
+          <!-- Hidden Google Translate container (script will initialize the widget) -->
+          <div id="google_translate_element" style="display:none"></div>
+        <a href="login.html" class="btn-login">LOGIN</a>
+        <a href="signup.html" class="btn-signup">SIGN UP</a>
+      </div>
+      <button class="hamburger-btn" id="hamburger"><span></span><span></span><span></span></button>
+    </div>
+    <!-- Mobile Menu -->
+    <nav class="mobile-menu" id="mobile-menu">
+      <a href="contact.html" class="mobile-nav-link">CONTACT</a>
+      <a href="services.html" class="mobile-nav-link">SERVICES</a>
+      <a href="marketing.html" class="mobile-nav-link">MARKETING</a>
+      <a href="portfolio.html" class="mobile-nav-link">PORTFOLIO</a>
+      <a href="blog.html" class="mobile-nav-link">BLOG</a>
+      <a href="about.html" class="mobile-nav-link">ABOUT</a>
+      <a href="index.html" class="mobile-nav-link">HOME</a>
+      <div class="mobile-auth">
+        <a href="login.html" class="btn-login">LOGIN</a>
+        <a href="signup.html" class="btn-signup">SIGN UP</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- SEARCH RESULTS MODAL -->
+  <div id="searchModal" class="search-modal">
+    <div class="search-modal-content">
+      <button class="search-modal-close" id="searchClose">&times;</button>
+      <h2>Search Results</h2>
+      <div id="searchResults" class="search-results-list"></div>
+    </div>
+  </div>
+
+  <section class="hero" style="min-height: 40vh;">
+    <div class="hero-content">
+      <h1>Terms & Conditions</h1>
+      <p class="hero-subtitle">Please read our terms carefully before using our services</p>
+    </div>
+  </section>
+
+  <div class="terms-content">
+    <p class="last-updated">Last updated: January 2026</p>
+
+    <div class="terms-section">
+      <h2>1. Agreement to Terms</h2>
+      <p>By accessing and using this website and services provided by Holly (referred to as "I," "me," "my," "Freelancer," or "Service Provider"), you acknowledge that you have read, understood, and agree to be bound by all the terms and conditions outlined in this agreement.</p>
+      <p>If you do not agree with any part of these terms, you are not permitted to use the website or services. Your continued use of the website and services constitutes your acceptance of these terms and any updates to them.</p>
+    </div>
+
+    <div class="terms-section">
+      <h2>2. Services Provided</h2>
+      <p>I provide professional services in the following areas:</p>
+      <ul>
+        <li>Website Development and Design</li>
+        <li>Digital Marketing Strategy and Implementation</li>
+        <li>Search Engine Optimization (SEO)</li>
+        <li>E-Commerce Solutions</li>
+        <li>Content Creation and Strategy</li>
+        <li>Brand Development and Design</li>
+        <li>Technical Support and Maintenance</li>
+        <li>Consulting and Strategy Sessions</li>
+      </ul>
+      <p>The scope of services is determined by the individual project agreement and proposal provided before work begins.</p>
+    </div>
+
+    <div class="terms-section">
+      <h2>3. Engagement and Payment Terms</h2>
+      <h3>Project Proposals</h3>
+      <p>All projects begin with a detailed proposal outlining scope, timeline, deliverables, and pricing. The project does not commence until the proposal is accepted and payment terms are agreed upon.</p>
+      
+      <h3>Payment Terms</h3>
+      <ul>
+        <li>A 50% deposit is required to begin work on most projects (50/50 payment split)</li>
+        <li>The remaining balance is due upon project completion and delivery</li>
+        <li>Recurring services are billed monthly at the start of each billing cycle</li>
+        <li>Payment methods accepted: Credit/Debit Cards, Bank Transfer, PayPal</li>
+        <li>Late payments may result in suspension of services</li>
+      </ul>
+
+      <h3>Cancellation Policy</h3>
+      <p>If you cancel a project before work begins, the deposit will be refunded. If work has commenced, the deposit is non-refundable, but remaining project costs will be prorated based on hours worked. Recurring service subscriptions can be canceled with 30 days written notice.</p>
+    </div>
+
+    <div class="terms-section">
+      <h2>4. Intellectual Property Rights</h2>
+      <h3>Ownership</h3>
+      <p>Upon full payment of all project fees, all original work created by me (including custom code, designs, copy, and graphics) becomes your property. However, I retain the right to:</p>
+      <ul>
+        <li>Use the completed work as a portfolio example (with your permission)</li>
+        <li>Display screenshots or descriptions of the project on my website and marketing materials</li>
+        <li>Retain ownership of any pre-existing templates, frameworks, or tools used</li>
+        <li>Use general methodologies and processes developed during the project for future clients</li>
+      </ul>
+
+      <h3>Third-Party Content</h3>
+      <p>Client is responsible for ensuring they have proper licenses and rights to all content (images, videos, fonts, plugins) provided to me for use in projects. I am not liable for copyright infringement related to client-provided materials.</p>
+    </div>
+
+    <div class="terms-section">
+      <h2>5. Revisions and Change Requests</h2>
+      <p>The number of revisions and change requests varies by project and is outlined in the individual project agreement. Additional revisions beyond the agreed-upon number will be charged at an hourly rate of $150/hour.</p>
+      <p>Significant scope changes after project commencement (known as "scope creep") will require a change order and may result in timeline and cost adjustments.</p>
+    </div>
+
+    <div class="terms-section">
+      <h2>6. Timeline and Delivery</h2>
+      <p>I provide estimated timelines for all projects. While I work to meet these deadlines, unforeseen circumstances, client delays in providing feedback or materials, or significant scope changes may push timelines back. I will communicate any delays promptly.</p>
+      <p>Client agrees to provide necessary materials, feedback, and approvals on a timely basis to keep the project on schedule.</p>
+    </div>
+
+    <div class="terms-section">
+      <h2>7. Warranties and Disclaimers</h2>
+      <div class="terms-highlight">
+        <strong>I provide services on an "as-is" basis and make no warranties, express or implied, regarding:</strong>
+      </div>
+      <ul>
+        <li>Specific results or traffic increases from digital marketing efforts</li>
+        <li>Ranking improvements or search engine visibility (SEO results vary)</li>
+        <li>Website uptime or error-free operation for third-party hosting providers</li>
+        <li>Client success or business outcomes resulting from services</li>
+        <li>Compatibility with all browsers, devices, or operating systems</li>
+      </ul>
+      <p>I provide professional services based on industry best practices, but results depend on many factors outside my control, including search engine algorithms, market conditions, and client execution.</p>
+    </div>
+
+    <div class="terms-section">
+      <h2>8. Confidentiality</h2>
+      <p>I agree to maintain the confidentiality of any proprietary or sensitive information shared during our engagement, except as required by law or with your written consent.</p>
+      <p>This includes business strategies, financial information, and non-public plans, but does not include general methodologies or industry-standard practices.</p>
+    </div>
+
+    <div class="terms-section">
+      <h2>9. Limitation of Liability</h2>
+      <div class="terms-highlight">
+        <strong>Except as prohibited by law, I am not liable for any indirect, incidental, special, or consequential damages arising from your use of services, including but not limited to loss of profits, data, or business opportunity.</strong>
+      </div>
+      <p>The maximum liability for any claim is limited to the total amount paid for the service that gave rise to the claim.</p>
+    </div>
+
+    <div class="terms-section">
+      <h2>10. Acceptable Use Policy</h2>
+      <p>Client agrees not to use services for:</p>
+      <ul>
+        <li>Illegal, harmful, or deceptive purposes</li>
+        <li>Spam, harassment, or abuse</li>
+        <li>Infringement of intellectual property rights</li>
+        <li>Violation of privacy laws or regulations</li>
+        <li>Malware, viruses, or malicious code</li>
+        <li>Content that is defamatory, obscene, or harmful</li>
+      </ul>
+      <p>Violation of this policy may result in immediate termination of services without refund.</p>
+    </div>
+
+    <div class="terms-section">
+      <h2>11. Data and Privacy</h2>
+      <p>I collect minimal personal information through contact forms and account registration. For details on how data is collected, used, and protected, please review our Privacy Policy.</p>
+      <p>Client is responsible for ensuring compliance with GDPR, CCPA, and other relevant data protection regulations regarding any customer data used in projects.</p>
+    </div>
+
+    <div class="terms-section">
+      <h2>12. Termination of Services</h2>
+      <h3>By Client</h3>
+      <p>You may terminate services at any time by written notice. Depending on the cancellation point:</p>
+      <ul>
+        <li>Before work begins: Full refund of deposit</li>
+        <li>During project: No refund; payment for work completed to date is required</li>
+        <li>Monthly recurring: 30-day notice required</li>
+      </ul>
+
+      <h3>By Service Provider</h3>
+      <p>I reserve the right to terminate services if:</p>
+      <ul>
+        <li>Payment is not received within 15 days of due date</li>
+        <li>Client violates the Acceptable Use Policy</li>
+        <li>Project scope becomes unreasonable or unfeasible</li>
+        <li>Work environment becomes abusive or unprofessional</li>
+      </ul>
+      <p>In such cases, a partial refund may be provided based on work completed.</p>
+    </div>
+
+    <div class="terms-section">
+      <h2>13. Indemnification</h2>
+      <p>Client agrees to indemnify and hold harmless me from any claims, damages, or costs (including legal fees) arising from:</p>
+      <ul>
+        <li>Client-provided content or materials</li>
+        <li>Client's violation of laws or third-party rights</li>
+        <li>Client's use of services contrary to this agreement</li>
+        <li>Claims by third parties related to client's business or content</li>
+      </ul>
+    </div>
+
+    <div class="terms-section">
+      <h2>14. Account Credentials and Security</h2>
+      <p>You are responsible for maintaining the confidentiality of your account credentials and password. All activity under your account is your responsibility. You agree to notify me immediately of any unauthorized use of your account.</p>
+      <p>I am not liable for any losses resulting from unauthorized access to your account if security measures are not properly maintained.</p>
+    </div>
+
+    <div class="terms-section">
+      <h2>15. Website Uptime and Maintenance</h2>
+      <p>While I strive for 99% uptime for websites I develop, I do not guarantee uninterrupted service. Website downtime may result from:</p>
+      <ul>
+        <li>Hosting provider issues or maintenance</li>
+        <li>Domain or DNS problems</li>
+        <li>Third-party service outages</li>
+        <li>Security updates or server issues</li>
+      </ul>
+      <p>Maintenance notifications will be provided when possible.</p>
+    </div>
+
+    <div class="terms-section">
+      <h2>16. Modifications to Terms</h2>
+      <p>I reserve the right to update these terms at any time. Changes will be effective immediately upon posting. Continued use of services after updates constitutes acceptance of new terms. For ongoing clients, significant changes will be communicated via email.</p>
+    </div>
+
+    <div class="terms-section">
+      <h2>17. Dispute Resolution</h2>
+      <h3>Informal Resolution</h3>
+      <p>Before pursuing formal action, parties agree to attempt resolution through good-faith negotiation and discussion.</p>
+
+      <h3>Arbitration</h3>
+      <p>If informal resolution fails, disputes shall be resolved through binding arbitration rather than court proceedings, in accordance with American Arbitration Association (AAA) rules.</p>
+
+      <h3>Governing Law</h3>
+      <p>These terms are governed by the laws of [Your State/Country] without regard to its conflict of law principles.</p>
+    </div>
+
+    <div class="terms-section">
+      <h2>18. Entire Agreement</h2>
+      <p>This Terms and Conditions agreement, together with any project proposals and agreements, constitutes the entire agreement between you and me regarding services provided. It supersedes all previous understandings and agreements.</p>
+    </div>
+
+    <div class="terms-section">
+      <h2>19. Severability</h2>
+      <p>If any provision of these terms is found to be invalid or unenforceable, the remaining provisions shall continue in full force and effect.</p>
+    </div>
+
+    <div class="terms-section">
+      <h2>20. Contact Information</h2>
+      <p>For questions about these terms, please contact me:</p>
+      <p>
+        📧 Email: <a href="mailto:hello@hollydev.com" style="color: var(--secondary-accent);">hello@hollydev.com</a><br>
+        📱 Phone: <a href="tel:+1555000000" style="color: var(--secondary-accent);">+1 (555) 000-0000</a><br>
+        🌐 Website: <a href="index.html" style="color: var(--secondary-accent);">https://hollydev.com</a>
+      </p>
+    </div>
+
+    <div style="background: linear-gradient(135deg, rgba(255, 0, 0, 0.1), rgba(67, 97, 238, 0.1)); border-radius: 10px; padding: 2rem; text-align: center; margin-top: 3rem; margin-bottom: 2rem;">
+      <h3 style="color: var(--primary-accent); margin-top: 0;">Questions About These Terms?</h3>
+      <p>If you have any questions or concerns about these terms and conditions, please don't hesitate to reach out. I'm happy to clarify any points.</p>
+      <a href="contact.html" class="btn btn-primary">Get In Touch</a>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-column">
+          <h4>Holly - Freelancer</h4>
+          <p>Ready to help with your digital presence.</p>
+        </div>
+        <div class="footer-column">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="portfolio.html">Portfolio</a></li>
+            <li><a href="about.html">About</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="terms.html">Terms</a></li>
+            <li><a href="#">Privacy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 HollyHub Digital. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="app-loader.js"></script>
+</body>
+</html>

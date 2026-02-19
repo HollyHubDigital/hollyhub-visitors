@@ -1,0 +1,75 @@
+[
+  {
+    "id": "1770915548636",
+    "filename": "1770915548623-test-upload.txt",
+    "originalname": "test-upload.txt",
+    "description": "",
+    "targets": [],
+    "uploadedAt": "2026-02-12T16:59:08.636Z"
+  },
+  {
+    "id": "1770915548815",
+    "filename": "1770915548814-test-upload.txt",
+    "originalname": "test-upload.txt",
+    "description": "",
+    "targets": [],
+    "uploadedAt": "2026-02-12T16:59:08.815Z"
+  },
+  {
+    "id": "1770915600757",
+    "filename": "1770915600739-test-upload.txt",
+    "originalname": "test-upload.txt",
+    "description": "",
+    "targets": [],
+    "uploadedAt": "2026-02-12T17:00:00.757Z"
+  },
+  {
+    "id": "1770915600884",
+    "filename": "1770915600883-test-upload.txt",
+    "originalname": "test-upload.txt",
+    "description": "",
+    "targets": [],
+    "uploadedAt": "2026-02-12T17:00:00.884Z"
+  },
+  {
+    "id": "1770916660007",
+    "filename": "1770916659971-Internet4.jpg",
+    "originalname": "Internet4.jpg",
+    "description": "",
+    "targets": [
+      "portfolio"
+    ],
+    "uploadedAt": "2026-02-12T17:17:40.007Z"
+  },
+  {
+    "id": "1770934775180",
+    "filename": "1770934775171-Screenshot_2026-01-08_142039.png",
+    "originalname": "Screenshot 2026-01-08 142039.png",
+    "description": "",
+    "targets": [
+      "portfolio",
+      "recent-projects"
+    ],
+    "uploadedAt": "2026-02-12T22:19:35.180Z"
+  },
+  {
+    "id": "1770953555968",
+    "filename": "1770953555966-Internet.webp",
+    "originalname": "Internet.webp",
+    "description": "",
+    "targets": [
+      "portfolio"
+    ],
+    "uploadedAt": "2026-02-13T03:32:35.968Z"
+  },
+  {
+    "id": "1770954508985",
+    "filename": "1770954508843-Screen_Recording_2026-01-06_193930.mp4",
+    "originalname": "Screen Recording 2026-01-06 193930.mp4",
+    "description": "",
+    "targets": [
+      "blog"
+    ],
+    "uploadedAt": "2026-02-13T03:48:28.985Z"
+  }
+]

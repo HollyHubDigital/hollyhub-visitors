@@ -1,0 +1,608 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Holly - Professional freelance web developer and digital marketing specialist. Custom website development, SEO, and marketing services for your business growth." />
+  <meta name="keywords" content="freelance web developer, website development, digital marketing, SEO services, website designer, marketing services" />
+  <meta name="author" content="Holly" />
+  <meta property="og:title" content="Holly - Professional Web Developer & Digital Marketer" />
+  <meta property="og:description" content="Custom website development and digital marketing services. Book your project today." />
+  <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <title>Holly - Professional Web Developer & Digital Marketer | Book Services</title>
+</head>
+<body>
+  <!-- STICKY HEADER -->
+  <header class="sticky-header" id="header">
+    <div class="header-container">
+      <div class="header-logo">
+        <a href="index.html" class="logo-link">
+          <img src="hollyhub.jpg" class="logo-img" alt="HollyHub" />
+          <h1 class="brand">HOLLY<span class="brandkit">DEV</span></h1>
+        </a>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <nav class="desktop-nav">
+        <a href="services.html" class="nav-link">SERVICES</a>
+        <a href="portfolio.html" class="nav-link">PORTFOLIO</a>
+        <a href="blog.html" class="nav-link">BLOG</a>
+        <a href="about.html" class="nav-link">ABOUT</a>
+      </nav>
+
+      <!-- Search Bar -->
+      <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search..." />
+        <button id="searchBtn" class="search-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Translator & Auth -->
+      <div class="header-actions">
+        <select id="languageSelect" class="language-select" aria-label="Select language">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="zh-CN">中文 (简体)</option>
+          <option value="zh-TW">中文 (繁體)</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="ru">Русский</option>
+          <option value="pt">Português</option>
+          <option value="it">Italiano</option>
+          <option value="nl">Nederlands</option>
+          <option value="sv">Svenska</option>
+          <option value="no">Norsk</option>
+          <option value="da">Dansk</option>
+          <option value="fi">Suomi</option>
+          <option value="pl">Polski</option>
+          <option value="tr">Türkçe</option>
+          <option value="ar">العربية</option>
+          <option value="hi">हिन्दी</option>
+          <option value="bn">বাংলা</option>
+          <option value="pa">ਪੰਜਾਬੀ</option>
+          <option value="ur">اردو</option>
+          <option value="vi">Tiếng Việt</option>
+          <option value="th">ไทย</option>
+          <option value="id">Bahasa Indonesia</option>
+          <option value="ms">Bahasa Melayu</option>
+          <option value="he">עברית</option>
+          <option value="el">Ελληνικά</option>
+          <option value="ro">Română</option>
+          <option value="hu">Magyar</option>
+          <option value="cs">Čeština</option>
+          <option value="sk">Slovenčina</option>
+          <option value="bg">Български</option>
+          <option value="uk">Українська</option>
+          <option value="hr">Hrvatski</option>
+          <option value="sr">Српски</option>
+          <option value="sl">Slovenščina</option>
+          <option value="lt">Lietuvių</option>
+          <option value="lv">Latviešu</option>
+          <option value="et">Eesti</option>
+          <option value="mk">Македонски</option>
+          <option value="sq">Shqip</option>
+          <option value="az">Azərbaycan</option>
+          <option value="hy">Հայերեն</option>
+          <option value="ka">ქართული</option>
+          <option value="mn">Монгол</option>
+        </select>
+          <!-- Hidden Google Translate container (script will initialize the widget) -->
+          <div id="google_translate_element" style="display:none"></div>
+        <a href="login.html" class="btn-login">LOGIN</a>
+        <a href="signup.html" class="btn-signup">SIGN UP</a>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button class="hamburger-btn" id="hamburger" aria-expanded="false" aria-label="Toggle menu">
+				<span></span><span></span><span></span>
+			</button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <nav class="mobile-menu" id="mobile-menu">
+      <a href="contact.html" class="mobile-nav-link">CONTACT</a>
+      <a href="services.html" class="mobile-nav-link">SERVICES</a>
+      <a href="marketing.html" class="mobile-nav-link">MARKETING</a>
+      <a href="portfolio.html" class="mobile-nav-link">PORTFOLIO</a>
+      <a href="blog.html" class="mobile-nav-link">BLOG</a>
+      <a href="about.html" class="mobile-nav-link">ABOUT</a>
+      <a href="terms.html" class="mobile-nav-link">TERMS</a>
+      <div class="mobile-auth">
+        <a href="login.html" class="btn-login">LOGIN</a>
+        <a href="signup.html" class="btn-signup">SIGN UP</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- SEARCH RESULTS MODAL -->
+  <div id="searchModal" class="search-modal">
+    <div class="search-modal-content">
+      <button class="search-modal-close" id="searchClose">&times;</button>
+      <h2>Search Results</h2>
+      <div id="searchResults" class="search-results-list"></div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: HERO SECTION -->
+  <section class="hero" id="hero">
+    <div class="hero-content">
+      <h1 class="hero-title">Professional Website Development & Digital Marketing</h1>
+      <span class="hero-subtitle"><span class="short"><strong>HollyHub Digital</strong></span> is a freelance web developer and digital marketing specialist. We help businesses get online and grow with custom websites brands and targeted marketing strategies. Let's transform your vision into results.</p>
+      <div class="hero-buttons">
+        <a href="signup.html" class="btn btn-primary">Book Our Services</a>
+        <a href="#services" class="btn btn-secondary">View Our Works</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <h3>150+</h3>
+          <p>Websites Built</p>
+        </div>
+        <div class="stat">
+          <h3>98%</h3>
+          <p>Client Satisfaction</p>
+        </div>
+        <div class="stat">
+          <h3>Fast</h3>
+          <p>Turnaround Time</p>
+        </div>
+      </div>
+    </div>
+    <div class="hero-image">
+      <div class="hero-graphic"><img src="hollyhubhero.jpg" alt="web" class="inter" /></div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: CORE SERVICES -->
+  <section class="services" id="services">
+    <div class="container">
+      <h2 class="section-title">Services We Offer</h2>
+      <p class="section-subtitle">We specialize in creating beautiful, functional websites and implementing data-driven marketing strategies that help your business grow.</p>
+      
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="service-icon">🌐</div>
+          <h3>Website Development</h3>
+          <p>We create custom, high-performance websites designed specifically for your business. Every site is built with SEO, mobile responsiveness, and fast loading times in mind. Whether you need a simple portfolio, a professional business site, or a complete e-commerce platform, We deliver quality results. We use modern technologies and best practices to ensure your website stands out and converts visitors into customers. Your site will be fully functional, secure, and ready to help you succeed online.</p>
+          <a href="services.html" class="service-link">Learn More →</a>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">📊</div>
+          <h3>Digital Marketing Services</h3>
+          <p>We help businesses reach their target audience and grow their online presence through strategic digital marketing. Our services include SEO optimization to rank higher on Google, content marketing to engage your audience, social media strategy to build your brand, and paid advertising to drive qualified leads. We take a data-driven approach, analyzing what works and continuously optimizing for better results. Our goal is to increase your visibility, attract the right customers, and help you achieve measurable business growth through proven marketing strategies.</p>
+          <a href="marketing.html" class="service-link">Learn More →</a>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">⚡</div>
+          <h3>Website Optimization</h3>
+          <p>Have an existing website that isn't performing well? We can help! We audit your current site, identify issues, and implement improvements to boost performance, speed, and conversions. This includes improving page load times, fixing SEO problems, improving user experience, updating outdated code, and adding new features. Sometimes a redesign isn't necessary – the right optimizations can significantly improve results and drive more business without a complete rebuild.</p>
+          <a href="services.html" class="service-link">Learn More →</a>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">💼</div>
+          <h3>E-Commerce Solutions</h3>
+          <p>If you want to sell products online, We build complete e-commerce websites with shopping carts, payment processing, inventory management, and order tracking. We integrate with popular payment processors and shipping providers to make your operations seamless. Whether you're just starting your online store or migrating from an existing platform, We ensure a smooth, secure, and customer-friendly shopping experience that keeps customers coming back and increases your sales.</p>
+          <a href="services.html" class="service-link">Learn More →</a>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">🎨</div>
+          <h3>Brand Design & Identity</h3>
+          <p>Your brand is your first impression. We create professional logos, color schemes, typography guidelines, and visual assets that represent your business authentically. A cohesive brand identity builds trust, creates recognition, and sets you apart from competitors. Whether starting from scratch or refreshing an existing brand, We ensure your visual identity aligns with your business values and appeals to your target market, creating a lasting professional impression.</p>
+          <a href="services.html" class="service-link">Learn More →</a>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">🔧</div>
+          <h3>Technical Support & Maintenance</h3>
+          <p>Keep your website running smoothly with ongoing support and maintenance. We handle security updates, performance monitoring, backups, bug fixes, and general maintenance so you can focus on your business. We're available to help with questions, implement new features, or make updates as your needs change. Peace of mind comes with knowing your digital assets are properly maintained and supported by a professional.</p>
+          <a href="services.html" class="service-link">Learn More →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: WHY CHOOSE US -->
+  <section class="features" id="features">
+    <div class="container">
+      <h2 class="section-title">Why Work With Us</h2>
+      <p class="section-subtitle">Here's what our clients value most about working with us as their freelancer.</p>
+      
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-number">01</div>
+          <h3>Dedicated Attention</h3>
+          <p>As a freelancer, you're our priority. You get direct communication with us, not layers of project managers or support tickets. We are personally invested in your success and take the time to understand your business, goals, and vision for the project.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-number">02</div>
+          <h3>Custom Solutions</h3>
+          <p>Every business is unique, and We don't believe in one-size-fits-all templates. We create customized solutions tailored specifically to your needs, budget, and timeline. Your website and marketing strategy will be built from scratch to match your brand and goals.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-number">03</div>
+          <h3>SEO Expert</h3>
+          <p>All our websites are built with search engine optimization in mind from day one. We implement best practices for on-page SEO, technical optimization, and content strategy to help you rank well on Google for your target keywords and attract organic traffic.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-number">04</div>
+          <h3>Mobile Responsive</h3>
+          <p>Over 60% of web traffic comes from mobile devices. We design and develop all websites mobile-first, ensuring perfect functionality and beautiful appearance across all screen sizes. Your customers enjoy a seamless experience whether they visit on desktop, tablet, or phone.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-number">05</div>
+          <h3>Results-Oriented</h3>
+          <p>We focus on measurable results, not vanity metrics. Whether it's rankings, conversions, traffic, or sales, We track what matters to your business and continuously optimize to achieve your goals. You'll always know what impact your investment is having.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-number">06</div>
+          <h3>Ongoing Support</h3>
+          <p>Your success doesn't end at project launch. We provide ongoing support and maintenance to keep your website running smoothly. We're available for updates, revisions, new features, and general support so your site remains secure, fast, and effective as your business grows.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: PRICING -->
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <h2 class="section-title">Flexible Pricing Plans</h2>
+      <p class="section-subtitle">Choose the service that best fits your business needs. Custom quotes available for complex projects.</p>
+      
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <h3>Starter Website</h3>
+          <p class="price">$499<span>one-time</span></p>
+          <p class="plan-description">Perfect for small businesses and freelancers starting their online presence.</p>
+          <ul class="features-list">
+            <li>✓ 5-page professional website</li>
+            <li>✓ Mobile responsive design</li>
+            <li>✓ Basic SEO optimization</li>
+            <li>✓ SSL certificate included</li>
+            <li>✓ Contact form integration</li>
+            <li>✓ 2 rounds of revisions</li>
+            <li>✗ E-commerce functionality</li>
+          </ul>
+          <a href="signup.html?service=starter-website" class="btn btn-primary">Order Now</a>
+        </div>
+
+        <div class="pricing-card">
+          <h3>Professional Website</h3>
+          <p class="price">$999<span>one-time</span></p>
+          <p class="plan-description">Ideal for established businesses needing a powerful online presence.</p>
+          <ul class="features-list">
+            <li>✓ 10-page custom website</li>
+            <li>✓ Advanced SEO optimization</li>
+            <li>✓ Blog integration with CMS</li>
+            <li>✓ Portfolio/Gallery showcase</li>
+            <li>✓ Email capture form</li>
+            <li>✓ Speed optimization</li>
+            <li>✓ 4 rounds of revisions</li>
+          </ul>
+          <a href="signup.html?service=professional-website" class="btn btn-primary">Order Now</a>
+        </div>
+
+        <div class="pricing-card featured">
+          <div class="badge">Most Popular</div>
+          <h3>E-Commerce Store</h3>
+          <p class="price">$1,499<span>one-time</span></p>
+          <p class="plan-description">Complete online store solution with payment processing and inventory management.</p>
+          <ul class="features-list">
+            <li>✓ Full e-commerce functionality</li>
+            <li>✓ Product management system</li>
+            <li>✓ Payment gateway integration</li>
+            <li>✓ Shopping cart & checkout</li>
+            <li>✓ Inventory tracking</li>
+            <li>✓ Order notifications</li>
+            <li>✓ 5 rounds of revisions</li>
+          </ul>
+          <a href="signup.html?service=ecommerce-store" class="btn btn-primary">Order Now</a>
+        </div>
+
+        <div class="pricing-card">
+          <h3>Website Optimization</h3>
+          <p class="price">$399<span>one-time</span></p>
+          <p class="plan-description">Improve an existing website's performance and conversions.</p>
+          <ul class="features-list">
+            <li>✓ Comprehensive site audit</li>
+            <li>✓ Speed optimization</li>
+            <li>✓ SEO improvements</li>
+            <li>✓ UX/UI enhancements</li>
+            <li>✓ Bug fixes</li>
+            <li>✓ Security updates</li>
+            <li>✓ Performance monitoring</li>
+          </ul>
+          <a href="signup.html?service=optimization" class="btn btn-primary">Order Now</a>
+        </div>
+
+        <div class="pricing-card">
+          <h3>SEO Marketing</h3>
+          <p class="price">$299<span>/month</span></p>
+          <p class="plan-description">Boost your rankings and drive organic traffic from Google.</p>
+          <ul class="features-list">
+            <li>✓ Keyword research & strategy</li>
+            <li>✓ On-page SEO optimization</li>
+            <li>✓ Content recommendations</li>
+            <li>✓ Backlink analysis</li>
+            <li>✓ Monthly rankings report</li>
+            <li>✓ Technical SEO audits</li>
+            <li>✗ Paid advertising</li>
+          </ul>
+          <a href="signup.html?service=seo-marketing" class="btn btn-primary">Order Now</a>
+        </div>
+
+        <div class="pricing-card">
+          <h3>Full Marketing Suite</h3>
+          <p class="price">$499<span>/month</span></p>
+          <p class="plan-description">Complete digital marketing package for all-around growth.</p>
+          <ul class="features-list">
+            <li>✓ SEO strategy & optimization</li>
+            <li>✓ Content marketing planning</li>
+            <li>✓ Social media strategy</li>
+            <li>✓ Email marketing setup</li>
+            <li>✓ PPC advertising management</li>
+            <li>✓ Weekly analytics reports</li>
+            <li>✓ Strategy consultation calls</li>
+          </ul>
+          <a href="signup.html?service=full-marketing" class="btn btn-primary">Order Now</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5: PORTFOLIO/RECENT WORK -->
+  <section class="portfolio-preview" id="portfolio-preview">
+    <div class="container">
+      <h2 class="section-title">Recent Projects</h2>
+      <p class="section-subtitle">Explore our latest work and see what we've accomplished for our clients across various industries.</p>
+      
+      <div class="portfolio-grid" id="recentProjectsGrid">
+        <!-- Recent projects will be loaded dynamically from /api/pages/sections/index -->
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 6: TESTIMONIALS -->
+  <section class="testimonials" id="testimonials">
+    <div class="container">
+      <h2 class="section-title">What Our Clients Say</h2>
+      <p class="section-subtitle">Real feedback from real business owners who've transformed their digital presence with HollyHub Digital.</p>
+      
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <p>"Working with HollyHub Digital was a game-changer for our business. Within 3 months, our website traffic increased by 250% and we landed 5 major clients. The team is professional, responsive, and truly cares about results."</p>
+          <div class="testimonial-author">
+            <strong>Sarah Johnson</strong>
+            <span>CEO, TechStartUp Inc.</span>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <p>"The custom app they built for us streamlined our operations and reduced manual work by 70%. The support team is incredible – they're always available when we need them. Highly recommend HollyHub Digital!"</p>
+          <div class="testimonial-author">
+            <strong>Michael Chen</strong>
+            <span>Founder, LogisticsHub</span>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <p>"From design to deployment, the HollyHub team exceeded our expectations. Our new website is stunning, loads fast, and ranks on the first page of Google for our target keywords. Best investment we made this year."</p>
+          <div class="testimonial-author">
+            <strong>Emma Rodriguez</strong>
+            <span>Director, Creative Agency Co.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 7: CTA SECTION -->
+  <section class="cta-section" id="cta">
+    <div class="container">
+      <h2>Ready to Grow Your Business?</h2>
+      <p>Let's work together to build your online presence and drive real results. Whether you need a stunning website, better search rankings, or a comprehensive marketing strategy, We're here to help. Contact us today for a free consultation.</p>
+      <div class="cta-buttons">
+        <a href="signup.html" class="btn btn-primary btn-large">Book My Services</a>
+        <a href="contact.html" class="btn btn-secondary btn-large">Get Free Consultation</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 8: FAQ -->
+  <section class="faq" id="faq">
+    <div class="container">
+      <h2 class="section-title">Frequently Asked Questions</h2>
+      <p class="section-subtitle">Find answers to common questions about our services, pricing, and support.</p>
+      
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question">What is included in your web development service? <span class="faq-icon">+</span></button>
+          <div class="faq-answer">
+            <p>Our web development service includes custom design based on your brand, responsive mobile-first development, SEO optimization, SSL certificate, performance optimization, and ongoing support. We also provide free revisions during the development phase to ensure you're completely satisfied with the final product.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">How long does a typical website project take? <span class="faq-icon">+</span></button>
+          <div class="faq-answer">
+            <p>Timeline depends on project complexity. Simple websites take 2-4 weeks, standard business websites 4-8 weeks, and complex e-commerce or custom platform projects 8-16 weeks. We provide a detailed timeline during the planning phase and keep you updated throughout development.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Do you offer ongoing maintenance and support? <span class="faq-icon">+</span></button>
+          <div class="faq-answer">
+            <p>Yes, all our clients receive continuous support included in their plan. This includes security updates, performance monitoring, backup management, and technical support. Additional custom support packages are available for enterprise clients with specific requirements.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">How do you approach SEO? <span class="faq-icon">+</span></button>
+          <div class="faq-answer">
+            <p>We take a comprehensive approach to SEO that includes technical optimization, keyword research, content strategy, link building, and continuous monitoring. Our goal is to increase your organic visibility on Google and drive qualified traffic that converts into customers.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Can you help with digital marketing? <span class="faq-icon">+</span></button>
+          <div class="faq-answer">
+            <p>Absolutely! We offer a full suite of digital marketing services including SEO, content marketing, social media management, email marketing, and PPC advertising. We create integrated campaigns that work together to maximize your online presence and ROI.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">What if I need to scale my platform? <span class="faq-icon">+</span></button>
+          <div class="faq-answer">
+            <p>We build all our solutions with scalability in mind. Whether you need to handle more users, add new features, or expand into new markets, our infrastructure and code are designed to grow with your business. We'll guide you through each scaling phase.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer" id="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-column">
+          <h4>Holly - Freelancer</h4>
+          <p>Professional web developer and digital marketing specialist. We help businesses establish and grow their online presence with custom websites and strategic marketing solutions.</p>
+          <div class="social-links">
+            <a href="#">Facebook</a>
+            <a href="#">Twitter</a>
+            <a href="#">LinkedIn</a>
+            <a href="#">Instagram</a>
+          </div>
+        </div>
+
+        <div class="footer-column">
+          <h4>Services</h4>
+          <ul>
+            <li><a href="services.html">Website Development</a></li>
+            <li><a href="services.html">E-Commerce Solutions</a></li>
+            <li><a href="services.html">SEO Marketing</a></li>
+            <li><a href="marketing.html">Digital Marketing</a></li>
+            <li><a href="services.html">Website Optimization</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-column">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="about.html">About Me</a></li>
+            <li><a href="blog.html">Blog</a></li>
+            <li><a href="portfolio.html">Portfolio</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="admin.html">Admin</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-column">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="terms.html">Terms & Conditions</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Cookie Policy</a></li>
+            <li><a href="#">Refund Policy</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 HollyHub Digital - Web Developer & Marketer. All rights reserved.</p>
+        <p>Built with ♥ for digital transformation</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="script.js"></script>
+  
+  <!-- Visitor Analytics Tracking -->
+  <script>
+    document.addEventListener('DOMContentLoaded', async function(){
+      try{
+        const res = await fetch('/api/pages/sections/index');
+        if(!res.ok) return;
+        const sections = await res.json();
+        const projects = sections.recentProjects || [];
+        const grid = document.getElementById('recentProjectsGrid');
+        if(!grid) return;
+        if(projects.length === 0) return;
+        grid.innerHTML = projects.map(p=>{
+          const img = (p.image||'').trim();
+          let imgUrl = img;
+          if(img && !img.startsWith('http') && !img.startsWith('/')) imgUrl = '/uploads/' + encodeURIComponent(img);
+          const bg = imgUrl ? `style="background-image:url('${imgUrl}');background-size:cover;background-position:center"` : '';
+          const link = p.url || 'portfolio.html';
+          return `<div class="portfolio-item"><div class="portfolio-image" ${bg}></div><h3>${p.title||''}</h3><p>${p.description||''}</p><a href="${link}" class="view-link">View Project →</a></div>`;
+        }).join('');
+      }catch(e){ console.log('Load recent projects failed', e); }
+    });
+  </script>
+  <script>
+    (function(){
+      try {
+        // Detect browser
+        const ua = navigator.userAgent;
+        let browser = 'Other';
+        if(ua.indexOf('Chrome')>-1 && ua.indexOf('Chromium')===-1) browser = 'Chrome';
+        else if(ua.indexOf('Safari')>-1 && ua.indexOf('Chrome')===-1) browser = 'Safari';
+        else if(ua.indexOf('Firefox')>-1) browser = 'Firefox';
+        else if(ua.indexOf('Edge')>-1) browser = 'Edge';
+        else if(ua.indexOf('MSIE')>-1 || ua.indexOf('Trident/')>-1) browser = 'IE';
+        
+        // Try to get country from IP (using free geolocation service)
+        fetch('https://ipapi.co/json/', { mode: 'cors' })
+          .then(r => r.json())
+          .then(data => {
+            const country = data.country_name || 'Unknown';
+            // Send analytics
+            fetch('/api/analytics', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                page: 'index',
+                browser: browser,
+                country: country
+              })
+            }).catch(e => console.log('Analytics track failed:', e));
+          })
+          .catch(e => {
+            // If geolocation fails, still send without country
+            fetch('/api/analytics', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                page: 'index',
+                browser: browser,
+                country: 'Unknown'
+              })
+            }).catch(e => console.log('Analytics track failed:', e));
+          });
+      } catch(e) {
+        console.log('Analytics error:', e);
+      }
+    })();
+  </script>
+  <script src="app-loader.js"></script>
+</body>
+</html>

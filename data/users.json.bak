@@ -1,0 +1,16 @@
+[
+  {
+    "id": "1770860653427",
+    "email": "maverickashley1@gmail.com",
+    "fullname": "maverick",
+    "passwordHash": "$2a$10$Vf9qkCNUjyAH1GrWRnrFaeiOhJeNlTHnI/BtANpk32699/ae1qQ6W",
+    "createdAt": "2026-02-12T01:44:13.427Z"
+  },
+  {
+    "id": "1770860531965",
+    "email": "testuser@example.com",
+    "fullname": "Test User",
+    "passwordHash": "$2a$10$7yPDIEwFy/q5.9SU9M1nAOzXCr2XREwfhV9fPuB0vgPxoJ9gtwfSO",
+    "createdAt": "2026-02-12T01:42:11.965Z"
+  }
+]

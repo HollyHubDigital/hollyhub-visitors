@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Sign up for Holly's professional web development and digital marketing services. Create your account to book services and manage your projects." />
+  <meta name="keywords" content="sign up, register, account, freelancer services" />
+  <title>Sign Up - Holly Web Developer & Marketer</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="sticky-header" id="header">
+    <div class="header-container">
+      <div class="header-logo">
+        <a href="index.html" class="logo-link">
+          <img src="hollyhub.jpg" class="logo-img" alt="HollyHub" />
+          <h1 class="brand">HOLLY<span class="brandkit">DEV</span></h1>
+        </a>
+      </div>
+
+      <nav class="desktop-nav">
+        <a href="index.html#hero" class="nav-link">HOME</a>
+        <a href="index.html#services" class="nav-link">SERVICES</a>
+        <a href="portfolio.html" class="nav-link">PORTFOLIO</a>
+        <a href="about.html" class="nav-link">ABOUT</a>
+      </nav>
+
+      <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search..." />
+        <button id="searchBtn" class="search-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="header-actions">
+        <select id="languageSelect" class="language-select" aria-label="Select language">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+        </select>
+        <div id="google_translate_element" style="display:none"></div>
+        <a href="login.html" class="btn-login">LOGIN</a>
+      </div>
+
+      <button class="hamburger-btn" id="hamburger" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+
+    <nav class="mobile-menu" id="mobile-menu">
+      <a href="index.html#hero" class="mobile-nav-link">HOME</a>
+      <a href="index.html#services" class="mobile-nav-link">SERVICES</a>
+      <a href="portfolio.html" class="mobile-nav-link">PORTFOLIO</a>
+      <a href="about.html" class="mobile-nav-link">ABOUT</a>
+      <div class="mobile-auth">
+        <a href="login.html" class="btn-login">LOGIN</a>
+      </div>
+    </nav>
+  </header>
+
+  
+
+  <!-- SIGNUP SECTION -->
+  <section class="auth-section">
+    <div class="auth-container">
+      <div class="auth-card">
+        <h1>Create Your Account</h1>
+        <p class="auth-subtitle">Join me to order services and start your digital transformation. It only takes a minute.</p>
+
+        <form id="signupForm" class="auth-form">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-input" name="fullname" placeholder="John Doe" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-input" name="email" placeholder="you@example.com" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Company Name</label>
+            <input type="text" class="form-input" name="company" placeholder="Your Company (Optional)" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" class="form-input" name="phone" placeholder="+1 (555) 000-0000" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-input" name="password" placeholder="Enter secure password" required />
+            <small style="opacity: 0.7; display: block; margin-top: 0.3rem;">At least 8 characters with uppercase, lowercase, and number</small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Confirm Password</label>
+            <input type="password" class="form-input" name="confirmPassword" placeholder="Confirm password" required />
+          </div>
+
+          <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+              <input type="checkbox" name="terms" required />
+              <span>I agree to the <a href="terms.html" target="_blank" style="color: var(--secondary-accent);">Terms & Conditions</a></span>
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+              <input type="checkbox" name="newsletter" />
+              <span>Subscribe to our newsletter for updates and offers</span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-large" style="width: 100%;">Create Account</button>
+        </form>
+
+        <div class="auth-divider">OR</div>
+
+        <div class="auth-social">
+          <a class="social-btn" href="/api/auth/google?action=start"><img src="google.png" alt="google" class="social" />
+            <span>Sign up with Google</span>
+          </a>
+          <a class="social-btn" href="/api/auth/github?action=start"><img src="github.png" alt="github" class="social" />
+            <span>Sign up with GitHub</span>
+          </a>
+        </div>
+
+        <p class="auth-footer">
+          Already have an account? <a href="login.html" style="color: var(--primary-accent); font-weight: 600;">Log in here</a>
+        </p>
+      </div>
+
+      <div class="auth-benefits">
+        <h3>Why Sign Up?</h3>
+        <ul class="benefits-list">
+          <li>✓ Book our services easily</li>
+          <li>✓ Track your projects in real-time</li>
+          <li>✓ Access exclusive discounts</li>
+          <li>✓ Get consultation calls</li>
+          <li>✓ Receive updates on your services</li>
+          <li>✓ Priority support access</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-column">
+          <h4>Holly - Freelancer</h4>
+          <p>Professional web developer and digital marketing specialist helping businesses grow online.</p>
+        </div>
+        <div class="footer-column">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="portfolio.html">Portfolio</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="terms.html">Terms & Conditions</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Cookie Policy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 HollyHub Digital. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <style>
+    .auth-section {
+      min-height: 100vh;
+      padding: 4rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(255, 0, 0, 0.05) 0%, rgba(67, 97, 238, 0.05) 100%);
+    }
+
+    .auth-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      max-width: 1200px;
+      width: 100%;
+      align-items: center;
+    }
+
+    .auth-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 0, 0, 0.05) 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 15px;
+      padding: 3rem;
+    }
+
+    .auth-card h1 {
+      color: var(--primary-accent);
+      margin-bottom: 0.5rem;
+      font-size: 2rem;
+    }
+
+    .auth-subtitle {
+      opacity: 0.8;
+      margin-bottom: 2rem;
+    }
+
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .auth-divider {
+      text-align: center;
+      margin: 2rem 0;
+      opacity: 0.5;
+      position: relative;
+    }
+
+    .auth-divider::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--border-color);
+    }
+
+    .auth-social {
+      display: flex;
+      gap: 1rem;
+      flex-direction: column;
+    }
+
+    .social-btn {
+      padding: 0.75rem 1.5rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-light);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+      font-weight: 600;
+    }
+
+    .social-btn:hover {
+      background-color: rgba(255, 0, 0, 0.1);
+      border-color: var(--primary-accent);
+    }
+
+    .social {
+      width: 40px;
+      height: 40px;
+    }
+
+    .auth-footer {
+      text-align: center;
+      margin-top: 1.5rem;
+      opacity: 0.8;
+    }
+
+    .auth-benefits {
+      background: rgba(255, 0, 0, 0.05);
+      border-left: 4px solid var(--primary-accent);
+      padding: 2rem;
+      border-radius: 10px;
+    }
+
+    .auth-benefits h3 {
+      color: var(--primary-accent);
+      margin-bottom: 1.5rem;
+    }
+
+    .benefits-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .benefits-list li {
+      opacity: 0.9;
+      font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+      .auth-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      .auth-card {
+        padding: 2rem;
+      }
+
+      .auth-card h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+
+  <script src="script.js"></script>
+  <script>
+    // Require Cloudflare Turnstile token before allowing signup; fallback if widget blocked
+    (function(){
+      const form = document.getElementById('signupForm');
+      if(!form) return;
+      const submitBtn = form.querySelector('[type=submit]');
+      if(submitBtn) submitBtn.disabled = true;
+      let start = Date.now();
+      let allowFallback = false;
+      const checkToken = () => {
+        const cfInput = document.querySelector('input[name="cf-turnstile-response"]');
+        const token = cfInput ? cfInput.value : '';
+        if(token){ if(submitBtn) submitBtn.disabled = false; }
+        else {
+          if(Date.now() - start > 5000){ allowFallback = true; if(submitBtn) submitBtn.disabled = false; }
+          else { if(submitBtn) submitBtn.disabled = true; }
+        }
+      };
+      setInterval(checkToken, 500);
+      form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const data = {
+        fullname: formData.get('fullname'),
+        email: formData.get('email'),
+        password: formData.get('password'),
+        confirmPassword: formData.get('confirmPassword')
+      };
+        // include Cloudflare Turnstile token if present
+        const cfInput = document.querySelector('input[name="cf-turnstile-response"]');
+        const cfToken = cfInput ? cfInput.value : null;
+        if(!cfToken && !allowFallback){ pageUtils.showNotification('Please complete the captcha', 'error'); return; }
+      if (data.password !== data.confirmPassword) { pageUtils.showNotification('Passwords do not match', 'error'); return; }
+      if (!pageUtils.validateForm(this)) { pageUtils.showNotification('Please fill all required fields correctly', 'error'); return; }
+      try{
+        pageUtils.showNotification('Creating account...', 'success');
+        const r = await fetch('/api/auth/register', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ fullname: data.fullname, email: data.email, password: data.password, cfToken }) });
+        const text = await r.text();
+        let j = null;
+        try{ j = text ? JSON.parse(text) : null; }catch(e){ j = null; }
+        if(!r.ok){ const msg = (j && j.error) ? j.error : (text || r.statusText); throw new Error(msg); }
+        pageUtils.setAuthToken(j.token);
+        window.location.href = 'index.html';
+      }catch(err){ pageUtils.showNotification('Signup failed: '+err.message, 'error'); }
+    });
+    })();
+  </script>
+  <script src="app-loader.js"></script>
+</body>
+</html>

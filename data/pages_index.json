@@ -1,0 +1,21 @@
+{
+  "index": {
+    "recentProjects": [
+      {
+        "id": "1770934775186",
+        "title": "HollyHub Modal",
+        "description": "This project is very amazing, i spent 4 months buiding this modal",
+        "image": "1770934775171-Screenshot_2026-01-08_142039.png",
+        "url": "https://hollyhub-kran.vercel.app"
+      },
+      {
+        "url": "https://example.com/demo",
+        "title": "Demo Project - Website Redesign",
+        "description": "A modern redesign delivered with performance and SEO in mind.",
+        "id": "demo-1770916072.19899",
+        "image": "/hollyhub.jpg"
+      }
+    ],
+    "interImage": "hollyhubhero.jpg"
+  }
+}

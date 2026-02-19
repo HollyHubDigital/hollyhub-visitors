@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Digital marketing and sales funnel optimization strategies to grow your business. Proven techniques for lead generation and conversion." />
+  <meta name="keywords" content="marketing, sales funnel, digital marketing, conversion optimization, lead generation" />
+  <title>Marketing - Holly Web Developer & Marketer</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="sticky-header" id="header">
+    <div class="header-container">
+      <div class="header-logo">
+        <a href="index.html" class="logo-link"><img src="hollyhub.jpg" class="logo-img" alt="HollyHub" /><h1 class="brand">HOLLY<span class="brandkit">DEV</span></h1></a>
+      </div>
+      <nav class="desktop-nav">
+        <a href="index.html" class="nav-link">HOME</a>
+        <a href="services.html" class="nav-link">SERVICES</a>
+        <a href="portfolio.html" class="nav-link">PORTFOLIO</a>
+        <a href="about.html" class="nav-link">ABOUT</a>
+      </nav>
+      <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search..." />
+        <button id="searchBtn" class="search-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
+      <!-- Translator & Auth -->
+      <div class="header-actions">
+        <select id="languageSelect" class="language-select" aria-label="Select language">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="zh-CN">中文 (简体)</option>
+          <option value="zh-TW">中文 (繁體)</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="ru">Русский</option>
+          <option value="pt">Português</option>
+          <option value="it">Italiano</option>
+          <option value="nl">Nederlands</option>
+          <option value="sv">Svenska</option>
+          <option value="no">Norsk</option>
+          <option value="da">Dansk</option>
+          <option value="fi">Suomi</option>
+          <option value="pl">Polski</option>
+          <option value="tr">Türkçe</option>
+          <option value="ar">العربية</option>
+          <option value="hi">हिन्दी</option>
+          <option value="bn">বাংলা</option>
+          <option value="pa">ਪੰਜਾਬੀ</option>
+          <option value="ur">اردو</option>
+          <option value="vi">Tiếng Việt</option>
+          <option value="th">ไทย</option>
+          <option value="id">Bahasa Indonesia</option>
+          <option value="ms">Bahasa Melayu</option>
+          <option value="he">עברית</option>
+          <option value="el">Ελληνικά</option>
+          <option value="ro">Română</option>
+          <option value="hu">Magyar</option>
+          <option value="cs">Čeština</option>
+          <option value="sk">Slovenčina</option>
+          <option value="bg">Български</option>
+          <option value="uk">Українська</option>
+          <option value="hr">Hrvatski</option>
+          <option value="sr">Српски</option>
+          <option value="sl">Slovenščina</option>
+          <option value="lt">Lietuvių</option>
+          <option value="lv">Latviešu</option>
+          <option value="et">Eesti</option>
+          <option value="mk">Македонски</option>
+          <option value="sq">Shqip</option>
+          <option value="az">Azərbaycan</option>
+          <option value="hy">Հայերեն</option>
+          <option value="ka">ქართული</option>
+          <option value="mn">Монгол</option>
+        </select>
+          <!-- Hidden Google Translate container (script will initialize the widget) -->
+          <div id="google_translate_element" style="display:none"></div>
+        <a href="login.html" class="btn-login">LOGIN</a>
+        <a href="signup.html" class="btn-signup">SIGN UP</a>
+      </div>
+      <button class="hamburger-btn" id="hamburger"><span></span><span></span><span></span></button>
+    </div>
+    <!-- Mobile Menu -->
+    <nav class="mobile-menu" id="mobile-menu">
+      <a href="contact.html" class="mobile-nav-link">CONTACT</a>
+      <a href="services.html" class="mobile-nav-link">SERVICES</a>
+      <a href="index.html" class="mobile-nav-link">HOME</a>
+      <a href="portfolio.html" class="mobile-nav-link">PORTFOLIO</a>
+      <a href="blog.html" class="mobile-nav-link">BLOG</a>
+      <a href="about.html" class="mobile-nav-link">ABOUT</a>
+      <a href="terms.html" class="mobile-nav-link">TERMS</a>
+      <div class="mobile-auth">
+        <a href="login.html" class="btn-login">LOGIN</a>
+        <a href="signup.html" class="btn-signup">SIGN UP</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- SEARCH RESULTS MODAL -->
+  <div id="searchModal" class="search-modal">
+    <div class="search-modal-content">
+      <button class="search-modal-close" id="searchClose">&times;</button>
+      <h2>Search Results</h2>
+      <div id="searchResults" class="search-results-list"></div>
+    </div>
+  </div>
+
+  <section class="hero" style="min-height: 60vh;">
+    <div class="hero-content">
+      <h1>Digital Marketing & Sales Funnel Strategy</h1>
+      <p class="hero-subtitle">Turn your website traffic into customers. Strategic marketing approach that focuses on real results and measurable growth.</p>
+      <div class="hero-buttons">
+        <a href="signup.html" class="btn btn-primary">Start Marketing Now</a>
+        <a href="contact.html" class="btn btn-secondary">Get Strategy</a>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding: 6rem 2rem;">
+    <div class="container">
+      <h2 class="section-title">Complete Marketing Solutions</h2>
+      <p class="section-subtitle">Comprehensive strategies to attract, engage, and convert your target audience.</p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem;">
+        
+        <div style="background: rgba(255, 0, 0, 0.05); padding: 2rem; border-radius: 10px; border-left: 4px solid var(--primary-accent);">
+          <h3 style="color: var(--primary-accent); margin-bottom: 1rem;">🎯 Funnel Strategy</h3>
+          <p style="line-height: 1.8; margin-bottom: 1rem;">Design a custom sales funnel tailored to your business model. From awareness to conversion, every stage is optimized to move prospects toward purchase.</p>
+          <ul style="list-style: none; opacity: 0.85;">
+            <li>✓ Funnel analysis and optimization</li>
+            <li>✓ Landing page design</li>
+            <li>✓ Lead capture strategies</li>
+            <li>✓ Email sequencing</li>
+            <li>✓ Conversion optimization</li>
+          </ul>
+        </div>
+
+        <div style="background: rgba(67, 97, 238, 0.05); padding: 2rem; border-radius: 10px; border-left: 4px solid var(--secondary-accent);">
+          <h3 style="color: var(--secondary-accent); margin-bottom: 1rem;">📧 Email Marketing</h3>
+          <p style="line-height: 1.8; margin-bottom: 1rem;">Build an email marketing system that nurtures leads and keeps customers engaged. Strategic campaigns that drive repeat business and referrals.</p>
+          <ul style="list-style: none; opacity: 0.85;">
+            <li>✓ Email list building</li>
+            <li>✓ Campaign strategy</li>
+            <li>✓ Automation setup</li>
+            <li>✓ A/B testing</li>
+            <li>✓ Performance tracking</li>
+          </ul>
+        </div>
+
+        <div style="background: rgba(255, 0, 0, 0.05); padding: 2rem; border-radius: 10px; border-left: 4px solid var(--primary-accent);">
+          <h3 style="color: var(--primary-accent); margin-bottom: 1rem;">💰 Paid Advertising</h3>
+          <p style="line-height: 1.8; margin-bottom: 1rem;">Strategic paid advertising campaigns on Google, Facebook, and other platforms. Every ad dollar is carefully managed to maximize ROI.</p>
+          <ul style="list-style: none; opacity: 0.85;">
+            <li>✓ Google Ads management</li>
+            <li>✓ Facebook/Instagram ads</li>
+            <li>✓ Audience targeting</li>
+            <li>✓ Budget optimization</li>
+            <li>✓ Conversion tracking</li>
+          </ul>
+        </div>
+
+        <div style="background: rgba(67, 97, 238, 0.05); padding: 2rem; border-radius: 10px; border-left: 4px solid var(--secondary-accent);">
+          <h3 style="color: var(--secondary-accent); margin-bottom: 1rem;">📱 Social Media</h3>
+          <p style="line-height: 1.8; margin-bottom: 1rem;">Build and grow your social media presence. Strategic content and community management that creates brand loyalty and engagement.</p>
+          <ul style="list-style: none; opacity: 0.85;">
+            <li>✓ Social media strategy</li>
+            <li>✓ Content calendar</li>
+            <li>✓ Community management</li>
+            <li>✓ Influencer outreach</li>
+            <li>✓ Performance analytics</li>
+          </ul>
+        </div>
+
+        <div style="background: rgba(255, 0, 0, 0.05); padding: 2rem; border-radius: 10px; border-left: 4px solid var(--primary-accent);">
+          <h3 style="color: var(--primary-accent); margin-bottom: 1rem;">📊 Analytics & Reporting</h3>
+          <p style="line-height: 1.8; margin-bottom: 1rem;">Comprehensive tracking and reporting. Know exactly how your marketing is performing and where opportunities exist for improvement.</p>
+          <ul style="list-style: none; opacity: 0.85;">
+            <li>✓ Campaign analytics</li>
+            <li>✓ ROI tracking</li>
+            <li>✓ Monthly reports</li>
+            <li>✓ Data visualization</li>
+            <li>✓ Insights & recommendations</li>
+          </ul>
+        </div>
+
+        <div style="background: rgba(67, 97, 238, 0.05); padding: 2rem; border-radius: 10px; border-left: 4px solid var(--secondary-accent);">
+          <h3 style="color: var(--secondary-accent); margin-bottom: 1rem;">🔘 Conversion Optimization</h3>
+          <p style="line-height: 1.8; margin-bottom: 1rem;">Optimize every element of your customer journey. Small improvements in conversion rate multiply into significant revenue increases.</p>
+          <ul style="list-style: none; opacity: 0.85;">
+            <li>✓ CRO audits</li>
+            <li>✓ A/B testing</li>
+            <li>✓ User experience optimization</li>
+            <li>✓ Form optimization</li>
+            <li>✓ Funnel improvements</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding: 6rem 2rem; background: linear-gradient(135deg, rgba(255, 0, 0, 0.05), rgba(67, 97, 238, 0.05));">
+    <div class="container">
+      <h2 class="section-title">Marketing Process</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-top: 3rem;">
+        <div style="text-align: center;">
+          <div style="font-size: 2.5rem; color: var(--primary-accent); margin-bottom: 1rem;">1️⃣</div>
+          <h4 style="color: var(--primary-accent); margin-bottom: 0.5rem;">Audit & Analysis</h4>
+          <p style="opacity: 0.8;">Analyze your current situation, market, and competitors to understand opportunities.</p>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 2.5rem; color: var(--secondary-accent); margin-bottom: 1rem;">2️⃣</div>
+          <h4 style="color: var(--secondary-accent); margin-bottom: 0.5rem;">Strategy Development</h4>
+          <p style="opacity: 0.8;">Create a comprehensive marketing strategy aligned with your business goals.</p>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 2.5rem; color: var(--primary-accent); margin-bottom: 1rem;">3️⃣</div>
+          <h4 style="color: var(--primary-accent); margin-bottom: 0.5rem;">Implementation</h4>
+          <p style="opacity: 0.8;">Execute campaigns across all relevant channels with precision and monitoring.</p>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 2.5rem; color: var(--secondary-accent); margin-bottom: 1rem;">4️⃣</div>
+          <h4 style="color: var(--secondary-accent); margin-bottom: 0.5rem;">Optimization</h4>
+          <p style="opacity: 0.8;">Continuously monitor, test, and improve for better results and ROI.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="container">
+      <h2>Ready to Grow?</h2>
+      <p>Let's create a marketing strategy that drives real business results. Book a consultation today.</p>
+      <div class="cta-buttons">
+        <a href="signup.html" class="btn btn-primary btn-large">Start Campaign</a>
+        <a href="contact.html" class="btn btn-secondary btn-large">Get Free Strategy</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-column">
+          <h4>Holly - Freelancer</h4>
+          <p>Digital marketing specialist helping businesses grow online.</p>
+        </div>
+        <div class="footer-column">
+          <h4>Links</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="portfolio.html">Portfolio</a></li>
+            <li><a href="blog.html">Blog</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="terms.html">Terms</a></li>
+            <li><a href="#">Privacy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 HollyHub Digital. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="app-loader.js"></script>
+</body>
+</html>

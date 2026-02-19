@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Get in touch with Holly for web development, digital marketing, or consulting services. Quick response and personalized solutions." />
+  <meta name="keywords" content="contact, get in touch, consultation, services inquiry" />
+  <title>Contact - Holly Web Developer & Marketer</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="sticky-header" id="header">
+    <div class="header-container">
+      <div class="header-logo">
+        <a href="index.html" class="logo-link"><img src="hollyhub.jpg" class="logo-img" alt="HollyHub" /><h1 class="brand">HOLLY<span class="brandkit">DEV</span></h1></a>
+      </div>
+      <nav class="desktop-nav">
+        <a href="index.html" class="nav-link">HOME</a>
+        <a href="services.html" class="nav-link">SERVICES</a>
+        <a href="marketing.html" class="nav-link">MARKETING</a>
+        <a href="portfolio.html" class="nav-link">PORTFOLIO</a>
+        <a href="blog.html" class="nav-link">BLOG</a>
+      </nav>
+      <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search..." />
+        <button id="searchBtn" class="search-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="header-actions">
+        <select id="languageSelect" class="language-select" aria-label="Select language">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="zh-CN">中文 (简体)</option>
+          <option value="zh-TW">中文 (繁體)</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="ru">Русский</option>
+          <option value="pt">Português</option>
+          <option value="it">Italiano</option>
+          <option value="nl">Nederlands</option>
+          <option value="sv">Svenska</option>
+          <option value="no">Norsk</option>
+          <option value="da">Dansk</option>
+          <option value="fi">Suomi</option>
+          <option value="pl">Polski</option>
+          <option value="tr">Türkçe</option>
+          <option value="ar">العربية</option>
+          <option value="hi">हिन्दी</option>
+          <option value="bn">বাংলা</option>
+          <option value="pa">ਪੰਜਾਬੀ</option>
+          <option value="ur">اردو</option>
+          <option value="vi">Tiếng Việt</option>
+          <option value="th">ไทย</option>
+          <option value="id">Bahasa Indonesia</option>
+          <option value="ms">Bahasa Melayu</option>
+          <option value="he">עברית</option>
+          <option value="el">Ελληνικά</option>
+          <option value="ro">Română</option>
+          <option value="hu">Magyar</option>
+          <option value="cs">Čeština</option>
+          <option value="sk">Slovenčina</option>
+          <option value="bg">Български</option>
+          <option value="uk">Українська</option>
+          <option value="hr">Hrvatski</option>
+          <option value="sr">Српски</option>
+          <option value="sl">Slovenščina</option>
+          <option value="lt">Lietuvių</option>
+          <option value="lv">Latviešu</option>
+          <option value="et">Eesti</option>
+          <option value="mk">Македонски</option>
+          <option value="sq">Shqip</option>
+          <option value="az">Azərbaycan</option>
+          <option value="hy">Հայերեն</option>
+          <option value="ka">ქართული</option>
+          <option value="mn">Монгол</option>
+        </select>
+        <div id="google_translate_element" style="display:none"></div>
+        <a href="login.html" class="btn-login">LOGIN</a>
+        <a href="signup.html" class="btn-signup">SIGN UP</a>
+      </div>
+      <button class="hamburger-btn" id="hamburger"><span></span><span></span><span></span></button>
+    </div>
+      <!-- Mobile Menu -->
+    <nav class="mobile-menu" id="mobile-menu">
+      <a href="index.html" class="mobile-nav-link">HOME</a>
+      <a href="services.html" class="mobile-nav-link">SERVICES</a>
+      <a href="marketing.html" class="mobile-nav-link">MARKETING</a>
+      <a href="portfolio.html" class="mobile-nav-link">PORTFOLIO</a>
+      <a href="blog.html" class="mobile-nav-link">BLOG</a>
+      <a href="about.html" class="mobile-nav-link">ABOUT</a>
+      <a href="terms.html" class="mobile-nav-link">TERMS</a>
+      <div class="mobile-auth">
+        <a href="login.html" class="btn-login">LOGIN</a>
+        <a href="signup.html" class="btn-signup">SIGN UP</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- SEARCH RESULTS MODAL -->
+  <div id="searchModal" class="search-modal">
+    <div class="search-modal-content">
+      <button class="search-modal-close" id="searchClose">&times;</button>
+      <h2>Search Results</h2>
+      <div id="searchResults" class="search-results-list"></div>
+    </div>
+  </div>
+
+  <section class="hero" style="min-height: 50vh;">
+    <div class="hero-content">
+      <h1>Get In Touch</h1>
+      <p class="hero-subtitle">Have a project in mind? Let's talk about how We can help your business succeed online.</p>
+    </div>
+  </section>
+
+    <section style="padding: 6rem 2rem;" class="contact-section">
+    <div class="container">
+      <div class="two-col-grid">
+        
+        <div>
+          <h2 style="color: var(--primary-accent); margin-bottom: 2rem;">Contact Information</h2>
+          
+          <div style="margin-bottom: 2rem; padding: 1.5rem; background: rgba(255, 0, 0, 0.05); border-radius: 10px; border-left: 4px solid var(--primary-accent);">
+            <h4 style="color: var(--primary-accent); margin-bottom: 0.5rem;">📧 Email</h4>
+            <p style="opacity: 0.85;"><a href="mailto:hello@hollydev.com" style="color: var(--secondary-accent);">hello@hollydev.com</a></p>
+            <p style="font-size: 0.9rem; opacity: 0.7;">We typically respond within 24 hours</p>
+          </div>
+
+          <div style="margin-bottom: 2rem; padding: 1.5rem; background: rgba(67, 97, 238, 0.05); border-radius: 10px; border-left: 4px solid var(--secondary-accent);">
+            <h4 style="color: var(--secondary-accent); margin-bottom: 0.5rem;">📱 Phone</h4>
+            <p style="opacity: 0.85;"><a href="#" class="js-whatsapp-tel" data-default="+2348137448596" style="color: var(--secondary-accent);">+234 813 744 8596</a></p>
+            <p style="font-size: 0.9rem; opacity: 0.7;">Available 24/7 Mon-Sat, 9am-10pm GMT</p>
+          </div>
+
+          <div style="margin-bottom: 2rem; padding: 1.5rem; background: rgba(255, 0, 0, 0.05); border-radius: 10px; border-left: 4px solid var(--primary-accent);">
+            <h4 style="color: var(--primary-accent); margin-bottom: 0.5rem;">🌐 Location</h4>
+            <p style="opacity: 0.85;">Remote - Serving clients worldwide</p>
+            <p style="font-size: 0.9rem; opacity: 0.7;">Based in Nigeria</p>
+          </div>
+
+          <div style="margin-bottom: 2rem; padding: 1.5rem; background: rgba(67, 97, 238, 0.05); border-radius: 10px; border-left: 4px solid var(--secondary-accent);">
+            <h4 style="color: var(--secondary-accent); margin-bottom: 0.5rem;">💬 Social Media</h4>
+            <p style="opacity: 0.85; margin-bottom: 1rem;">Connect with us on:</p>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+              <a href="https://www.facebook.com/share/1FTuHkqASt/" style="color: var(--secondary-accent); font-weight: 600;">Facebook</a>
+              <a href="https://x.com/HollyHub" style="color: var(--secondary-accent); font-weight: 600;">Twitter</a>
+              <a href="https://www.tiktok.com/@hollyhub_digital?_r=1&_t=ZS-93ywkPdWvMC" style="color: var(--secondary-accent); font-weight: 600;">Tiktok</a>
+              <a href="https://www.instagram.com/hollyhub_digital?igsh=ZGV3cnU0anhkazA=" style="color: var(--secondary-accent); font-weight: 600;">Instagram</a>
+            </div>
+          </div>
+
+          <div style="padding: 1.5rem; background: linear-gradient(135deg, rgba(255, 0, 0, 0.1), rgba(67, 97, 238, 0.1)); border-radius: 10px;">
+            <h4 style="color: var(--primary-accent); margin-bottom: 1rem;">📅 Free Consultation</h4>
+            <p style="opacity: 0.85; margin-bottom: 1rem;">Not sure where to start? Schedule a free 30-minute consultation to discuss your project and goals.</p>
+            <a href="#" class="btn btn-primary btn-small js-whatsapp-tel" data-default="+2348137448596" style="padding: 0.6rem 1.2rem;">Call Support</a>
+          </div>
+        </div>
+
+        <div>
+          <form class="contact-form" style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 0, 0, 0.05) 100%); border: 1px solid var(--border-color); border-radius: 15px; padding: 2rem;">
+            <h3 style="color: var(--primary-accent); margin-bottom: 1.5rem;">Send Me a Message</h3>
+            
+            <div class="form-group">
+              <label class="form-label">Your Name</label>
+              <input type="text" class="form-input" placeholder="John Doe" required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" class="form-input" placeholder="you@example.com" required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" class="form-input" placeholder="+1 (555) 000-0000" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Service Type</label>
+              <select class="form-select" required>
+                <option value="">Select a service...</option>
+                <option value="web-dev">Web Development</option>
+                <option value="web-app">Web Application</option>
+                <option value="marketing">Digital Marketing</option>
+                <option value="seo">SEO Services</option>
+                <option value="ecommerce">E-Commerce</option>
+                <option value="consultation">Consultation</option>
+                <option value="branding">Branding Design</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Project Description</label>
+              <textarea class="form-textarea" placeholder="Tell me about your project and goals..." required></textarea>
+            </div>
+
+            <div class="form-group">
+              <label style="display: flex; align-items: center; gap: 0.5rem;">
+                <input type="checkbox" name="privacy" required />
+                <span style="font-size: 0.9rem;">I agree to the <a href="terms.html" target="_blank" style="color: var(--secondary-accent);">privacy policy</a></span>
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-column">
+          <h4>Holly - Freelancer</h4>
+          <p>Ready to help with your digital presence.</p>
+        </div>
+        <div class="footer-column">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="portfolio.html">Portfolio</a></li>
+            <li><a href="about.html">About</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="terms.html">Terms</a></li>
+            <li><a href="#">Privacy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 HollyHub Digital. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+    document.querySelector('.contact-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const nameInput = this.querySelector('input[name="name"]');
+      const emailInput = this.querySelector('input[name="email"]');
+      const messageInput = this.querySelector('textarea[name="message"]');
+      
+      const name = nameInput ? nameInput.value : 'Visitor';
+      const email = emailInput ? emailInput.value : 'visitor@example.com';
+      const message = messageInput ? messageInput.value : '';
+      
+      // Send to Tawk.to
+      pageUtils.showNotification('Sending message to support...', 'success');
+      
+      const sent = await pageUtils.sendToTawk(
+        `Name: ${name}\nEmail: ${email}\n\nMessage: ${message}`,
+        email,
+        name
+      );
+      
+      if (sent) {
+        pageUtils.showNotification('Message sent! Redirecting to checkout...', 'success');
+        this.reset();
+        // Redirect to checkout after 2 seconds
+        setTimeout(() => {
+          window.location.href = 'checkout.html';
+        }, 2000);
+      } else {
+        pageUtils.showNotification('Failed to send message. Please try again.', 'error');
+      }
+    });
+  </script>
+  <script src="app-loader.js"></script>
+</body>
+</html>

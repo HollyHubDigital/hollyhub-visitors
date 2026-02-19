@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reset Password - Holly</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header style="padding:1rem;display:flex;align-items:center;gap:1rem;">
+    <a href="/" style="display:flex;align-items:center;gap:0.5rem;text-decoration:none;color:inherit;"><img src="hollyhub.jpg" alt="Holly" style="height:40px;border-radius:6px;"/><h1 style="font-size:1.2rem;margin:0">HOLLY<span style="color:#3b82f6">DEV</span></h1></a>
+  </header>
+  <main style="max-width:520px;margin:4rem auto;padding:1rem;">
+    <h2>Choose a new password</h2>
+    <form id="resetForm">
+      <input type="password" id="newPassword" placeholder="New password" style="width:100%;padding:0.6rem;margin-bottom:0.6rem;border:1px solid #ddd;border-radius:6px;" required />
+      <input type="password" id="confirmPassword" placeholder="Confirm new password" style="width:100%;padding:0.6rem;margin-bottom:0.6rem;border:1px solid #ddd;border-radius:6px;" required />
+      <input type="hidden" id="resetToken" />
+      <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
+        <button type="submit" class="btn btn-primary">Save new password</button>
+      </div>
+      <div id="resetMsg" style="margin-top:0.8rem;opacity:0.9;"></div>
+    </form>
+  </main>
+  <script>
+    // parse token from query
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token') || '';
+    document.getElementById('resetToken').value = token;
+
+    document.getElementById('resetForm').addEventListener('submit', async function(e){
+      e.preventDefault();
+      const np = document.getElementById('newPassword').value;
+      const cp = document.getElementById('confirmPassword').value;
+      if(np !== cp){ document.getElementById('resetMsg').innerText = 'Passwords do not match'; return; }
+      if(!token){ document.getElementById('resetMsg').innerText = 'Invalid token'; return; }
+      try{
+        const r = await fetch('/api/auth/reset', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ token, newPassword: np }) });
+        const j = await r.json();
+        if(!r.ok) return document.getElementById('resetMsg').innerText = (j && j.error) ? j.error : 'Reset failed';
+        document.getElementById('resetMsg').innerText = 'Password updated — redirecting to login...';
+        setTimeout(()=>{ window.location.href = '/login.html'; }, 1200);
+      }catch(e){ document.getElementById('resetMsg').innerText = 'Request failed'; }
+    });
+  </script>
+</body>
+</html>

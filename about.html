@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Learn about Holly - freelance web developer and digital marketing specialist. Expertise, skills, and passion for helping businesses succeed online." />
+  <meta name="keywords" content="about, freelancer, web developer, digital marketer, expertise, skills" />
+  <title>About Me - Holly Web Developer & Marketer</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="sticky-header" id="header">
+    <div class="header-container">
+      <div class="header-logo">
+        <a href="index.html" class="logo-link"><img src="hollyhub.jpg" class="logo-img" alt="HollyHub" /><h1 class="brand">HOLLY<span class="brandkit">DEV</span></h1></a>
+      </div>
+      <nav class="desktop-nav">
+        <a href="index.html" class="nav-link">HOME</a>
+        <a href="services.html" class="nav-link">SERVICES</a>
+        <a href="portfolio.html" class="nav-link">PORTFOLIO</a>
+        <a href="marketing.html" class="nav-link">MARKETING</a>
+      </nav>
+      <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search..." />
+        <button id="searchBtn" class="search-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
+      <!-- Translator & Auth -->
+      <div class="header-actions">
+        <select id="languageSelect" class="language-select" aria-label="Select language">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="zh-CN">中文 (简体)</option>
+          <option value="zh-TW">中文 (繁體)</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="ru">Русский</option>
+          <option value="pt">Português</option>
+          <option value="it">Italiano</option>
+          <option value="nl">Nederlands</option>
+          <option value="sv">Svenska</option>
+          <option value="no">Norsk</option>
+          <option value="da">Dansk</option>
+          <option value="fi">Suomi</option>
+          <option value="pl">Polski</option>
+          <option value="tr">Türkçe</option>
+          <option value="ar">العربية</option>
+          <option value="hi">हिन्दी</option>
+          <option value="bn">বাংলা</option>
+          <option value="pa">ਪੰਜਾਬੀ</option>
+          <option value="ur">اردو</option>
+          <option value="vi">Tiếng Việt</option>
+          <option value="th">ไทย</option>
+          <option value="id">Bahasa Indonesia</option>
+          <option value="ms">Bahasa Melayu</option>
+          <option value="he">עברית</option>
+          <option value="el">Ελληνικά</option>
+          <option value="ro">Română</option>
+          <option value="hu">Magyar</option>
+          <option value="cs">Čeština</option>
+          <option value="sk">Slovenčina</option>
+          <option value="bg">Български</option>
+          <option value="uk">Українська</option>
+          <option value="hr">Hrvatski</option>
+          <option value="sr">Српски</option>
+          <option value="sl">Slovenščina</option>
+          <option value="lt">Lietuvių</option>
+          <option value="lv">Latviešu</option>
+          <option value="et">Eesti</option>
+          <option value="mk">Македонски</option>
+          <option value="sq">Shqip</option>
+          <option value="az">Azərbaycan</option>
+          <option value="hy">Հայերեն</option>
+          <option value="ka">ქართული</option>
+          <option value="mn">Монгол</option>
+        </select>
+          <!-- Hidden Google Translate container (script will initialize the widget) -->
+          <div id="google_translate_element" style="display:none"></div>
+        <a href="login.html" class="btn-login">LOGIN</a>
+        <a href="signup.html" class="btn-signup">SIGN UP</a>
+      </div>
+      <button class="hamburger-btn" id="hamburger"><span></span><span></span><span></span></button>
+    </div>
+    <!-- Mobile Menu -->
+    <nav class="mobile-menu" id="mobile-menu">
+      <a href="contact.html" class="mobile-nav-link">CONTACT</a>
+      <a href="services.html" class="mobile-nav-link">SERVICES</a>
+      <a href="marketing.html" class="mobile-nav-link">MARKETING</a>
+      <a href="portfolio.html" class="mobile-nav-link">PORTFOLIO</a>
+      <a href="blog.html" class="mobile-nav-link">BLOG</a>
+      <a href="index.html" class="mobile-nav-link">HOME</a>
+      <a href="terms.html" class="mobile-nav-link">TERMS</a>
+      <div class="mobile-auth">
+        <a href="login.html" class="btn-login">LOGIN</a>
+        <a href="signup.html" class="btn-signup">SIGN UP</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- SEARCH RESULTS MODAL -->
+  <div id="searchModal" class="search-modal">
+    <div class="search-modal-content">
+      <button class="search-modal-close" id="searchClose">&times;</button>
+      <h2>Search Results</h2>
+      <div id="searchResults" class="search-results-list"></div>
+    </div>
+  </div>
+
+  <section class="hero" style="min-height: 50vh;">
+    <div class="hero-content">
+      <h1>About Us</h1>
+      <p class="hero-subtitle">Freelance Web Developer & Digital Marketing Specialist Helping Businesses Grow Online</p>
+    </div>
+  </section>
+
+  <section class="about-section" id="about">
+    <div class="container">
+      <div class="about-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; margin-top: 3rem;">
+        <div>
+          <h2 style="color: var(--primary-accent); margin-bottom: 1.5rem;">Who we are</h2>
+          <p style="line-height: 1.8; margin-bottom: 1rem;">We're HollyHub Digital, a passionate freelance web developer and digital marketing specialist with over 5 years of experience helping businesses establish and grow their online presence. What started as a personal interest in coding has evolved into a successful freelance career we're serving clients across various industries.</p>
+          <p style="line-height: 1.8; margin-bottom: 1rem;">We believe that every business deserves a professional, functional, and beautiful online presence. We are dedicated to creating not just visually stunning websites, but solutions that drive real business results – whether that's increased traffic, more leads, or higher conversions.</p>
+          <p style="line-height: 1.8; margin-bottom: 2rem;">Our approach is collaborative and transparent. We work closely with clients to understand their goals, constraints, and vision. We believe in educating our clients throughout the process so they feel confident in their digital assets and understand the strategies behind them.</p>
+        </div>
+        <div style="background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent)); border-radius: 15px; height: 400px;"></div>
+      </div>
+
+      <div class="skills-section" style="margin-top: 6rem;">
+        <h2 style="text-align: center; color: var(--primary-accent); margin-bottom: 3rem;">Core Skills & Expertise</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+          <div style="background: rgba(255, 0, 0, 0.05); padding: 2rem; border-radius: 10px; border-left: 4px solid var(--primary-accent);">
+            <h4 style="color: var(--primary-accent); margin-bottom: 1rem;">Web Development</h4>
+            <ul style="list-style: none; opacity: 0.85;">
+              <li>✓ HTML, CSS, Tailwind, JavaScript</li>
+              <li>✓ React & Vue.js</li>
+              <li>✓ Node.js & Express</li>
+              <li>✓ Database Design (SQL & NoSQL)</li>
+              <li>✓ Responsive Design</li>
+              <li>✓ Web Performance Optimization</li>
+            </ul>
+          </div>
+
+          <div style="background: rgba(67, 97, 238, 0.05); padding: 2rem; border-radius: 10px; border-left: 4px solid var(--secondary-accent);">
+            <h4 style="color: var(--secondary-accent); margin-bottom: 1rem;">Digital Marketing</h4>
+            <ul style="list-style: none; opacity: 0.85;">
+              <li>✓ SEO & Technical SEO</li>
+              <li>✓ Content Marketing</li>
+              <li>✓ Social Media Strategy</li>
+              <li>✓ Email Marketing</li>
+              <li>✓ PPC Advertising (Google, Facebook)</li>
+              <li>✓ Analytics & Reporting</li>
+            </ul>
+          </div>
+
+          <div style="background: rgba(255, 0, 0, 0.05); padding: 2rem; border-radius: 10px; border-left: 4px solid var(--primary-accent);">
+            <h4 style="color: var(--primary-accent); margin-bottom: 1rem;">Design & UX</h4>
+            <ul style="list-style: none; opacity: 0.85;">
+              <li>✓ UI/UX Design</li>
+              <li>✓ Wireframing & Prototyping</li>
+              <li>✓ Logo & Brand Design</li>
+              <li>✓ Visual Identity</li>
+              <li>✓ Conversion Optimization</li>
+              <li>✓ Figma & Adobe Suite</li>
+            </ul>
+          </div>
+
+          <div style="background: rgba(67, 97, 238, 0.05); padding: 2rem; border-radius: 10px; border-left: 4px solid var(--secondary-accent);">
+            <h4 style="color: var(--secondary-accent); margin-bottom: 1rem;">Tools & Platforms</h4>
+            <ul style="list-style: none; opacity: 0.85;">
+              <li>✓ WordPress & E-commerce (Shopify, WooCommerce)</li>
+              <li>✓ CMS & Headless CMS</li>
+              <li>✓ Version Control (Git)</li>
+              <li>✓ Deployment & Hosting</li>
+              <li>✓ Cloud Services (AWS, Google Cloud)</li>
+              <li>✓ Project Management Tools</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-section" style="margin-top: 6rem;">
+        <h2 style="text-align: center; color: var(--primary-accent); margin-bottom: 3rem;">Our Journey</h2>
+        <div style="max-width: 800px; margin: 0 auto;">
+          <div style="padding: 2rem; border-left: 3px solid var(--primary-accent); margin-bottom: 2rem; background: rgba(255, 0, 0, 0.03); border-radius: 5px;">
+            <h4 style="color: var(--primary-accent); margin-bottom: 0.5rem;">2020 - Started Freelancing</h4>
+            <p style="opacity: 0.8;">Began freelance career while working full-time. Quickly built portfolio and client base through quality work and word-of-mouth referrals.</p>
+          </div>
+          <div style="padding: 2rem; border-left: 3px solid var(--secondary-accent); margin-bottom: 2rem; background: rgba(67, 97, 238, 0.03); border-radius: 5px;">
+            <h4 style="color: var(--secondary-accent); margin-bottom: 0.5rem;">2021 - Full-Time Freelancer</h4>
+            <p style="opacity: 0.8;">Transitioned to full-time freelancing after exceeding income from day job. Launched HollyHub Digital to serve more clients.</p>
+          </div>
+          <div style="padding: 2rem; border-left: 3px solid var(--primary-accent); margin-bottom: 2rem; background: rgba(255, 0, 0, 0.03); border-radius: 5px;">
+            <h4 style="color: var(--primary-accent); margin-bottom: 0.5rem;">2022 - Specialization & Growth</h4>
+            <p style="opacity: 0.8;">Focused on web development and digital marketing. Grew to 150+ successful projects with clients across multiple industries.</p>
+          </div>
+          <div style="padding: 2rem; border-left: 3px solid var(--secondary-accent); background: rgba(67, 97, 238, 0.03); border-radius: 5px;">
+            <h4 style="color: var(--secondary-accent); margin-bottom: 0.5rem;">2025 - Continued Excellence</h4>
+            <p style="opacity: 0.8;">Maintaining high standards, continuously learning new technologies, and helping more businesses achieve their digital goals.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 6rem; text-align: center; padding: 3rem; background: linear-gradient(135deg, rgba(255, 0, 0, 0.1), rgba(67, 97, 238, 0.1)); border-radius: 15px;">
+        <h3 style="color: var(--primary-accent); margin-bottom: 1rem;">Let's Work Together</h3>
+        <p style="opacity: 0.85; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">I'm always interested in hearing about new projects and helping businesses grow. Whether you need a website, marketing strategy, or both, let's chat about how I can help you succeed.</p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+          <a href="contact.html" class="btn btn-primary">Get in Touch</a>
+          <a href="signup.html" class="btn btn-secondary">Book Services</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-column">
+          <h4>Holly - Freelancer</h4>
+          <p>Web developer and digital marketer dedicated to helping businesses succeed online.</p>
+        </div>
+        <div class="footer-column">
+          <h4>Links</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="portfolio.html">Portfolio</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="terms.html">Terms</a></li>
+            <li><a href="#">Privacy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 HollyHub Digital. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="app-loader.js"></script>
+</body>
+</html>

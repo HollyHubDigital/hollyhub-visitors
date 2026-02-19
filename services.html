@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Explore Holly's professional web development and digital marketing services. Custom websites, SEO optimization, and comprehensive marketing strategies." />
+  <meta name="keywords" content="web development services, digital marketing, SEO, e-commerce, website design, freelancer" />
+  <title>Services - Holly Web Developer & Marketer</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="sticky-header" id="header">
+    <div class="header-container">
+      <div class="header-logo">
+        <a href="index.html" class="logo-link">
+          <img src="hollyhub.jpg" class="logo-img" alt="HollyHub" />
+          <h1 class="brand">HOLLY<span class="brandkit">DEV</span></h1>
+        </a>
+      </div>
+      <nav class="desktop-nav">
+        <a href="index.html" class="nav-link">HOME</a>
+        <a href="blog.html" class="nav-link">BLOG</a>
+        <a href="portfolio.html" class="nav-link">PORTFOLIO</a>
+        <a href="about.html" class="nav-link">ABOUT</a>
+      </nav>
+      <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search..." />
+        <button id="searchBtn" class="search-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
+      <!-- Translator & Auth -->
+      <div class="header-actions">
+        <select id="languageSelect" class="language-select" aria-label="Select language">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="zh-CN">中文 (简体)</option>
+          <option value="zh-TW">中文 (繁體)</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="ru">Русский</option>
+          <option value="pt">Português</option>
+          <option value="it">Italiano</option>
+          <option value="nl">Nederlands</option>
+          <option value="sv">Svenska</option>
+          <option value="no">Norsk</option>
+          <option value="da">Dansk</option>
+          <option value="fi">Suomi</option>
+          <option value="pl">Polski</option>
+          <option value="tr">Türkçe</option>
+          <option value="ar">العربية</option>
+          <option value="hi">हिन्दी</option>
+          <option value="bn">বাংলা</option>
+          <option value="pa">ਪੰਜਾਬੀ</option>
+          <option value="ur">اردو</option>
+          <option value="vi">Tiếng Việt</option>
+          <option value="th">ไทย</option>
+          <option value="id">Bahasa Indonesia</option>
+          <option value="ms">Bahasa Melayu</option>
+          <option value="he">עברית</option>
+          <option value="el">Ελληνικά</option>
+          <option value="ro">Română</option>
+          <option value="hu">Magyar</option>
+          <option value="cs">Čeština</option>
+          <option value="sk">Slovenčina</option>
+          <option value="bg">Български</option>
+          <option value="uk">Українська</option>
+          <option value="hr">Hrvatski</option>
+          <option value="sr">Српски</option>
+          <option value="sl">Slovenščina</option>
+          <option value="lt">Lietuvių</option>
+          <option value="lv">Latviešu</option>
+          <option value="et">Eesti</option>
+          <option value="mk">Македонски</option>
+          <option value="sq">Shqip</option>
+          <option value="az">Azərbaycan</option>
+          <option value="hy">Հայերեն</option>
+          <option value="ka">ქართული</option>
+          <option value="mn">Монгол</option>
+        </select>
+          <!-- Hidden Google Translate container (script will initialize the widget) -->
+          <div id="google_translate_element" style="display:none"></div>
+        <a href="login.html" class="btn-login">LOGIN</a>
+        <a href="signup.html" class="btn-signup">SIGN UP</a>
+      </div>
+      <button class="hamburger-btn" id="hamburger"><span></span><span></span><span></span></button>
+    </div>
+    <!-- Mobile Menu -->
+    <nav class="mobile-menu" id="mobile-menu">
+      <a href="contact.html" class="mobile-nav-link">CONTACT</a>
+      <a href="index.html" class="mobile-nav-link">HOME</a>
+      <a href="marketing.html" class="mobile-nav-link">MARKETING</a>
+      <a href="portfolio.html" class="mobile-nav-link">PORTFOLIO</a>
+      <a href="blog.html" class="mobile-nav-link">BLOG</a>
+      <a href="about.html" class="mobile-nav-link">ABOUT</a>
+      <a href="terms.html" class="mobile-nav-link">TERMS</a>
+      <div class="mobile-auth">
+        <a href="login.html" class="btn-login">LOGIN</a>
+        <a href="signup.html" class="btn-signup">SIGN UP</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- SEARCH RESULTS MODAL -->
+  <div id="searchModal" class="search-modal">
+    <div class="search-modal-content">
+      <button class="search-modal-close" id="searchClose">&times;</button>
+      <h2>Search Results</h2>
+      <div id="searchResults" class="search-results-list"></div>
+    </div>
+  </div>
+
+  <!-- HERO SECTION -->
+  <section class="hero" style="min-height: 60vh;">
+    <div class="hero-content">
+      <h1>We Create Solutions That Drive Results</h1>
+      <p class="hero-subtitle">From custom websites to comprehensive digital marketing strategies, We provide professional services tailored to your business goals.</p>
+      <div class="hero-buttons">
+        <a href="signup.html" class="btn btn-primary">Order Services</a>
+        <a href="#services" class="btn btn-secondary">Explore Options</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES DETAILS -->
+  <section class="services-details" id="services">
+    <div class="container">
+      <h2 class="section-title">Complete Service Offerings</h2>
+      <p class="section-subtitle">Professional solutions for every stage of your digital journey</p>
+
+      <!-- Web Development Service -->
+      <div class="service-detail-card">
+        <div class="service-detail-header">
+          <div class="service-detail-icon">🌐</div>
+          <div>
+            <h3>Web Development</h3>
+            <p class="service-detail-meta">Custom • Responsive • SEO-Ready</p>
+          </div>
+        </div>
+        <div class="service-detail-content">
+          <p>We build custom websites from scratch using modern technologies and best practices. Every website is designed specifically for your brand and optimized for both user experience and search engines. I don't use templates – each site is created with your unique vision in mind. Whether you need a simple business site, a complex e-commerce platform, or a cutting-edge web application, I have the expertise to deliver.</p>
+          <h4>What's Included:</h4>
+          <ul class="feature-list">
+            <li>Custom design aligned with your brand</li>
+            <li>Mobile-responsive development</li>
+            <li>Fast page load optimization</li>
+            <li>SEO foundation implementation</li>
+            <li>Security and SSL setup</li>
+            <li>Cross-browser compatibility</li>
+            <li>Lead capture forms</li>
+            <li>Analytics integration</li>
+          </ul>
+          <h4>Pricing:</h4>
+          <p>Starting at $499 for basic sites | $999+ for professional sites | $1,499+ for e-commerce</p>
+          <a href="signup.html?service=web-dev" class="btn btn-primary">Book Web Development</a>
+        </div>
+      </div>
+
+      <!-- Digital Marketing Service -->
+      <div class="service-detail-card">
+        <div class="service-detail-header">
+          <div class="service-detail-icon">📊</div>
+          <div>
+            <h3>Digital Marketing</h3>
+            <p class="service-detail-meta">Strategic • Data-Driven • Results-Focused</p>
+          </div>
+        </div>
+        <div class="service-detail-content">
+          <p>Growing your online presence requires more than just a website – it requires a comprehensive marketing strategy. We develop customized digital marketing plans that attract your target audience, engage them with valuable content, and convert them into loyal customers. Our approach combines SEO, content marketing, social media strategy, and paid advertising for maximum impact and measurable results.</p>
+          <h4>What's Included:</h4>
+          <ul class="feature-list">
+            <li>Keyword research and strategy</li>
+            <li>Content marketing planning</li>
+            <li>Social media strategy</li>
+            <li>Email marketing setup</li>
+            <li>PPC advertising management</li>
+            <li>Analytics and reporting</li>
+            <li>Competitor analysis</li>
+            <li>Monthly strategy calls</li>
+          </ul>
+          <h4>Pricing:</h4>
+          <p>$299/month for SEO | $499/month for full digital marketing suite</p>
+          <a href="signup.html?service=marketing" class="btn btn-primary">Start Marketing</a>
+        </div>
+      </div>
+
+      <!-- SEO Service -->
+      <div class="service-detail-card">
+        <div class="service-detail-header">
+          <div class="service-detail-icon">🔍</div>
+          <div>
+            <h3>SEO Optimization</h3>
+            <p class="service-detail-meta">Rankings • Traffic • Visibility</p>
+          </div>
+        </div>
+        <div class="service-detail-content">
+          <p>Ranking on Google's first page is crucial for visibility. We implement proven SEO strategies that improve your search rankings for target keywords, drive organic traffic, and increase qualified leads. We focus on sustainable, white-hat SEO techniques that provide long-term results. Whether optimizing an existing site or building SEO into new projects, our approach is always data-driven and transparent.</p>
+          <h4>What's Included:</h4>
+          <ul class="feature-list">
+            <li>Technical SEO audit</li>
+            <li>On-page optimization</li>
+            <li>Keyword optimization</li>
+            <li>Meta tags and structured data</li>
+            <li>Speed optimization</li>
+            <li>Backlink analysis and strategy</li>
+            <li>Monthly SEO reports</li>
+            <li>Rank tracking</li>
+          </ul>
+          <h4>Pricing:</h4>
+          <p>$299/month for SEO services</p>
+          <a href="signup.html?service=seo" class="btn btn-primary">Improve Rankings</a>
+        </div>
+      </div>
+
+      <!-- E-Commerce Service -->
+      <div class="service-detail-card">
+        <div class="service-detail-header">
+          <div class="service-detail-icon">🛒</div>
+          <div>
+            <h3>E-Commerce Solutions</h3>
+            <p class="service-detail-meta">Online Store • Payment • Inventory</p>
+          </div>
+        </div>
+        <div class="service-detail-content">
+          <p>Ready to sell online? We build fully functional e-commerce platforms that make it easy for customers to browse, purchase, and receive products or services. We handle everything from design to payment processing integration, ensuring a smooth customer experience that maximizes conversions and repeat purchases. Security and reliability are built in from day one.</p>
+          <h4>What's Included:</h4>
+          <ul class="feature-list">
+            <li>Product catalog management</li>
+            <li>Shopping cart functionality</li>
+            <li>Payment gateway integration</li>
+            <li>Inventory management system</li>
+            <li>Order tracking system</li>
+            <li>Customer accounts</li>
+            <li>Email notifications</li>
+            <li>Security certificates</li>
+          </ul>
+          <h4>Pricing:</h4>
+          <p>Starting at $1,499 (one-time) + monthly hosting</p>
+          <a href="signup.html?service=ecommerce" class="btn btn-primary">Launch Online Store</a>
+        </div>
+      </div>
+
+      <!-- Website Optimization Service -->
+      <div class="service-detail-card">
+        <div class="service-detail-header">
+          <div class="service-detail-icon">⚡</div>
+          <div>
+            <h3>Website Optimization</h3>
+            <p class="service-detail-meta">Performance • UX • Conversions</p>
+          </div>
+        </div>
+        <div class="service-detail-content">
+          <p>Have an existing website that could perform better? We audit your site, identify issues, and implement improvements that boost performance, improve user experience, fix SEO problems, and increase conversions. Sometimes you don't need a complete redesign – strategic optimizations can have a dramatic impact on results and ROI.</p>
+          <h4>What's Included:</h4>
+          <ul class="feature-list">
+            <li>Comprehensive site audit</li>
+            <li>Speed optimization</li>
+            <li>UX/UI improvements</li>
+            <li>SEO fixes and improvements</li>
+            <li>Conversion optimization</li>
+            <li>Mobile responsiveness fixes</li>
+            <li>Bug fixes and cleanup</li>
+            <li>Performance monitoring</li>
+          </ul>
+          <h4>Pricing:</h4>
+          <p>$399 for optimization package</p>
+          <a href="signup.html?service=optimization" class="btn btn-primary">Optimize Website</a>
+        </div>
+      </div>
+
+      <!-- Brand Design Service -->
+      <div class="service-detail-card">
+        <div class="service-detail-header">
+          <div class="service-detail-icon">🎨</div>
+          <div>
+            <h3>Brand Design & Identity</h3>
+            <p class="service-detail-meta">Logo • Branding • Visual Assets</p>
+          </div>
+        </div>
+        <div class="service-detail-content">
+          <p>Your brand is your first impression. We create comprehensive brand identities that represent your business authentically and appeal to your target market. From logos to color schemes to brand guidelines, every element works together to build recognition and trust. A strong brand creates emotional connection with customers and sets you apart from competitors.</p>
+          <h4>What's Included:</h4>
+          <ul class="feature-list">
+            <li>Logo design (multiple concepts)</li>
+            <li>Color palette selection</li>
+            <li>Typography guidelines</li>
+            <li>Brand guidelines document</li>
+            <li>Business card design</li>
+            <li>Social media templates</li>
+            <li>Brand presentation deck</li>
+            <li>Unlimited revisions</li>
+          </ul>
+          <h4>Pricing:</h4>
+          <p>Package pricing available upon consultation</p>
+          <a href="contact.html" class="btn btn-primary">Design My Brand</a>
+        </div>
+      </div>
+
+      <!-- Support Service -->
+      <div class="service-detail-card">
+        <div class="service-detail-header">
+          <div class="service-detail-icon">🤝</div>
+          <div>
+            <h3>Ongoing Support & Maintenance</h3>
+            <p class="service-detail-meta">Support • Updates • Peace of Mind</p>
+          </div>
+        </div>
+        <div class="service-detail-content">
+          <p>Your website needs care and attention after launch. We provide comprehensive support and maintenance services to keep your site secure, fast, and up-to-date. Whether you need minor updates, minor features, troubleshooting, or regular maintenance, We're here to help. You can focus on your business while We handle the technical details.</p>
+          <h4>What's Included:</h4>
+          <ul class="feature-list">
+            <li>Security updates</li>
+            <li>Backup management</li>
+            <li>Performance monitoring</li>
+            <li>Bug fixes</li>
+            <li>Content updates</li>
+            <li>Plugin updates</li>
+            <li>Email support</li>
+            <li>Priority response times</li>
+          </ul>
+          <h4>Pricing:</h4>
+          <p>Monthly maintenance packages available</p>
+          <a href="signup.html?service=support" class="btn btn-primary">Get Support Plan</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS SECTION -->
+  <section class="services-process">
+    <div class="container">
+      <h2 class="section-title">Our Service Process</h2>
+      <p class="section-subtitle">How We work to deliver exceptional results</p>
+      
+      <div class="process-grid">
+        <div class="process-step">
+          <div class="step-number">1</div>
+          <h4>Consultation</h4>
+          <p>We discuss your goals, budget, timeline, and vision. We understand your business and target audience to create the right strategy.</p>
+        </div>
+        <div class="process-step">
+          <div class="step-number">2</div>
+          <h4>Planning & Design</h4>
+          <p>We create detailed plans, wireframes, and designs for your approval. You're involved at every step and feedback shapes the final result.</p>
+        </div>
+        <div class="process-step">
+          <div class="step-number">3</div>
+          <h4>Development & Build</h4>
+          <p>Using proven technologies and best practices, We build your solution. You receive regular updates and can track progress throughout.</p>
+        </div>
+        <div class="process-step">
+          <div class="step-number">4</div>
+          <h4>Testing & Launch</h4>
+          <p>Before launch, everything is thoroughly tested across devices and browsers. We ensure quality and performance meet high standards.</p>
+        </div>
+        <div class="process-step">
+          <div class="step-number">5</div>
+          <h4>Training & Handoff</h4>
+          <p>We provide training and documentation so you can manage and update your site. You'll feel confident using your new solution.</p>
+        </div>
+        <div class="process-step">
+          <div class="step-number">6</div>
+          <h4>Support & Optimization</h4>
+          <p>Ongoing support, monitoring, and optimization keeps your site performing at its best. We're always available to help and improve.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA SECTION -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Ready to Get Started?</h2>
+      <p>Choose a service above or contact me for a custom quote. Let's build something amazing together.</p>
+      <div class="cta-buttons">
+        <a href="signup.html" class="btn btn-primary btn-large">Order Services</a>
+        <a href="contact.html" class="btn btn-secondary btn-large">Get Consultation</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-column">
+          <h4>Holly - Freelancer</h4>
+          <p>Professional web development and digital marketing solutions for your business growth.</p>
+        </div>
+        <div class="footer-column">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="portfolio.html">Portfolio</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="terms.html">Terms & Conditions</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 HollyHub Digital. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <style>
+    .services-details {
+      padding: 6rem 2rem;
+    }
+
+    .service-detail-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 0, 0, 0.05) 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 15px;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      transition: var(--transition);
+    }
+
+    .service-detail-card:hover {
+      border-color: var(--primary-accent);
+      box-shadow: 0 15px 40px rgba(255, 0, 0, 0.2);
+    }
+
+    .service-detail-header {
+      display: flex;
+      gap: 2rem;
+      align-items: flex-start;
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .service-detail-icon {
+      font-size: 3rem;
+      flex-shrink: 0;
+    }
+
+    .service-detail-header h3 {
+      color: var(--primary-accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .service-detail-meta {
+      opacity: 0.7;
+      font-size: 0.9rem;
+    }
+
+    .service-detail-content h4 {
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--secondary-accent);
+    }
+
+    .service-detail-content p {
+      margin-bottom: 1rem;
+      line-height: 1.8;
+    }
+
+    .feature-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .feature-list li {
+      padding-left: 2rem;
+      position: relative;
+      opacity: 0.85;
+    }
+
+    .feature-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--primary-accent);
+      font-weight: bold;
+    }
+
+    .services-process {
+      padding: 6rem 2rem;
+      background: linear-gradient(135deg, rgba(67, 97, 238, 0.05) 0%, rgba(255, 0, 0, 0.05) 100%);
+    }
+
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    .process-step {
+      text-align: center;
+      padding: 2rem;
+      background: rgba(255, 0, 0, 0.05);
+      border-radius: 10px;
+      transition: var(--transition);
+    }
+
+    .process-step:hover {
+      background: rgba(67, 97, 238, 0.1);
+      transform: translateY(-5px);
+    }
+
+    .step-number {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin: 0 auto 1rem;
+    }
+
+    .process-step h4 {
+      color: var(--primary-accent);
+      margin-bottom: 1rem;
+    }
+
+    .process-step p {
+      opacity: 0.8;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 768px) {
+      .services-details {
+        padding: 3rem 1.5rem;
+      }
+
+      .service-detail-card {
+        padding: 1.5rem;
+      }
+
+      .service-detail-header {
+        flex-direction: column;
+      }
+
+      .feature-list {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+  <script src="script.js"></script>
+  <script src="app-loader.js"></script>
+</body>
+</html>

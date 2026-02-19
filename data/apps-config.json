@@ -1,0 +1,32 @@
+{
+  "enabled": {
+    "cloudflare": {
+      "siteKey": "0x4AAAAAACcPVkNQ6P6p5n0y"
+    },
+    "mixpanel": {
+      "token": "0e82a6caff9478ddcddf00224b32cbc1"
+    },
+    "klaviyo": {
+      "publicKey": "pk_73bd5193d7741d0f76085958775d84408c",
+      "accountId": "VM4ahN"
+    },
+    "googleAnalytics": {
+      "gaId": "G-N5NZW9GSTP"
+    },
+    "tawkto": {
+      "propertyId": "6992799f3a5ba51c3b88d08c/1jhi2m6n0"
+    },
+    "paystack": {
+      "publicKey": "pk_xxxx_your_public_key_here",
+      "fxRate": 1000
+    },
+    "privy": {
+      "siteId": "8D48E51CE4E017165773A3CA"
+    },
+    "yotpo": {
+      "apiKey": "Xw19ihiKlAgx8uTlE0gGspxMuu3kbT3MksJYjr7p",
+      "accountId": "1287298"
+    }
+  },
+  "disabled": []
+}

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Holly's portfolio showcasing successful web development and marketing projects. See real results from various industries and business types." />
+  <meta name="keywords" content="portfolio, web projects, case studies, client work, web development examples" />
+  <title>Portfolio - Holly Web Developer & Marketer</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="sticky-header" id="header">
+    <div class="header-container">
+      <div class="header-logo">
+        <a href="index.html" class="logo-link"><img src="hollyhub.jpg" class="logo-img" alt="HollyHub" /><h1 class="brand">HOLLY<span class="brandkit">DEV</span></h1></a>
+      </div>
+      <nav class="desktop-nav">
+        <a href="index.html" class="nav-link">HOME</a>
+        <a href="services.html" class="nav-link">SERVICES</a>
+        <a href="contact.html" class="nav-link">CONTACT</a>
+        <a href="about.html" class="nav-link">ABOUT</a>
+      </nav>
+      <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search..." />
+        <button id="searchBtn" class="search-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
+      <!-- Translator & Auth -->
+      <div class="header-actions">
+        <select id="languageSelect" class="language-select" aria-label="Select language">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="zh-CN">中文 (简体)</option>
+          <option value="zh-TW">中文 (繁體)</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="ru">Русский</option>
+          <option value="pt">Português</option>
+          <option value="it">Italiano</option>
+          <option value="nl">Nederlands</option>
+          <option value="sv">Svenska</option>
+          <option value="no">Norsk</option>
+          <option value="da">Dansk</option>
+          <option value="fi">Suomi</option>
+          <option value="pl">Polski</option>
+          <option value="tr">Türkçe</option>
+          <option value="ar">العربية</option>
+          <option value="hi">हिन्दी</option>
+          <option value="bn">বাংলা</option>
+          <option value="pa">ਪੰਜਾਬੀ</option>
+          <option value="ur">اردو</option>
+          <option value="vi">Tiếng Việt</option>
+          <option value="th">ไทย</option>
+          <option value="id">Bahasa Indonesia</option>
+          <option value="ms">Bahasa Melayu</option>
+          <option value="he">עברית</option>
+          <option value="el">Ελληνικά</option>
+          <option value="ro">Română</option>
+          <option value="hu">Magyar</option>
+          <option value="cs">Čeština</option>
+          <option value="sk">Slovenčina</option>
+          <option value="bg">Български</option>
+          <option value="uk">Українська</option>
+          <option value="hr">Hrvatski</option>
+          <option value="sr">Српски</option>
+          <option value="sl">Slovenščina</option>
+          <option value="lt">Lietuvių</option>
+          <option value="lv">Latviešu</option>
+          <option value="et">Eesti</option>
+          <option value="mk">Македонски</option>
+          <option value="sq">Shqip</option>
+          <option value="az">Azərbaycan</option>
+          <option value="hy">Հայերեն</option>
+          <option value="ka">ქართული</option>
+          <option value="mn">Монгол</option>
+        </select>
+          <!-- Hidden Google Translate container (script will initialize the widget) -->
+          <div id="google_translate_element" style="display:none"></div>
+        <a href="login.html" class="btn-login">LOGIN</a>
+        <a href="signup.html" class="btn-signup">SIGN UP</a>
+      </div>
+      <button class="hamburger-btn" id="hamburger"><span></span><span></span><span></span></button>
+    </div>
+    <!-- Mobile Menu -->
+    <nav class="mobile-menu" id="mobile-menu">
+      <a href="contact.html" class="mobile-nav-link">CONTACT</a>
+      <a href="services.html" class="mobile-nav-link">SERVICES</a>
+      <a href="marketing.html" class="mobile-nav-link">MARKETING</a>
+      <a href="index.html" class="mobile-nav-link">HOME</a>
+      <a href="blog.html" class="mobile-nav-link">BLOG</a>
+      <a href="about.html" class="mobile-nav-link">ABOUT</a>
+      <a href="terms.html" class="mobile-nav-link">TERMS</a>
+      <div class="mobile-auth">
+        <a href="login.html" class="btn-login">LOGIN</a>
+        <a href="signup.html" class="btn-signup">SIGN UP</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- SEARCH RESULTS MODAL -->
+  <div id="searchModal" class="search-modal">
+    <div class="search-modal-content">
+      <button class="search-modal-close" id="searchClose">&times;</button>
+      <h2>Search Results</h2>
+      <div id="searchResults" class="search-results-list"></div>
+    </div>
+  </div>
+
+  <section class="hero" style="min-height: 50vh;">
+    <div class="hero-content">
+      <h1>Featured Projects & Case Studies</h1>
+      <p class="hero-subtitle">Real projects, real results. Explore how we helped businesses like yours succeed online.</p>
+    </div>
+  </section>
+
+  <section class="portfolio-section" id="portfolio">
+    <div class="container">
+      <h2 class="section-title">Recent Work</h2>
+      <div id="portfolioGrid" class="portfolio-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; margin-top: 3rem;"></div>
+    </div>
+  </section>
+
+  <section style="padding: 6rem 2rem; text-align: center;">
+    <div class="container">
+      <h2>Ready to Start Your Project?</h2>
+      <p style="opacity: 0.8; margin-bottom: 2rem;">Let's create something amazing together</p>
+      <a href="signup.html" class="btn btn-primary btn-large">Book Consultation</a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-column">
+          <h4>Holly - Freelancer</h4>
+          <p>Web development and digital marketing specialist with proven results.</p>
+        </div>
+        <div class="footer-column">
+          <h4>Links</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="terms.html">Terms</a></li>
+            <li><a href="#">Privacy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 HollyHub Digital. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <style>
+    .case-study {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 0, 0, 0.03) 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .case-study:hover {
+      border-color: var(--primary-accent);
+      box-shadow: 0 15px 40px rgba(255, 0, 0, 0.2);
+      transform: translateY(-5px);
+    }
+
+    .case-body {
+      padding: 1.5rem;
+    }
+
+    .case-body h3 {
+      color: var(--primary-accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .case-meta {
+      font-size: 0.85rem;
+      opacity: 0.6;
+      margin-bottom: 1rem;
+    }
+
+    .case-description {
+      opacity: 0.8;
+      line-height: 1.8;
+      margin-bottom: 1rem;
+    }
+  </style>
+
+  <script src="script.js"></script>
+  <script>
+    // dynamic portfolio rendering
+    async function loadPortfolioItems(){
+      try{
+        const r = await fetch('/api/portfolio');
+        if(!r.ok) return;
+        const items = await r.json();
+        const grid = document.getElementById('portfolioGrid');
+        grid.innerHTML = '';
+        items.forEach(it=>{
+          const el = document.createElement('div'); el.className='case-study';
+          let media = '';
+          // Normalize image URL: if it's already absolute or starts with /, use it. Otherwise, assume it's an uploaded filename and prefix /uploads/
+          let imageVal = (it.image || '').trim();
+          let imageUrl = imageVal;
+          if(imageVal && !imageVal.startsWith('http') && !imageVal.startsWith('/')){
+            // encode spaces and special chars
+            imageUrl = '/uploads/' + encodeURIComponent(imageVal);
+          }
+          const lower = (imageUrl||'').toLowerCase();
+          if(lower.match(/\.(mp4|webm|ogg)$/)){
+            media = `<video controls style="width:100%; height:250px; object-fit:cover; border-radius:10px 10px 0 0;"><source src="${imageUrl}" type="video/mp4">Your browser does not support the video tag.</video>`;
+          } else {
+            media = `<div class="case-header" style="background-image:url('${imageUrl}'); background-size:cover; background-position:center; height:250px; border-radius:10px 10px 0 0;"></div>`;
+          }
+          el.innerHTML = `${media}<div class="case-body"><h3>${it.title}</h3><p class="case-meta">${it.category || ''} • ${new Date(it.createdAt).getFullYear()}</p><p class="case-description">${it.description || ''}</p><div style="margin-top:12px"><a href="${it.url||'#'}" class="btn btn-primary btn-small" style="padding:0.5rem 1rem; font-size:0.9rem;">View Project</a></div></div>`;
+          grid.appendChild(el);
+        });
+      }catch(e){ console.error('Could not load portfolio', e); }
+    }
+    document.addEventListener('DOMContentLoaded', loadPortfolioItems);
+  </script>
+
+  <!-- Visitor Analytics Tracking -->
+  <script>
+    (function(){
+      try {
+        const ua = navigator.userAgent;
+        let browser = 'Other';
+        if(ua.indexOf('Chrome')>-1 && ua.indexOf('Chromium')===-1) browser = 'Chrome';
+        else if(ua.indexOf('Safari')>-1 && ua.indexOf('Chrome')===-1) browser = 'Safari';
+        else if(ua.indexOf('Firefox')>-1) browser = 'Firefox';
+        else if(ua.indexOf('Edge')>-1) browser = 'Edge';
+        else if(ua.indexOf('MSIE')>-1 || ua.indexOf('Trident/')>-1) browser = 'IE';
+        
+        fetch('https://ipapi.co/json/', { mode: 'cors' })
+          .then(r => r.json())
+          .then(data => {
+            const country = data.country_name || 'Unknown';
+            fetch('/api/analytics', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ page: 'portfolio', browser: browser, country: country })
+            }).catch(e => console.log('Analytics track failed:', e));
+          })
+          .catch(e => {
+            fetch('/api/analytics', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ page: 'portfolio', browser: browser, country: 'Unknown' })
+            }).catch(e => console.log('Analytics track failed:', e));
+          });
+      } catch(e) {
+        console.log('Analytics error:', e);
+      }
+    })();
+  </script>
+  <script src="app-loader.js"></script>
+</body>
+</html>
