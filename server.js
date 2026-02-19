@@ -191,10 +191,25 @@ const validate = (schema) => (req, res, next) => {
   next();
 };
 
-// Static files
+// Static files - must come before HTML handlers
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
-// Explicit root route - serve index.html
+// Serve static assets (CSS, JS, images, etc) with correct MIME types
+const _serveStatic = express.static(path.join(__dirname), {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.css')) res.setHeader('Content-Type', 'text/css; charset=UTF-8');
+    if (path.endsWith('.js')) res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
+    if (path.endsWith('.json')) res.setHeader('Content-Type', 'application/json; charset=UTF-8');
+  }
+});
+app.use((req, res, next) => {
+  // Skip API routes, let them be handled later
+  if (req.path && req.path.startsWith('/api')) return next();
+  // Skip HTML routes, handle those with app injection
+  if (req.path === '/' || /\.html?$/.test(req.path)) return next();
+  // Serve everything else as static
+  return _serveStatic(req, res, next);
+});
 app.get('/', (req, res, next) => {
   try{
     const fp = path.join(__dirname, 'index.html');
@@ -261,12 +276,6 @@ app.get(/\.html?$/, (req, res, next) => {
     res.setHeader('Content-Type','text/html');
     return res.send(html);
   }catch(e){ console.error('HTML serve error', e); return next(); }
-});
-
-const _serveStatic = express.static(path.join(__dirname));
-app.use((req, res, next) => {
-  if (req.path && req.path.startsWith('/api')) return next();
-  return _serveStatic(req, res, next);
 });
 
 // Initialize directories
