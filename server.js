@@ -195,7 +195,7 @@ const validate = (schema) => (req, res, next) => {
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 // Serve HTML with app script injection
-app.get('/*.html', (req, res, next) => {
+app.get(/\.html?$|^\/$/, (req, res, next) => {
   try{
     const reqPath = req.path === '/' ? '/index.html' : req.path;
     const fp = path.join(__dirname, reqPath);
