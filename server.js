@@ -194,7 +194,30 @@ const validate = (schema) => (req, res, next) => {
 // Static files - must come before HTML handlers
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
-// Explicit routes for CSS, JS, and other static assets with correct MIME types
+// Specific handlers for common static assets (ensure correct MIME)
+app.get('/styles.css', (req, res) => {
+  try {
+    const filePath = path.join(__dirname, 'styles.css');
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      res.setHeader('Content-Type', 'text/css; charset=UTF-8');
+      return res.sendFile(filePath);
+    }
+  } catch (e) { console.error('styles.css error:', e); }
+  return res.status(404).end();
+});
+
+app.get('/script.js', (req, res) => {
+  try {
+    const filePath = path.join(__dirname, 'script.js');
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
+      return res.sendFile(filePath);
+    }
+  } catch (e) { console.error('script.js error:', e); }
+  return res.status(404).end();
+});
+
+// Generic static asset handler (fallback)
 app.get(/\.(css|js|png|jpg|jpeg|gif|svg|ico|webp|mp4|weba|webm)$/, (req, res, next) => {
   try {
     const filePath = path.join(__dirname, req.path);
