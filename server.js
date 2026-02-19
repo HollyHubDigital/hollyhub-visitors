@@ -51,7 +51,8 @@ app.use((req, res, next) => {
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Permissions-Policy', 'geolocation=(), microphone=()');
-    res.setHeader('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://paystack.com https://js.paystack.co; worker-src 'self' blob:; connect-src 'self' https: wss:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https: https://paystack.com https://js.paystack.co;");
+    // Explicitize script-src-elem and allow known external payment libs and worker blobs
+    res.setHeader('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net; script-src-elem 'self' https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net; worker-src 'self' blob:; connect-src 'self' https: wss: https://eu.i.posthog.com; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https: https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net;");
   }catch(e){}
   next();
 });
@@ -217,10 +218,24 @@ app.get('/script.js', (req, res) => {
   return res.status(404).end();
 });
 
+// Explicit app-loader handler
+app.get('/app-loader.js', (req, res) => {
+  try {
+    const filePath = path.join(__dirname, 'app-loader.js');
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
+      return res.sendFile(filePath);
+    }
+  } catch (e) { console.error('app-loader.js error:', e); }
+  return res.status(404).end();
+});
+
 // Generic static asset handler (fallback)
 app.get(/\.(css|js|png|jpg|jpeg|gif|svg|ico|webp|mp4|weba|webm)$/, (req, res, next) => {
   try {
-    const filePath = path.join(__dirname, req.path);
+    // Normalize and remove leading slashes to avoid absolute path issues
+    const rel = decodeURIComponent((req.path || '').replace(/^\/+/, ''));
+    const filePath = path.join(__dirname, rel);
     if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
       const ext = path.extname(filePath).toLowerCase();
       const mimeTypes = {
