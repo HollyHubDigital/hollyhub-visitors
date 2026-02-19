@@ -51,7 +51,7 @@ app.use((req, res, next) => {
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Permissions-Policy', 'geolocation=(), microphone=()');
-    res.setHeader('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' https:; connect-src 'self' https: wss:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:");
+    res.setHeader('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; worker-src 'self' blob:; connect-src 'self' https: wss:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:");
   }catch(e){}
   next();
 });
@@ -194,8 +194,42 @@ const validate = (schema) => (req, res, next) => {
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
-// Serve HTML with app script injection
-app.get(/\.html?$|^\/$/, (req, res, next) => {
+// Explicit root route - serve index.html
+app.get('/', (req, res, next) => {
+  try{
+    const fp = path.join(__dirname, 'index.html');
+    if(!fs.existsSync(fp)) return next();
+    let html = fs.readFileSync(fp, 'utf8');
+
+    const appsConfigPath = path.join(dataDir, 'apps-config.json');
+    let appsCfg = { enabled: {} };
+    try{ if(fs.existsSync(appsConfigPath)) appsCfg = JSON.parse(fs.readFileSync(appsConfigPath,'utf8') || '{}'); }catch(e){ appsCfg = { enabled: {} }; }
+
+    try{
+      const { getApp } = require('./api/app-registry');
+      let injectScripts = '';
+      for(const [appId, cfg] of Object.entries(appsCfg.enabled || {})){
+        const appDef = getApp(appId);
+        if(appDef && typeof appDef.scriptInjection === 'function'){
+          try{
+            const s = appDef.scriptInjection(cfg || {});
+            if(s && s.length) injectScripts += '\n' + s + '\n';
+          }catch(e){ console.error('app scriptInjection error', appId, e); }
+        }
+      }
+
+      if(injectScripts && html.indexOf('</head>') !== -1){
+        html = html.replace('</head>', injectScripts + '\n</head>');
+      }
+    }catch(e){ console.error('App injection failed', e); }
+
+    res.setHeader('Content-Type','text/html');
+    return res.send(html);
+  }catch(e){ console.error('HTML serve error on /', e); return next(); }
+});
+
+// Serve other HTML files with app script injection
+app.get(/\.html?$/, (req, res, next) => {
   try{
     const reqPath = req.path === '/' ? '/index.html' : req.path;
     const fp = path.join(__dirname, reqPath);
