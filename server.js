@@ -7,6 +7,52 @@ const AWS = require('aws-sdk');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+// Safe FS wrappers: if running in read-only serverless, fall back to in-memory store
+let READ_ONLY_FS = false;
+const _fs_readFileSync = fs.readFileSync.bind(fs);
+const _fs_writeFileSync = fs.writeFileSync.bind(fs);
+const _fs_mkdirSync = fs.mkdirSync && fs.mkdirSync.bind(fs);
+const _fs_unlinkSync = fs.unlinkSync && fs.unlinkSync.bind(fs);
+const _inMemoryFiles = new Map();
+
+fs.readFileSync = function(filePath, ...args){
+  try{ return _fs_readFileSync(filePath, ...args); }catch(e){
+    if(e && (e.code === 'EROFS' || e.code === 'EACCES' || e.code === 'ENOENT')){
+      // fall back to in-memory or sensible defaults for JSON
+      const name = (typeof filePath === 'string') ? path.basename(filePath) : null;
+      if(name && _inMemoryFiles.has(name)) return _inMemoryFiles.get(name);
+      if(name && name.endsWith('.json')){
+        if(name === 'settings.json' || name === 'pages_index.json') return '{}';
+        return '[]';
+      }
+      return '';
+    }
+    throw e;
+  }
+};
+
+fs.writeFileSync = function(filePath, data, ...args){
+  try{ return _fs_writeFileSync(filePath, data, ...args); }catch(e){
+    if(e && (e.code === 'EROFS' || e.code === 'EACCES')){
+      READ_ONLY_FS = true;
+      const name = (typeof filePath === 'string') ? path.basename(filePath) : null;
+      if(name && name.endsWith('.json')){
+        _inMemoryFiles.set(name, (typeof data === 'string') ? data : JSON.stringify(data));
+        return;
+      }
+      return;
+    }
+    throw e;
+  }
+};
+
+fs.mkdirSync = function(...args){
+  try{ if(_fs_mkdirSync) return _fs_mkdirSync(...args); }catch(e){ if(e && (e.code === 'EROFS' || e.code === 'EACCES')){ READ_ONLY_FS = true; return; } throw e; }
+};
+
+fs.unlinkSync = function(...args){
+  try{ if(_fs_unlinkSync) return _fs_unlinkSync(...args); }catch(e){ if(e && (e.code === 'EROFS' || e.code === 'EACCES')){ READ_ONLY_FS = true; return; } throw e; }
+};
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const helmet = require('helmet');
@@ -198,7 +244,23 @@ const validate = (schema) => (req, res, next) => {
 };
 
 // Static files - must come before HTML handlers
-app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
+if (S3_ENABLED) {
+  // Serve uploads from S3/R2 (stream or redirect)
+  app.get('/uploads/:file', async (req, res) => {
+    try{
+      const file = req.params.file;
+      const pub = process.env.S3_PUBLIC_URL || '';
+      if(pub){
+        return res.redirect(302, `${pub.replace(/\/$/, '')}/uploads/${encodeURIComponent(file)}`);
+      }
+      const r = await s3.getObject({ Bucket: S3_BUCKET, Key: `uploads/${file}` }).promise();
+      res.setHeader('Content-Type', r.ContentType || 'application/octet-stream');
+      return res.send(r.Body);
+    }catch(e){ console.error('S3 getObject error', e); return res.status(404).send('Not found'); }
+  });
+} else {
+  app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
+}
 
 // Specific handlers for common static assets (ensure correct MIME)
 app.get('/styles.css', (req, res) => {
@@ -411,8 +473,8 @@ if (S3_ENABLED) {
 }
 
 const MAX_UPLOAD_MB = parseInt(process.env.MAX_UPLOAD_MB || '200', 10);
-// Use memory storage when S3 is enabled to avoid writing to local disk
-const storage = S3_ENABLED ? multer.memoryStorage() : multer.diskStorage({ destination: uploadDir, filename: (req,file,cb)=>{ const safe = Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g,'_'); cb(null, safe); } });
+// Use memory storage when S3 is enabled or filesystem is read-only to avoid writing to disk
+const storage = (S3_ENABLED || READ_ONLY_FS) ? multer.memoryStorage() : multer.diskStorage({ destination: uploadDir, filename: (req,file,cb)=>{ const safe = Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g,'_'); cb(null, safe); } });
 const upload = multer({ storage, limits: { fileSize: MAX_UPLOAD_MB * 1024 * 1024 } });
 
 // Helper to read/write JSON metadata either from local fs or S3
@@ -519,13 +581,37 @@ app.put('/api/pages/:page', authRequired, (req,res)=>{
 });
 
 // ===== FILE UPLOAD =====
-app.post('/api/upload', authRequired, upload.single('file'), (req,res)=>{
+app.post('/api/upload', authRequired, upload.single('file'), async (req,res)=>{
   if(!req.file) return res.status(400).send('No file');
   const description = req.body.description || '';
   const targets = (req.body.targets || '').split(',').map(s=>s.trim()).filter(Boolean);
-  const meta = { id: Date.now().toString(), filename: req.file.filename, originalname: req.file.originalname, description, targets, uploadedAt: new Date().toISOString() };
-  const arr = JSON.parse(fs.readFileSync(filesJson,'utf8')) || [];
-  arr.push(meta); fs.writeFileSync(filesJson, JSON.stringify(arr, null, 2));
+
+  // If running read-only and S3 is not enabled, fail clearly
+  if(READ_ONLY_FS && !S3_ENABLED){
+    return res.status(503).json({ error: 'Uploads disabled', message: 'Server filesystem is read-only; enable S3/R2 or deploy a writable server.' });
+  }
+
+  let filename;
+  try{
+    if(S3_ENABLED && req.file.buffer){
+      const safe = Date.now() + '-' + (req.file.originalname || 'upload').replace(/[^a-zA-Z0-9._-]/g,'_');
+      const remote = await uploadToStore(req.file.buffer, safe, req.file.mimetype);
+      filename = remote;
+    }else if(req.file.path){
+      // disk storage
+      filename = path.basename(req.file.path || req.file.filename || '');
+    }else{
+      return res.status(500).send('Upload handling not supported in this environment');
+    }
+  }catch(e){ console.error('Upload store error', e); return res.status(500).send('Upload failed: '+e.message); }
+
+  const meta = { id: Date.now().toString(), filename, originalname: req.file.originalname, description, targets, uploadedAt: new Date().toISOString() };
+  try{
+    const arr = JSON.parse(fs.readFileSync(filesJson,'utf8')) || [];
+    arr.push(meta);
+    fs.writeFileSync(filesJson, JSON.stringify(arr, null, 2));
+  }catch(e){ console.error('Upload metadata write failed', e); }
+
   return res.json(meta);
 });
 
