@@ -182,10 +182,25 @@ app.use((req, res, next) => {
       const origin = req.get('origin');
       const referer = req.get('referer');
       const host = `${req.protocol}://${req.get('host')}`;
-      if(origin && !(origin === host || origin.includes('localhost') || origin.includes('127.0.0.1'))){
+      // Allow: same-origin, localhost, Vercel origins (admin)
+      const isAllowedOrigin = origin && (
+        origin === host || 
+        origin.includes('localhost') || 
+        origin.includes('127.0.0.1') ||
+        origin.endsWith('.vercel.app')  // ✅ Allow Vercel admin origins
+      );
+      if(origin && !isAllowedOrigin){
         return res.status(403).send('Forbidden (invalid origin)');
       }
-      if(!origin && referer && !(referer.startsWith(host) || referer.includes('localhost') || referer.includes('127.0.0.1'))){
+      
+      // Check referer if no origin header
+      const isAllowedReferer = !referer || (
+        referer.startsWith(host) || 
+        referer.includes('localhost') || 
+        referer.includes('127.0.0.1') ||
+        referer.includes('.vercel.app')  // ✅ Allow Vercel referer
+      );
+      if(!origin && referer && !isAllowedReferer){
         return res.status(403).send('Forbidden (invalid referer)');
       }
     }
