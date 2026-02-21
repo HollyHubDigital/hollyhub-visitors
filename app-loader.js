@@ -199,18 +199,48 @@
 
     initKlaviyo(config) {
       if (!config.publicKey) return;
+      const company = config.publicKey.trim();
+      const accountParam = config.accountId ? `&account_id=${config.accountId.trim()}` : '';
       const script = document.createElement('script');
-      script.src = 'https://static.klaviyo.com/onsite/js/klaviyo.js?v=1';
-      script.onload = () => {
-        if (window.klaviyo) {
-          window.klaviyo.init({
-            apiKey: config.publicKey,
-            accountId: config.accountId || ''
-          });
-        }
-      };
+      script.async = true;
+      script.type = 'text/javascript';
+      script.src = `https://static.klaviyo.com/onsite/js/${company}/klaviyo.js?company_id=${company}${accountParam}`;
       document.head.appendChild(script);
-      this.log('Klaviyo loaded');
+      
+      // Initialize Klaviyo proxy to queue calls until library loads (prevents errors)
+      window.klaviyo = window.klaviyo || {};
+      if (!window._klOnsite) {
+        window._klOnsite = [];
+        try {
+          window.klaviyo = new Proxy({}, {
+            get: function(target, prop) {
+              if (prop === 'push') {
+                return function() {
+                  window._klOnsite.push.apply(window._klOnsite, arguments);
+                };
+              }
+              return function() {
+                const args = Array.from(arguments);
+                const callback = typeof args[args.length - 1] === 'function' ? args.pop() : undefined;
+                const promise = new Promise(resolve => {
+                  window._klOnsite.push([prop, ...args, function(result) {
+                    if (callback) callback(result);
+                    resolve(result);
+                  }]);
+                });
+                return promise;
+              };
+            }
+          });
+        } catch (e) {
+          window.klaviyo = window.klaviyo || [];
+          window.klaviyo.push = function() {
+            window._klOnsite.push.apply(window._klOnsite, arguments);
+          };
+        }
+      }
+      
+      this.log('Klaviyo loaded with company ID:', company.substring(0, 8) + '...');
     },
 
     initPaystack(config) {
