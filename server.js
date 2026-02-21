@@ -3,7 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 // Optional S3 / R2 support (use env vars to enable)
-const AWS = require('aws-sdk');
+let AWS = null;
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
@@ -68,6 +68,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'devsecret';
 
 // ✅ CORS: Allow admin.hollyhubdigital.vercel.app to access this API
 const ALLOWED_ORIGINS = [
+  // Vercel admin site (production)
+  'https://admin-hollyhub.vercel.app',
+  // older/alternate admin hostname (kept for compatibility)
   'https://admin-hollyhubdigital.vercel.app',
   'http://localhost:3001',
   'http://localhost:3000',
@@ -244,22 +247,28 @@ const validate = (schema) => (req, res, next) => {
 };
 
 // Static files - must come before HTML handlers
-if (S3_ENABLED) {
-  // Serve uploads from S3/R2 (stream or redirect)
-  app.get('/uploads/:file', async (req, res) => {
-    try{
-      const file = req.params.file;
-      const pub = process.env.S3_PUBLIC_URL || '';
-      if(pub){
-        return res.redirect(302, `${pub.replace(/\/$/, '')}/uploads/${encodeURIComponent(file)}`);
-      }
-      const r = await s3.getObject({ Bucket: S3_BUCKET, Key: `uploads/${file}` }).promise();
-      res.setHeader('Content-Type', r.ContentType || 'application/octet-stream');
-      return res.send(r.Body);
-    }catch(e){ console.error('S3 getObject error', e); return res.status(404).send('Not found'); }
-  });
-} else {
-  app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
+{
+  const S3_BUCKET_ENV = process.env.S3_BUCKET || '';
+  if (S3_BUCKET_ENV) {
+    // Serve uploads from S3/R2 (stream or redirect)
+    app.get('/uploads/:file', async (req, res) => {
+      try{
+        const file = req.params.file;
+        const pub = process.env.S3_PUBLIC_URL || '';
+        if(pub){
+          return res.redirect(302, `${pub.replace(/\/$/, '')}/uploads/${encodeURIComponent(file)}`);
+        }
+        // lazy init S3 client
+        const AWS_local = require('aws-sdk');
+        const s3_local = new AWS_local.S3({ region: process.env.S3_REGION || process.env.AWS_REGION || 'us-east-1', endpoint: process.env.S3_ENDPOINT || undefined, credentials: (process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY) ? new AWS_local.Credentials(process.env.S3_ACCESS_KEY_ID, process.env.S3_SECRET_ACCESS_KEY) : undefined });
+        const r = await s3_local.getObject({ Bucket: S3_BUCKET_ENV, Key: `uploads/${file}` }).promise();
+        res.setHeader('Content-Type', r.ContentType || 'application/octet-stream');
+        return res.send(r.Body);
+      }catch(e){ console.error('S3 getObject error', e); return res.status(404).send('Not found'); }
+    });
+  } else {
+    app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
+  }
 }
 
 // Specific handlers for common static assets (ensure correct MIME)
@@ -466,6 +475,7 @@ const S3_SECRET_ACCESS_KEY = process.env.S3_SECRET_ACCESS_KEY || process.env.AWS
 const S3_ENABLED = !!S3_BUCKET;
 let s3 = null;
 if (S3_ENABLED) {
+  AWS = require('aws-sdk');
   const s3conf = { region: S3_REGION };
   if (S3_ENDPOINT) s3conf.endpoint = S3_ENDPOINT;
   if (S3_ACCESS_KEY_ID && S3_SECRET_ACCESS_KEY) s3conf.credentials = new AWS.Credentials(S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY);
