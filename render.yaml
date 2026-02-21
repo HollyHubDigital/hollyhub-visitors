@@ -1,0 +1,15 @@
+# Render service specification for the visitors site
+# Visit https://render.com/docs/render-yaml for details and to customize
+services:
+  - type: web
+    name: holly-visitors
+    env: node
+    plan: free
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Add other env vars (S3, ADMIN credentials, Sentry) via Render dashboard
