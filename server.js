@@ -174,10 +174,14 @@ app.use((req, res, next) => {
   next();
 });
 
-// CSRF check
+// CSRF check (skip for public tracking endpoints)
 app.use((req, res, next) => {
   try{
     const method = (req.method || '').toUpperCase();
+    // Skip CSRF for public endpoints like tracking
+    if(req.path === '/api/track' || req.path === '/api/public-settings') {
+      return next();
+    }
     if(['POST','PUT','DELETE','PATCH'].includes(method)){
       const origin = req.get('origin');
       const referer = req.get('referer');
