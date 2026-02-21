@@ -273,8 +273,16 @@
         const form = document.getElementById(formId);
         if (!form) return null;
 
-        // avoid duplicating
-        if (form.querySelector('#' + widgetId)) return form.querySelector('#' + widgetId);
+        // avoid duplicating - but properly return slot object structure
+        const existingContainer = form.querySelector('#' + widgetId);
+        if (existingContainer) {
+          const existingHidden = form.querySelector('input[name="cf-turnstile-response"]');
+          const existingInner = existingContainer.querySelector('.cf-turnstile');
+          if (existingInner && existingHidden) {
+            return { container: existingContainer, hidden: existingHidden, inner: existingInner };
+          }
+          return null; // malformed, skip
+        }
 
         // create container for turnstile widget
         const container = document.createElement('div');
@@ -315,20 +323,22 @@
           const signup = addWidgetToForm('signupForm', 'turnstile-signup');
 
           const renderIf = (slot) => {
-            if (!slot) return;
+            if (!slot || !slot.inner) return;
             try {
               if (window.turnstile && typeof window.turnstile.render === 'function') {
-                window.turnstile.render(slot.inner || slot.container, {
+                // Always pass the inner div element (not container)
+                window.turnstile.render(slot.inner, {
                   sitekey: siteKey,
-                  callback: (token) => { slot.hidden.value = token; },
-                  'expired-callback': () => { slot.hidden.value = ''; },
+                  callback: (token) => { if (slot.hidden) slot.hidden.value = token; },
+                  'expired-callback': () => { if (slot.hidden) slot.hidden.value = ''; },
                   'error-callback': () => {
                     this.log('Turnstile error callback triggered, removing widget');
                     if (slot.container && slot.container.parentNode) {
-                      slot.container.parentNode.removeChild(slot.container);
+                      try { slot.container.parentNode.removeChild(slot.container); } catch (re) {}
                     }
                   }
                 });
+                this.log('Turnstile widget rendered successfully');
                 return;
               }
             } catch (e) {
@@ -373,7 +383,7 @@
       const originalErrorHandler = window.onerror;
       window.onerror = function(msg, url, lineNo, colNo, error) {
         if (msg && msg.toString().includes('TurnstileError')) {
-          console.error('Turnstile widget failed:', msg);
+          console.error('Uncaught Turnstile error, removing widget:', msg);
           // Remove broken Turnstile widgets
           document.querySelectorAll('#turnstile-login, #turnstile-signup').forEach(el => {
             try { el.parentNode && el.parentNode.removeChild(el); } catch (e) {}

@@ -124,16 +124,11 @@ const appRegistry = {
       { name: 'secretKey', label: 'Secret Key', type: 'password', placeholder: 'Your secret key', required: true, adminOnly: true }
     ],
     scriptInjection: (config) => {
-      if (!config.siteKey) return '';
-      return `<!-- Cloudflare reCAPTCHA -->
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-<script>
-  window.cloudflareEnable = true;
-  window.cloudflare = { siteKey: '${config.siteKey}' };
-</script>`;
+      // Cloudflare Turnstile is handled exclusively by app-loader.js with proper error handling
+      // Returning empty string prevents duplicate script loading
+      return '';
     },
-    version: '1.0.0'
-    ,
+    version: '1.0.0',
     helpUrl: 'https://dash.cloudflare.com/'
   },
 
