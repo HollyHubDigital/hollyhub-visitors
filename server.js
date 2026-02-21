@@ -83,7 +83,8 @@ ALLOWED_ORIGINS.push('https://hollyhubdigital.vercel.app');
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+    // Allow when no origin (server-to-server), or exact match, or common Vercel preview/admin hosts
+    if (!origin || ALLOWED_ORIGINS.includes(origin) || (typeof origin === 'string' && origin.endsWith('.vercel.app'))) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
