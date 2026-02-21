@@ -107,7 +107,7 @@ app.use((req, res, next) => {
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Permissions-Policy', 'geolocation=(), microphone=()');
     // Explicitize script-src-elem and allow known external payment libs and worker blobs
-    res.setHeader('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net; script-src-elem 'self' https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net; worker-src 'self' blob:; connect-src 'self' https: wss: https://eu.i.posthog.com; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https: https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net;");
+    res.setHeader('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net; script-src-elem 'self' 'unsafe-inline' https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net; worker-src 'self' blob:; connect-src 'self' https: wss: https://eu.i.posthog.com; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https: https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net;");
   }catch(e){}
   next();
 });
@@ -246,6 +246,21 @@ const validate = (schema) => (req, res, next) => {
   req.body = value;
   next();
 };
+
+// ===== S3 / R2 CONFIGURATION (EARLY INIT) =====
+const S3_BUCKET = process.env.S3_BUCKET || '';
+const S3_REGION = process.env.S3_REGION || process.env.AWS_REGION || 'us-east-1';
+const S3_ENDPOINT = process.env.S3_ENDPOINT || '';
+const S3_ACCESS_KEY_ID = process.env.S3_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID || '';
+const S3_SECRET_ACCESS_KEY = process.env.S3_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY || '';
+const S3_ENABLED = !!S3_BUCKET;
+let s3 = null;
+if (S3_ENABLED) {
+  const s3conf = { region: S3_REGION };
+  if (S3_ENDPOINT) s3conf.endpoint = S3_ENDPOINT;
+  if (S3_ACCESS_KEY_ID && S3_SECRET_ACCESS_KEY) s3conf.credentials = new AWS.Credentials(S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY);
+  s3 = new AWS.S3(s3conf);
+}
 
 // Static files - must come before HTML handlers
 {
@@ -467,22 +482,7 @@ if(!fs.existsSync(settingsJson)) fs.writeFileSync(settingsJson, '{}');
 if(!fs.existsSync(analyticsJson)) fs.writeFileSync(analyticsJson, '[]');
 if(!fs.existsSync(pagesIndexJson)) fs.writeFileSync(pagesIndexJson, '{}');
 
-// S3 configuration
-const S3_BUCKET = process.env.S3_BUCKET || '';
-const S3_REGION = process.env.S3_REGION || process.env.AWS_REGION || 'us-east-1';
-const S3_ENDPOINT = process.env.S3_ENDPOINT || '';
-const S3_ACCESS_KEY_ID = process.env.S3_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID || '';
-const S3_SECRET_ACCESS_KEY = process.env.S3_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY || '';
-const S3_ENABLED = !!S3_BUCKET;
-let s3 = null;
-if (S3_ENABLED) {
-  AWS = require('aws-sdk');
-  const s3conf = { region: S3_REGION };
-  if (S3_ENDPOINT) s3conf.endpoint = S3_ENDPOINT;
-  if (S3_ACCESS_KEY_ID && S3_SECRET_ACCESS_KEY) s3conf.credentials = new AWS.Credentials(S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY);
-  s3 = new AWS.S3(s3conf);
-}
-
+// S3 was already configured at top of file; now set up upload storage & limits
 const MAX_UPLOAD_MB = parseInt(process.env.MAX_UPLOAD_MB || '200', 10);
 // Use memory storage when S3 is enabled or filesystem is read-only to avoid writing to disk
 const storage = (S3_ENABLED || READ_ONLY_FS) ? multer.memoryStorage() : multer.diskStorage({ destination: uploadDir, filename: (req,file,cb)=>{ const safe = Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g,'_'); cb(null, safe); } });
@@ -934,6 +934,51 @@ app.get('/api/analytics', authRequired, (req,res)=>{
   };
   
   return res.json(stats);
+});
+
+// ===== SERVER-SIDE TRACKING (FOR AD-BLOCKER BYPASS) =====
+app.post('/api/track', (req,res)=>{
+  try{
+    if(req.method !== 'POST'){
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+    const body = req.body || {};
+    const { event, properties = {}, userId } = body;
+    if(!event){
+      return res.status(400).json({ error: 'Missing event name' });
+    }
+    let mixpanelToken = process.env.MIXPANEL_TOKEN;
+    if(!mixpanelToken){
+      try{
+        const appsConfigPath = path.join(dataDir, 'apps-config.json');
+        if(fs.existsSync(appsConfigPath)){
+          const config = JSON.parse(fs.readFileSync(appsConfigPath, 'utf8'));
+          if(config.enabled && config.enabled.mixpanel && config.enabled.mixpanel.token){
+            mixpanelToken = config.enabled.mixpanel.token;
+          }
+        }
+      }catch(e){ console.error('Error reading apps config:', e); }
+    }
+    if(!mixpanelToken){
+      return res.status(501).json({ error: 'Mixpanel not configured' });
+    }
+    const timestamp = Math.floor(Date.now() / 1000);
+    const eventData = {
+      event: event,
+      properties: {
+        token: mixpanelToken,
+        time: timestamp,
+        distinct_id: userId || 'anonymous',
+        ...properties
+      }
+    };
+    // For now, just log the event server-side and return success
+    console.log('[Track] Event:', event, 'Properties:', properties);
+    return res.json({ ok: true, tracked: event });
+  }catch(e){
+    console.error('Track error:', e);
+    return res.status(500).json({ error: e.message });
+  }
 });
 
 // Dynamic API loader
