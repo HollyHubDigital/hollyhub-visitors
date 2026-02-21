@@ -256,7 +256,10 @@
     },
 
     initCloudflare(config) {
-      if (!config.siteKey) return;
+      if (!config.siteKey) {
+        this.log('Cloudflare siteKey not configured, skipping Turnstile');
+        return;
+      }
       const siteKey = config.siteKey;
       const script = document.createElement('script');
       script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
@@ -318,33 +321,71 @@
                 window.turnstile.render(slot.inner || slot.container, {
                   sitekey: siteKey,
                   callback: (token) => { slot.hidden.value = token; },
-                  'expired-callback': () => { slot.hidden.value = ''; }
+                  'expired-callback': () => { slot.hidden.value = ''; },
+                  'error-callback': () => {
+                    this.log('Turnstile error callback triggered, removing widget');
+                    if (slot.container && slot.container.parentNode) {
+                      slot.container.parentNode.removeChild(slot.container);
+                    }
+                  }
                 });
                 return;
               }
-              // if automatic initialization is available, ensure inner has data-sitekey (already set)
-            } catch(e) { this.log('turnstile.render error', e); }
+            } catch (e) {
+              this.log('Turnstile render error:', e.message);
+              // Remove broken widget, allow form to work without it
+              if (slot.container && slot.container.parentNode) {
+                try { slot.container.parentNode.removeChild(slot.container); } catch (re) {}
+              }
+            }
           };
 
           renderIf(login);
           renderIf(signup);
         } catch (e) {
-          this.log('Error rendering Cloudflare widgets:', e);
+          this.log('Error initializing Cloudflare widgets:', e.message);
         }
       };
 
       // If script loads later, render widgets after load
       script.onload = () => {
-        this.log('Cloudflare script loaded, rendering widgets');
-        renderWidgets();
+        this.log('Cloudflare Turnstile script loaded');
+        // Use setTimeout to ensure Turnstile API is ready
+        setTimeout(() => {
+          try {
+            renderWidgets();
+          } catch (e) {
+            this.log('Turnstile widget rendering failed:', e.message);
+          }
+        }, 100);
       };
 
-      // Append script and also attempt rendering in case script was cached/ready
-      document.head.appendChild(script);
-      // try render after DOM ready (if script executed earlier)
-      setTimeout(() => { renderWidgets(); }, 500);
+      // Handle script load errors gracefully
+      script.onerror = () => {
+        this.log('Failed to load Cloudflare Turnstile script, continuing without CAPTCHA');
+        // Remove any partially rendered widgets
+        document.querySelectorAll('.cf-turnstile').forEach(el => {
+          try { el.parentNode && el.parentNode.removeChild(el); } catch (e) {}
+        });
+      };
 
-      this.log('Cloudflare reCAPTCHA loader injected');
+      // Add error handler to window for uncaught Turnstile errors
+      const originalErrorHandler = window.onerror;
+      window.onerror = function(msg, url, lineNo, colNo, error) {
+        if (msg && msg.toString().includes('TurnstileError')) {
+          console.error('Turnstile widget failed:', msg);
+          // Remove broken Turnstile widgets
+          document.querySelectorAll('#turnstile-login, #turnstile-signup').forEach(el => {
+            try { el.parentNode && el.parentNode.removeChild(el); } catch (e) {}
+          });
+          // Don't let the error stop the page
+          return true;
+        }
+        if (originalErrorHandler) return originalErrorHandler(msg, url, lineNo, colNo, error);
+      };
+
+      document.head.appendChild(script);
+      this.log('Cloudflare Turnstile loader injected (optional CAPTCHA)');
     },
 
     initCookieConsent(config) {
