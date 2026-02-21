@@ -48,7 +48,7 @@ module.exports = async (req, res) => {
     const pathParts = url.split('/').filter(Boolean);
     const lastPart = pathParts[pathParts.length-1] || '';
     const action = req.query.action || (req.query.code ? 'callback' : lastPart);
-    const origin = (req.protocol || 'http') + '://' + (req.get('host') || 'localhost:3000');
+    const origin = (req.protocol || 'https') + '://' + (req.get('host') || 'hollyhubdigital.onrender.com');
     const clientId = process.env.GITHUB_CLIENT_ID || '';
     const clientSecret = process.env.GITHUB_CLIENT_SECRET || '';
     console.log('github auth handler hit; env:', { GITHUB_CLIENT_ID: !!clientId, GITHUB_CLIENT_SECRET: !!clientSecret, NEXTAUTH_SECRET: !!process.env.NEXTAUTH_SECRET });

@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
     arr.push({ token, email: user.email, expires });
     fs.writeFileSync(resetsJson, JSON.stringify(arr, null, 2), 'utf8');
 
-    const origin = (req.protocol || 'http') + '://' + (req.get('host') || 'localhost:3000');
+    const origin = (req.protocol || 'https') + '://' + (req.get('host') || 'hollyhubdigital.onrender.com');
     const resetUrl = origin + '/reset.html?token=' + token;
     const isLocalHost = (req.get('host') && (req.get('host').includes('localhost') || req.get('host').includes('127.0.0.1')));
     const devResp = ((process.env.NODE_ENV !== 'production') || isLocalHost) ? { ok: true, resetUrl } : { ok: true };

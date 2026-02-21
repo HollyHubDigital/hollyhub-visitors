@@ -66,7 +66,7 @@ const ADMIN_USER = process.env.ADMIN_USER || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASS || 'password';
 const JWT_SECRET = process.env.JWT_SECRET || 'devsecret';
 
-// ✅ CORS: Allow admin.hollyhubdigital.vercel.app to access this API
+// ✅ CORS: Allow admin.hollyhubdigital.vercel.app and visitors on Render to access this API
 const ALLOWED_ORIGINS = [
   // Vercel admin site (production)
   'https://admin-hollyhub.vercel.app',
@@ -74,6 +74,7 @@ const ALLOWED_ORIGINS = [
   'https://admin-hollyhubdigital.vercel.app',
   // Render visitors site (production)
   'https://hollyhubdigital.onrender.com',
+  // Local dev (kept for local testing only)
   'http://localhost:3001',
   'http://localhost:3000',
   'http://127.0.0.1:3001',
