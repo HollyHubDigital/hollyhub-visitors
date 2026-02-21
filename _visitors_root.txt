@@ -1,0 +1,46 @@
+﻿
+
+StatusCode        : 200
+StatusDescription : OK
+Content           : ﻿<!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                      <meta charset="UTF-8" />
+                      <meta name="viewport" content="width=device-width, 
+                    initial-scale=1.0" />
+                      <meta name="description" content="Holly - Professi...
+RawContent        : HTTP/1.1 200 OK
+                    Age: 0
+                    Strict-Transport-Security: max-age=63072000; 
+                    includeSubDomains; preload
+                    X-Vercel-Cache: MISS
+                    X-Vercel-Id: cpt1::iad1::r5mhp-1771542825077-7bdb47149c75
+                    Accept-Ranges: bytes...
+Forms             : 
+Headers           : {[Age, 0], [Strict-Transport-Security, max-age=63072000; 
+                    includeSubDomains; preload], [X-Vercel-Cache, MISS], 
+                    [X-Vercel-Id, 
+                    cpt1::iad1::r5mhp-1771542825077-7bdb47149c75]...}
+Images            : {}
+InputFields       : {@{outerHTML=<input type="text" id="searchInput" 
+                    class="search-input" placeholder="Search..." />; 
+                    tagName=INPUT; type=text; id=searchInput; 
+                    class=search-input; placeholder=Search...}}
+Links             : {@{outerHTML=<a href="index.html" class="logo-link">
+                              <img src="hollyhub.jpg" class="logo-img" 
+                    alt="HollyHub" />
+                              <h1 class="brand">HOLLY<span 
+                    class="brandkit">DEV</span></h1>
+                            </a>; tagName=A; href=index.html; 
+                    class=logo-link}, @{outerHTML=<a href="services.html" 
+                    class="nav-link">SERVICES</a>; tagName=A; 
+                    href=services.html; class=nav-link}, @{outerHTML=<a 
+                    href="portfolio.html" class="nav-link">PORTFOLIO</a>; 
+                    tagName=A; href=portfolio.html; class=nav-link}, 
+                    @{outerHTML=<a href="blog.html" class="nav-link">BLOG</a>; 
+                    tagName=A; href=blog.html; class=nav-link}...}
+ParsedHtml        : 
+RawContentLength  : 31817
+
+
+

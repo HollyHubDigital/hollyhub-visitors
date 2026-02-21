@@ -43,3 +43,4 @@ tmp/
 *.key
 secrets.txt
 private.json
+.vercel
