@@ -112,6 +112,8 @@ module.exports = async (req, res) => {
             }
           }
         }
+        // Return with proper content type and error handling
+        res.setHeader('Content-Type', 'application/json');
         return res.json({ scripts: inject });
       }
 

@@ -48,6 +48,7 @@
         if (data.scripts && data.scripts.trim()) {
           try {
             const scriptEl = document.createElement('script');
+            scriptEl.type = 'text/javascript';
             scriptEl.innerHTML = data.scripts;
             document.head.appendChild(scriptEl);
             this.log('Preview scripts injected');
@@ -476,14 +477,19 @@
           })
         });
 
+        if (!response.ok) {
+          this.log(`Server-side tracking error: HTTP ${response.status}`);
+          return;
+        }
+
         const result = await response.json();
-        if (result.success) {
+        if (result.ok || result.success) {
           this.log(`✓ Event '${event}' tracked via server-side API (ad-blocker proof)`);
         } else {
-          this.log(`Server-side tracking error: ${result.error}`);
+          this.log(`Server-side tracking error: ${result.error || 'unknown'}`);
         }
       } catch (e) {
-        this.log('Server-side tracking failed:', e);
+        this.log('Server-side tracking failed:', e.message);
       }
     },
 
