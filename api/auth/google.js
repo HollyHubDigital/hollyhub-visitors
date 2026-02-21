@@ -46,7 +46,9 @@ module.exports = async (req, res) => {
     const pathParts = url.split('/').filter(Boolean);
     const lastPart = pathParts[pathParts.length-1] || '';
     const action = req.query.action || (req.query.code ? 'callback' : lastPart);
-    const origin = (req.protocol || 'https') + '://' + (req.get('host') || 'hollyhubdigital.onrender.com');
+    // Force HTTPS for OAuth - req.protocol may be 'http' behind reverse proxy but OAuth always uses https
+    const host = req.get('host') || 'hollyhubdigital.onrender.com';
+    const origin = 'https://' + host;
     const clientId = process.env.GOOGLE_CLIENT_ID || '';
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET || '';
     console.log('google auth handler hit; env:', { GOOGLE_CLIENT_ID: !!clientId, GOOGLE_CLIENT_SECRET: !!clientSecret, NEXTAUTH_SECRET: !!process.env.NEXTAUTH_SECRET });
