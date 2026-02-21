@@ -103,7 +103,7 @@ app.use((req, res, next) => {
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Permissions-Policy', 'geolocation=(), microphone=()');
     // Explicitize script-src-elem and allow known external payment libs and worker blobs
-    res.setHeader('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net; script-src-elem 'self' https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net; worker-src 'self' blob:; connect-src 'self' https: wss: https://eu.i.posthog.com; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https: https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net;");
+    res.setHeader('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net; script-src-elem 'self' 'unsafe-inline' https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net; worker-src 'self' blob:; connect-src 'self' https: wss: https://eu.i.posthog.com; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https: https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net;");
   }catch(e){}
   next();
 });
@@ -924,6 +924,51 @@ app.get('/api/analytics', authRequired, (req,res)=>{
   };
   
   return res.json(stats);
+});
+
+// ===== SERVER-SIDE TRACKING (FOR AD-BLOCKER BYPASS) =====
+app.post('/api/track', (req,res)=>{
+  try{
+    if(req.method !== 'POST'){
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+    const body = req.body || {};
+    const { event, properties = {}, userId } = body;
+    if(!event){
+      return res.status(400).json({ error: 'Missing event name' });
+    }
+    let mixpanelToken = process.env.MIXPANEL_TOKEN;
+    if(!mixpanelToken){
+      try{
+        const appsConfigPath = path.join(dataDir, 'apps-config.json');
+        if(fs.existsSync(appsConfigPath)){
+          const config = JSON.parse(fs.readFileSync(appsConfigPath, 'utf8'));
+          if(config.enabled && config.enabled.mixpanel && config.enabled.mixpanel.token){
+            mixpanelToken = config.enabled.mixpanel.token;
+          }
+        }
+      }catch(e){ console.error('Error reading apps config:', e); }
+    }
+    if(!mixpanelToken){
+      return res.status(501).json({ error: 'Mixpanel not configured' });
+    }
+    const timestamp = Math.floor(Date.now() / 1000);
+    const eventData = {
+      event: event,
+      properties: {
+        token: mixpanelToken,
+        time: timestamp,
+        distinct_id: userId || 'anonymous',
+        ...properties
+      }
+    };
+    // For now, just log the event server-side and return success
+    console.log('[Track] Event:', event, 'Properties:', properties);
+    return res.json({ ok: true, tracked: event });
+  }catch(e){
+    console.error('Track error:', e);
+    return res.status(500).json({ error: e.message });
+  }
 });
 
 // Dynamic API loader
