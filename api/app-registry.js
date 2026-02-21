@@ -43,18 +43,35 @@ const appRegistry = {
     ],
     scriptInjection: (config) => {
       if (!config.publicKey) return '';
-      // Prefer using company_id pattern for onsite Klaviyo script when provided
-      const company = config.publicKey;
-      const accountParam = config.accountId ? `&account_id=${config.accountId}` : '';
+      const company = config.publicKey.trim();
+      const accountParam = config.accountId ? `&account_id=${config.accountId.trim()}` : '';
       return `<!-- Klaviyo Onsite Tracking -->
 <script async type="text/javascript" src="https://static.klaviyo.com/onsite/js/${company}/klaviyo.js?company_id=${company}${accountParam}"></script>
 <script type="text/javascript">
-  // Initialize Klaviyo proxy to queue calls until library loads
-  !function(){if(!window.klaviyo){window._klOnsite=window._klOnsite||[];try{window.klaviyo=new Proxy({},{get:function(n,i){return"push"===i?function(){var n;(n=window._klOnsite).push.apply(n,arguments)}:function(){for(var n=arguments.length,o=new Array(n),w=0;w<n;w++)o[w]=arguments[w];var t="function"==typeof o[o.length-1]?o.pop():void 0,e=new Promise((function(n){window._klOnsite.push([i].concat(o,[function(i){t&&t(i),n(i)}]))}));return e}}})}catch(e){window.klaviyo=window.klaviyo||[],window.klaviyo.push=function(){var n;(n=window._klOnsite).push.apply(n,arguments)}}}}();
+!function(){
+  if(!window.klaviyo){
+    window._klOnsite=window._klOnsite||[];
+    try{
+      window.klaviyo=new Proxy({},{
+        get:function(n,i){
+          return"push"===i?function(){var n;(n=window._klOnsite).push.apply(n,arguments)}:function(){
+            for(var n=arguments.length,o=new Array(n),w=0;w<n;w++)o[w]=arguments[w];
+            var t="function"==typeof o[o.length-1]?o.pop():void 0,e=new Promise((function(n){
+              window._klOnsite.push([i].concat(o,[function(i){t&&t(i),n(i)}]))
+            }));
+            return e
+          }
+        }
+      })
+    }catch(n){
+      window.klaviyo=window.klaviyo||[];
+      window.klaviyo.push=function(){var n;(n=window._klOnsite).push.apply(n,arguments)}
+    }
+  }
+}();
 </script>`;
     },
-    version: '1.0.0'
-    ,
+    version: '1.0.0',
     helpUrl: 'https://www.klaviyo.com/'
   },
 

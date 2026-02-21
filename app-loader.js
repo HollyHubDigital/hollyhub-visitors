@@ -201,44 +201,43 @@
       if (!config.publicKey) return;
       const company = config.publicKey.trim();
       const accountParam = config.accountId ? `&account_id=${config.accountId.trim()}` : '';
-      const script = document.createElement('script');
-      script.async = true;
-      script.type = 'text/javascript';
-      script.src = `https://static.klaviyo.com/onsite/js/${company}/klaviyo.js?company_id=${company}${accountParam}`;
-      document.head.appendChild(script);
       
-      // Initialize Klaviyo proxy to queue calls until library loads (prevents errors)
-      window.klaviyo = window.klaviyo || {};
-      if (!window._klOnsite) {
-        window._klOnsite = [];
-        try {
-          window.klaviyo = new Proxy({}, {
-            get: function(target, prop) {
-              if (prop === 'push') {
-                return function() {
-                  window._klOnsite.push.apply(window._klOnsite, arguments);
-                };
-              }
-              return function() {
-                const args = Array.from(arguments);
-                const callback = typeof args[args.length - 1] === 'function' ? args.pop() : undefined;
-                const promise = new Promise(resolve => {
-                  window._klOnsite.push([prop, ...args, function(result) {
-                    if (callback) callback(result);
-                    resolve(result);
-                  }]);
-                });
-                return promise;
-              };
+      // Inject the exact Klaviyo tracking script as two separate script tags
+      // Script 1: Async library loader with company ID in URL
+      const scriptAsync = document.createElement('script');
+      scriptAsync.async = true;
+      scriptAsync.type = 'text/javascript';
+      scriptAsync.src = `https://static.klaviyo.com/onsite/js/${company}/klaviyo.js?company_id=${company}${accountParam}`;
+      document.head.appendChild(scriptAsync);
+      
+      // Script 2: Initialize Klaviyo proxy (must be synchronous)
+      const scriptInit = document.createElement('script');
+      scriptInit.type = 'text/javascript';
+      // Exact Klaviyo initialization code - handles both presence and absence of Klaviyo library
+      scriptInit.innerHTML = `
+        !function(){
+          if(!window.klaviyo){
+            window._klOnsite=window._klOnsite||[];
+            try{
+              window.klaviyo=new Proxy({},{
+                get:function(n,i){
+                  return"push"===i?function(){var n;(n=window._klOnsite).push.apply(n,arguments)}:function(){
+                    for(var n=arguments.length,o=new Array(n),w=0;w<n;w++)o[w]=arguments[w];
+                    var t="function"==typeof o[o.length-1]?o.pop():void 0,e=new Promise((function(n){
+                      window._klOnsite.push([i].concat(o,[function(i){t&&t(i),n(i)}]))
+                    }));
+                    return e
+                  }
+                }
+              })
+            }catch(n){
+              window.klaviyo=window.klaviyo||[];
+              window.klaviyo.push=function(){var n;(n=window._klOnsite).push.apply(n,arguments)}
             }
-          });
-        } catch (e) {
-          window.klaviyo = window.klaviyo || [];
-          window.klaviyo.push = function() {
-            window._klOnsite.push.apply(window._klOnsite, arguments);
-          };
-        }
-      }
+          }
+        }();
+      `;
+      document.head.appendChild(scriptInit);
       
       this.log('Klaviyo loaded with company ID:', company.substring(0, 8) + '...');
     },
