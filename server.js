@@ -72,6 +72,8 @@ const ALLOWED_ORIGINS = [
   'https://admin-hollyhub.vercel.app',
   // older/alternate admin hostname (kept for compatibility)
   'https://admin-hollyhubdigital.vercel.app',
+  // Render visitors site (production)
+  'https://hollyhubdigital.onrender.com',
   'http://localhost:3001',
   'http://localhost:3000',
   'http://127.0.0.1:3001',
@@ -83,8 +85,8 @@ ALLOWED_ORIGINS.push('https://hollyhubdigital.vercel.app');
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow when no origin (server-to-server), or exact match, or common Vercel preview/admin hosts
-    if (!origin || ALLOWED_ORIGINS.includes(origin) || (typeof origin === 'string' && origin.endsWith('.vercel.app'))) {
+    // Allow when no origin (server-to-server), or exact match, or common Vercel/Render hosts
+    if (!origin || ALLOWED_ORIGINS.includes(origin) || (typeof origin === 'string' && (origin.endsWith('.vercel.app') || origin.endsWith('.onrender.com')))) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -92,6 +94,14 @@ app.use(cors({
   },
   credentials: true
 }));
+
+// CORS error handler - return JSON instead of plain text
+app.use((err, req, res, next) => {
+  if (err && err.message === 'Not allowed by CORS') {
+    return res.status(403).json({ error: 'CORS: Origin not allowed' });
+  }
+  next(err);
+});
 
 // Capture raw request body for webhook signature verification
 app.use(express.json({ limit: process.env.JSON_LIMIT || '10mb', verify: (req, res, buf) => { try{ req.rawBody = buf.toString(); }catch(e){ req.rawBody = ''; } } }));
