@@ -191,7 +191,7 @@ app.use((req, res, next) => {
   try{
     const method = (req.method || '').toUpperCase();
     // Skip CSRF for public/payment endpoints like tracking, comments and checkout
-    if(req.path === '/api/track' || req.path === '/api/public-settings' || req.path === '/api/checkout' || req.path === '/api/blog/comment') {
+    if(req.path === '/api/track' || req.path === '/api/public-settings' || req.path === '/api/checkout' || req.path === '/api/blog/comment' || req.path === '/api/blog/like') {
       return next();
     }
     if(['POST','PUT','DELETE','PATCH'].includes(method)){
@@ -203,7 +203,8 @@ app.use((req, res, next) => {
         origin === host || 
         origin.includes('localhost') || 
         origin.includes('127.0.0.1') ||
-        origin.endsWith('.vercel.app')  // ✅ Allow Vercel admin origins
+        origin.endsWith('.vercel.app') || // ✅ Allow Vercel admin origins
+        origin.endsWith('.onrender.com')  // ✅ Allow Render visitors origins
       );
       if(origin && !isAllowedOrigin){
         return res.status(403).send('Forbidden (invalid origin)');
@@ -214,7 +215,8 @@ app.use((req, res, next) => {
         referer.startsWith(host) || 
         referer.includes('localhost') || 
         referer.includes('127.0.0.1') ||
-        referer.includes('.vercel.app')  // ✅ Allow Vercel referer
+        referer.includes('.vercel.app') || // ✅ Allow Vercel referer
+        referer.includes('.onrender.com')  // ✅ Allow Render referer
       );
       if(!origin && referer && !isAllowedReferer){
         return res.status(403).send('Forbidden (invalid referer)');
