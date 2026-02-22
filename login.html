@@ -338,7 +338,25 @@
     document.body.insertAdjacentHTML('beforeend', forgotModalHtml);
     const forgotLink = document.getElementById('forgotPasswordLink');
     if(forgotLink){
-      forgotLink.addEventListener('click', (e)=>{ e.preventDefault(); document.getElementById('forgotModal').style.display = 'flex'; });
+      forgotLink.addEventListener('click', async (e)=>{
+        e.preventDefault();
+        const emailInput = document.querySelector('input[name="email"]');
+        const email = emailInput ? (emailInput.value||'').trim() : '';
+        // If an email is already entered in the login form, trigger reset-request directly
+        if(email){
+          // provide immediate feedback
+          pageUtils.showNotification('Sending reset link to ' + email, 'success');
+          try{
+            const r = await fetch('/api/auth/reset-request', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+            let j = null; try{ j = await r.json(); }catch(_){ j = null; }
+            if(!r.ok){ pageUtils.showNotification((j && j.error) ? j.error : 'Reset request failed', 'error'); return; }
+            pageUtils.showNotification('Reset link sent. Check your email (and spam).', 'success');
+            return;
+          }catch(err){ console.error('reset-request failed', err); pageUtils.showNotification('Reset request failed', 'error'); return; }
+        }
+        // fallback: show modal to input email
+        document.getElementById('forgotModal').style.display = 'flex';
+      });
     }
     document.getElementById('forgotCancel').addEventListener('click', ()=>{ document.getElementById('forgotModal').style.display = 'none'; });
     document.getElementById('forgotSend').addEventListener('click', async () => {

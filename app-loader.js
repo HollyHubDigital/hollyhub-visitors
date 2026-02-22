@@ -105,13 +105,39 @@
                 try{ gEl.style.display = gEl.style.display === 'none' ? '' : gEl.style.display; }catch(e){}
                 // Load Google Translate script and init
                 window.googleTranslateElementInit = function(){
-                  try{ new window.google.translate.TranslateElement({pageLanguage: 'en', layout: window.google && window.google.translate && window.google.translate.TranslateElement ? window.google.translate.TranslateElement.InlineLayout.SIMPLE : 0}, 'google_translate_element'); }catch(e){}
+                  try{
+                    // Initialize Google Translate widget using default overlay
+                    new window.google.translate.TranslateElement({ pageLanguage: 'en', autoDisplay: true }, 'google_translate_element');
+                    // make placeholder visible
+                    const gEl = document.getElementById('google_translate_element');
+                    if(gEl) try{ gEl.style.display = ''; }catch(e){}
+
+                    // Wire the custom language select (if present) to the Google Translate combobox
+                    const bindLanguageSelect = () => {
+                      try{
+                        const combo = document.querySelector('.goog-te-combo');
+                        const sel = document.getElementById('languageSelect');
+                        if(!combo || !sel) return false;
+                        sel.addEventListener('change', () => {
+                          try{ combo.value = sel.value; combo.dispatchEvent(new Event('change')); }catch(e){}
+                        });
+                        return true;
+                      }catch(e){ return false; }
+                    };
+
+                    // The google combo is added asynchronously; poll briefly to bind
+                    let attempts = 0;
+                    const iv = setInterval(() => {
+                      attempts++;
+                      if(bindLanguageSelect() || attempts > 10) clearInterval(iv);
+                    }, 500);
+                  }catch(e){ /* ignore */ }
                 };
                 const gt = document.createElement('script');
                 gt.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
                 gt.async = true;
                 document.head.appendChild(gt);
-                this.log('Google Translate initialized');
+                this.log('Google Translate loader injected');
               }
             }catch(e){ this.log('google translate init failed', e); }
 
