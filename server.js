@@ -189,8 +189,8 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   try{
     const method = (req.method || '').toUpperCase();
-    // Skip CSRF for public endpoints like tracking
-    if(req.path === '/api/track' || req.path === '/api/public-settings') {
+    // Skip CSRF for public/payment endpoints like tracking and checkout
+    if(req.path === '/api/track' || req.path === '/api/public-settings' || req.path === '/api/checkout') {
       return next();
     }
     if(['POST','PUT','DELETE','PATCH'].includes(method)){

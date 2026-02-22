@@ -44,11 +44,22 @@
           this.log('Failed to fetch preview scripts, skipping');
           return;
         }
-        const data = await response.json();
-        if (data.scripts && data.scripts.trim()) {
+        let data;
+        try {
+          data = await response.json();
+        } catch (parseError) {
+          this.log('Failed to parse preview scripts response as JSON, skipping');
+          return;
+        }
+        if (data.scripts && typeof data.scripts === 'string' && data.scripts.trim()) {
           try {
             const scriptEl = document.createElement('script');
             scriptEl.type = 'text/javascript';
+            // Validate that scripts don't contain raw HTML (starts with < which is invalid in script context)
+            if (data.scripts.trim().startsWith('<')) {
+              this.log('Preview scripts contain HTML, skipping injection');
+              return;
+            }
             scriptEl.innerHTML = data.scripts;
             document.head.appendChild(scriptEl);
             this.log('Preview scripts injected');
