@@ -116,8 +116,10 @@ app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Permissions-Policy', 'geolocation=(), microphone=()');
-    // Comprehensive CSP allowing all third-party app integration domains and allow framing from the admin app
+    // Content Security Policy: allow known external libs and allow admin sites to embed the visitors site in an iframe
     res.setHeader('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net https://challenges.cloudflare.com https://cdn.mxpnl.com https://static.klaviyo.com https://www.googletagmanager.com https://embed.tawk.to https://widget.privy.com https://cdn.yotpo.com https://script.hotjar.com https://cdn.segment.com https://embed.typeform.com https://widget.intercom.io https://api-iam.intercom.io https://assets.freshchat.com https://wchat.freshchat.com https://js.driftt.com https://load.sumome.com; script-src-elem 'self' 'unsafe-inline' https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net https://challenges.cloudflare.com https://cdn.mxpnl.com https://static.klaviyo.com https://www.googletagmanager.com https://embed.tawk.to https://widget.privy.com https://cdn.yotpo.com https://script.hotjar.com https://cdn.segment.com https://embed.typeform.com https://widget.intercom.io https://api-iam.intercom.io https://assets.freshchat.com https://wchat.freshchat.com https://js.driftt.com https://load.sumome.com; worker-src 'self' blob:; connect-src 'self' https: wss: https://eu.i.posthog.com; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https: https://paystack.com https://js.paystack.co https://checkout.paystack.com https://cdn.jsdelivr.net https://widget.privy.com https://cdn.yotpo.com https://script.hotjar.com https://assets.freshchat.com https://wchat.freshchat.com; frame-ancestors 'self' https://admin-hollyhub.vercel.app https://admin-hollyhubdigital.vercel.app;");
+    // If hosting platform injected an X-Frame-Options header, remove it so CSP frame-ancestors takes precedence
+    try{ if(typeof res.removeHeader === 'function') res.removeHeader('X-Frame-Options'); }catch(e){}
   }catch(e){}
   next();
 });
