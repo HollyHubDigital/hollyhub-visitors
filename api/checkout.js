@@ -38,6 +38,11 @@ module.exports = async (req, res) => {
       }
     }
     if (!paystackSecret) return res.status(501).json({ error: 'Paystack not configured. Set PAYSTACK_SECRET or configure Paystack secret in data/apps-config.json.' });
+    // Sanitize public key: ignore placeholder values that may be present in example configs
+    if (paystackPublicKey && typeof paystackPublicKey === 'string' && paystackPublicKey.indexOf('xxxx') !== -1) {
+      console.warn('[Checkout] Paystack public key appears to be a placeholder; omitting public key to avoid client-side errors');
+      paystackPublicKey = null;
+    }
 
     // Convert currency to NGN if needed (Paystack expects NGN amounts for NGN account)
     let amountInNgn = amount;
