@@ -97,6 +97,39 @@
         try{
           await this.loadPublicSettings();
         }catch(e){ this.log('loadPublicSettings error', e); }
+            // Initialize Google Translate if the placeholder element exists and populate WhatsApp links
+            try{
+              const gEl = document.getElementById('google_translate_element');
+              if(gEl){
+                // Make widget area visible (some templates hide it by default)
+                try{ gEl.style.display = gEl.style.display === 'none' ? '' : gEl.style.display; }catch(e){}
+                // Load Google Translate script and init
+                window.googleTranslateElementInit = function(){
+                  try{ new window.google.translate.TranslateElement({pageLanguage: 'en', layout: window.google && window.google.translate && window.google.translate.TranslateElement ? window.google.translate.TranslateElement.InlineLayout.SIMPLE : 0}, 'google_translate_element'); }catch(e){}
+                };
+                const gt = document.createElement('script');
+                gt.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+                gt.async = true;
+                document.head.appendChild(gt);
+                this.log('Google Translate initialized');
+              }
+            }catch(e){ this.log('google translate init failed', e); }
+
+            // Ensure WhatsApp links use wa.me and tel formats when public settings available
+            try{
+              const r = await fetch('/api/public-settings');
+              if(r.ok){
+                const s = await r.json();
+                const raw = (s.whatsappNumber || '').toString();
+                const cleaned = raw.replace(/[^+0-9]/g, '');
+                if(cleaned){
+                  const tel = 'tel:' + cleaned;
+                  const wa = 'https://wa.me/' + cleaned.replace(/^\+/, '');
+                  document.querySelectorAll('.js-whatsapp-tel').forEach(el=>{ try{ el.href = tel; if(!el.dataset.noText) el.textContent = cleaned.replace(/(\+?\d{3})(\d{3})(\d{3})(\d{3})?/, (m,a,b,c,d)=> a + ' ' + (b||'') + ' ' + (c||'') + (d? ' ' + d : '')); }catch(e){} });
+                  document.querySelectorAll('.js-whatsapp-link, .js-whatsapp-wa').forEach(el=>{ try{ el.href = wa; el.setAttribute('target','_blank'); }catch(e){} });
+                }
+              }
+            }catch(e){ this.log('whatsapp populate failed', e); }
       } catch (e) {
         this.log('Error in init:', e);
       }
