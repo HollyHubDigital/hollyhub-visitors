@@ -157,7 +157,12 @@
           <div style="padding: 1.5rem; background: linear-gradient(135deg, rgba(255, 0, 0, 0.1), rgba(67, 97, 238, 0.1)); border-radius: 10px;">
             <h4 style="color: var(--primary-accent); margin-bottom: 1rem;">📅 Free Consultation</h4>
             <p style="opacity: 0.85; margin-bottom: 1rem;">Not sure where to start? Schedule a free 30-minute consultation to discuss your project and goals.</p>
-            <a href="#" class="btn btn-primary btn-small js-whatsapp-tel" data-default="+2348137448596" style="padding: 0.6rem 1.2rem;">Call Support</a>
+            <div style="display:flex;align-items:center;gap:8px">
+              <a href="#" class="btn btn-primary btn-small js-whatsapp-tel" data-default="+2348137448596" style="padding: 0.6rem 1.2rem;">Call Support</a>
+              <a href="#" class="js-whatsapp-link" title="Message on WhatsApp" style="display:inline-flex;align-items:center;">
+                <img src="whatsapp.png" alt="WhatsApp" style="width:34px;height:34px;display:block;" />
+              </a>
+            </div>
           </div>
         </div>
 
@@ -245,6 +250,29 @@
   </footer>
 
   <script src="script.js"></script>
+  <script>
+    // Populate WhatsApp links dynamically from public settings
+    (async function(){
+      try{
+        const res = await fetch('/api/public-settings');
+        if(!res.ok) return;
+        const data = await res.json();
+        const num = (data && data.whatsappNumber) ? data.whatsappNumber : null;
+        const els = document.querySelectorAll('.js-whatsapp-tel');
+        els.forEach(el=>{
+          const phone = el.getAttribute('data-default') || num || '';
+          const cleaned = (phone || '').toString().replace(/[^+0-9]/g,'');
+          if(cleaned) el.href = `https://wa.me/${cleaned.replace(/^\+/, '')}`;
+        });
+        const icon = document.querySelectorAll('.js-whatsapp-link');
+        icon.forEach(a=>{
+          const phone = a.previousElementSibling && a.previousElementSibling.getAttribute && a.previousElementSibling.getAttribute('data-default') || num || '';
+          const cleaned = (phone || '').toString().replace(/[^+0-9]/g,'');
+          if(cleaned) a.href = `https://wa.me/${cleaned.replace(/^\+/, '')}`;
+        });
+      }catch(e){ console.warn('whatsapp link init failed', e); }
+    })();
+  </script>
   <script>
     document.querySelector('.contact-form').addEventListener('submit', async function(e) {
       e.preventDefault();
