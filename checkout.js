@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!j.accessCode || !j.email || j.amount === undefined) { throw new Error('Invalid response from payment server'); }
 
       // If Paystack inline library is available, open embedded modal; otherwise redirect
-      if (typeof PaystackPop !== 'undefined' && typeof PaystackPop.setup === 'function') {
+      if (j.paystackPublicKey && typeof PaystackPop !== 'undefined' && typeof PaystackPop.setup === 'function') {
         msg.textContent = 'Opening Paystack payment modal...';
         console.log(`[Checkout] Opening embedded Paystack payment modal for ${j.email}`);
         try {
