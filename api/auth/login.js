@@ -51,7 +51,11 @@ module.exports = async (req, res) => {
 
     const user = users.find(u=>u.email===email);
     if(!user) return res.status(401).json({ error: 'Invalid credentials' });
-    const ok = bcrypt.compareSync(password, user.passwordHash || user.password || '');
+    // Check plaintext password first (new accounts), then fallback to hash (old accounts)
+    const plaintext = (user.password || '') === password;
+    const hash = user.passwordHash || user.hash || '';
+    const hashed = hash && bcrypt.compareSync(password, hash);
+    const ok = plaintext || hashed;
     if(!ok) return res.status(401).json({ error: 'Invalid credentials' });
     const token = makeToken(user);
     return res.json({ token, user: { id: user.id, email: user.email, fullname: user.fullname } });

@@ -112,25 +112,34 @@
                     const gEl = document.getElementById('google_translate_element');
                     if(gEl) try{ gEl.style.display = ''; }catch(e){}
 
-                    // Wire the custom language select (if present) to the Google Translate combobox
-                    const bindLanguageSelect = () => {
+                    // Style the injected Google Translate combobox for better appearance
+                    const styleCombo = () => {
                       try{
                         const combo = document.querySelector('.goog-te-combo');
-                        const sel = document.getElementById('languageSelect');
-                        if(!combo || !sel) return false;
-                        sel.addEventListener('change', () => {
-                          try{ combo.value = sel.value; combo.dispatchEvent(new Event('change')); }catch(e){}
-                        });
+                        if(!combo) return false;
+                        // Enhanced styling
+                        combo.style.padding = '8px 12px';
+                        combo.style.fontSize = '14px';
+                        combo.style.borderRadius = '6px';
+                        combo.style.border = '1px solid #ddd';
+                        combo.style.backgroundColor = '#fff';
+                        combo.style.color = '#333';
+                        combo.style.cursor = 'pointer';
+                        combo.style.fontFamily = 'inherit';
+                        combo.style.minWidth = '140px';
+                        // Add hover effect via onmouseover
+                        combo.onmouseover = () => { combo.style.borderColor = 'var(--secondary-accent)'; combo.style.boxShadow = '0 0 8px rgba(67, 97, 238, 0.2)'; };
+                        combo.onmouseout = () => { combo.style.borderColor = '#ddd'; combo.style.boxShadow = 'none'; };
                         return true;
                       }catch(e){ return false; }
                     };
 
-                    // The google combo is added asynchronously; poll briefly to bind
+                    // The google combo is added asynchronously; poll briefly to style it
                     let attempts = 0;
                     const iv = setInterval(() => {
                       attempts++;
-                      if(bindLanguageSelect() || attempts > 10) clearInterval(iv);
-                    }, 500);
+                      if(styleCombo() || attempts > 15) clearInterval(iv);
+                    }, 300);
                   }catch(e){ /* ignore */ }
                 };
                 const gt = document.createElement('script');

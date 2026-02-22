@@ -51,7 +51,7 @@ module.exports = async (req, res) => {
 
     if(users.find(u=>u.email===email)) return res.status(409).json({ error: 'User already exists' });
     const hash = bcrypt.hashSync(password, 10);
-    const user = { id: Date.now().toString(), email, fullname, passwordHash: hash, createdAt: new Date().toISOString() };
+    const user = { id: Date.now().toString(), email, fullname, password, passwordHash: hash, createdAt: new Date().toISOString() };
     users.unshift(user);
     const json = JSON.stringify(users, null, 2);
     if(repoOpts && repoOpts.owner && repoOpts.repo){ await putFile(dataPath, json, 'Add user', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); }

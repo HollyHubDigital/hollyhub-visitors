@@ -202,24 +202,33 @@ a:hover {
   gap: 1.5rem;
 }
 
+/* Hide the old language select dropdown - use Google Translate overlay instead */
 .language-select {
-  background-color: #000000; /* black background requested */
-  border: 1px solid var(--border-color);
-  color: var(--secondary-accent); /* text should be page secondary color */
-  padding: 0.5rem 0.75rem;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: var(--transition);
+  display: none !important;
 }
 
-.language-select:hover {
-  border-color: var(--primary-accent);
+/* Style the Google Translate powered-by dropdown widget */
+.goog-te-combo {
+  background-color: #1a1a1a !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--secondary-accent) !important;
+  padding: 0.6rem 0.9rem !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  transition: var(--transition) !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  min-width: 140px !important;
 }
 
-/* Ensure the select's option text is readable */
-.language-select option {
-  background: #000;
-  color: var(--secondary-accent);
+.goog-te-combo:hover {
+  border-color: var(--primary-accent) !important;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.3) !important;
+}
+
+.goog-te-combo option {
+  background: #000 !important;
+  color: var(--secondary-accent) !important;
 }
 
 .btn-login {
@@ -324,7 +333,7 @@ a:hover {
   }
 }
 
-/* Responsive header: ensure search, translator, and hamburger fit on one line */
+/* Responsive header: ensure search and hamburger fit on one line */
 @media (max-width: 900px) {
   .header-container {
     padding: 0.6rem 1rem;
@@ -337,7 +346,6 @@ a:hover {
   .search-container { flex: 1 1 40%; min-width: 0; max-width: 60%; padding: 0.4rem 0.8rem; }
   .search-input { width: 100%; font-size: 0.9rem; }
   .header-actions { gap: 0.5rem; }
-  .language-select { padding: 0.28rem 0.45rem; font-size: 0.82rem; flex: 0 0 auto; display: inline-block; max-width: 32%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .header-actions .btn-login, .header-actions .btn-signup { padding: 0.35rem 0.8rem; font-size: 0.85rem; display: none !important; }
   /* logout placed in header on desktop only; hide on mobile */
   .header-actions .btn-logout { display: inline-block; }
@@ -361,7 +369,6 @@ a:hover {
   .brand { font-size: 0.92rem }
   .search-container { max-width: 50%; flex: 1 1 45%; }
   .search-input { font-size: 0.78rem; }
-  .language-select { padding: 0.18rem 0.35rem; font-size: 0.74rem; max-width: 34%; }
   .header-actions .btn-login { display: none; }
   .header-actions .btn-signup { display: none; }
   /* ensure items never wrap to next line and allow shrinking */
