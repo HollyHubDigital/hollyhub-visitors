@@ -47,7 +47,7 @@ module.exports = async (req, res) => {
     const lastPart = pathParts[pathParts.length-1] || '';
     const action = req.query.action || (req.query.code ? 'callback' : lastPart);
     // Force HTTPS for OAuth - req.protocol may be 'http' behind reverse proxy but OAuth always uses https
-    const host = req.get('host') || 'hollyhubdigital.onrender.com';
+    const host = req.get('host') || 'hollyhubdigitals.vercel.app';
     const origin = 'https://' + host;
     const clientId = process.env.GOOGLE_CLIENT_ID || '';
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET || '';

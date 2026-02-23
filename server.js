@@ -72,8 +72,8 @@ const ALLOWED_ORIGINS = [
   'https://admin-hollyhub.vercel.app',
   // older/alternate admin hostname (kept for compatibility)
   'https://admin-hollyhubdigital.vercel.app',
-  // Render visitors site (production)
-  'https://hollyhubdigital.onrender.com',
+  // Vercel visitors site (production)
+  'https://hollyhubdigitals.vercel.app',
   // Local dev (kept for local testing only)
   'http://localhost:3001',
   'http://localhost:3000',
@@ -81,8 +81,8 @@ const ALLOWED_ORIGINS = [
   'http://127.0.0.1:3000'
 ];
 
-// Allow the public visitors domain (production) and common Vercel preview patterns if needed
-ALLOWED_ORIGINS.push('https://hollyhubdigital.vercel.app');
+// Allow preview patterns for Vercel
+// (no need to push since wildcard .vercel.app is already allowed below)
 
 app.use(cors({
   origin: (origin, callback) => {
