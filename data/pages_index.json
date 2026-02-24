@@ -13,9 +13,9 @@
         "title": "Demo Project - Website Redesign",
         "description": "A modern redesign delivered with performance and SEO in mind.",
         "id": "demo-1770916072.19899",
-        "image": "/hollyhub.jpg"
+        "image": "/assets/hollyhub.jpg"
       }
     ],
-    "interImage": "hollyhubhero.jpg"
+    "interImage": "/assets/hollyhubhero.jpg"
   }
 }
