@@ -341,24 +341,43 @@ app.use('/public', express.static(path.join(__dirname, 'public'), { maxAge: '1y'
 
 // Explicit async image routes for Vercel serverless
 const imageRoutes = {
-  '/public/assets/hollyhub.jpg': { path: 'public/assets/hollyhub.jpg', mime: 'image/jpeg' },
-  '/public/assets/hollyhubhero.jpg': { path: 'public/assets/hollyhubhero.jpg', mime: 'image/jpeg' },
-  '/public/assets/google.png': { path: 'public/assets/google.png', mime: 'image/png' },
-  '/public/assets/github.png': { path: 'public/assets/github.png', mime: 'image/png' },
-  '/public/assets/whatsapp.png': { path: 'public/assets/whatsapp.png', mime: 'image/png' }
+  '/public/assets/hollyhub.jpg': { paths: ['public/assets/hollyhub.jpg', '/var/task/public/assets/hollyhub.jpg'], mime: 'image/jpeg' },
+  '/public/assets/hollyhubhero.jpg': { paths: ['public/assets/hollyhubhero.jpg', '/var/task/public/assets/hollyhubhero.jpg'], mime: 'image/jpeg' },
+  '/public/assets/google.png': { paths: ['public/assets/google.png', '/var/task/public/assets/google.png'], mime: 'image/png' },
+  '/public/assets/github.png': { paths: ['public/assets/github.png', '/var/task/public/assets/github.png'], mime: 'image/png' },
+  '/public/assets/whatsapp.png': { paths: ['public/assets/whatsapp.png', '/var/task/public/assets/whatsapp.png'], mime: 'image/png' }
 };
 
 Object.entries(imageRoutes).forEach(([route, config]) => {
   app.get(route, async (req, res) => {
     try {
-      const filePath = path.join(__dirname, config.path);
-      const data = await fs.promises.readFile(filePath);
+      let data = null;
+      let found = false;
+      
+      // Try each possible path
+      for (const p of config.paths) {
+        try {
+          const fullPath = p.startsWith('/') ? p : path.join(__dirname, p);
+          data = await fs.promises.readFile(fullPath);
+          found = true;
+          console.log(`[Image] Served ${route} from ${fullPath}`);
+          break;
+        } catch (e) {
+          // Try next path
+        }
+      }
+      
+      if (!found) {
+        console.error(`[Image] Failed to find ${route} in any path`, { __dirname, paths: config.paths });
+        return res.status(404).json({ error: 'File not found' });
+      }
+      
       res.setHeader('Content-Type', config.mime);
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
       return res.send(data);
     } catch (e) {
-      console.error(`Failed to serve ${route}:`, e.message);
-      return res.status(404).json({ error: 'Not found' });
+      console.error(`[Image] Error serving ${route}:`, e.message);
+      return res.status(500).json({ error: 'Server error' });
     }
   });
 });
