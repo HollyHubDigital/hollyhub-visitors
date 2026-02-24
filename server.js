@@ -86,8 +86,8 @@ const ALLOWED_ORIGINS = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow when no origin (server-to-server), or exact match, or common Vercel/Render hosts
-    if (!origin || ALLOWED_ORIGINS.includes(origin) || (typeof origin === 'string' && (origin.endsWith('.vercel.app') || origin.endsWith('.onrender.com')))) {
+    // Allow when no origin (server-to-server), or exact match, or Vercel hosts
+    if (!origin || ALLOWED_ORIGINS.includes(origin) || (typeof origin === 'string' && origin.endsWith('.vercel.app'))) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -203,8 +203,7 @@ app.use((req, res, next) => {
         origin === host || 
         origin.includes('localhost') || 
         origin.includes('127.0.0.1') ||
-        origin.endsWith('.vercel.app') || // ✅ Allow Vercel admin origins
-        origin.endsWith('.onrender.com')  // ✅ Allow Render visitors origins
+        origin.endsWith('.vercel.app')  // ✅ Allow Vercel origins
       );
       if(origin && !isAllowedOrigin){
         return res.status(403).send('Forbidden (invalid origin)');
@@ -215,8 +214,7 @@ app.use((req, res, next) => {
         referer.startsWith(host) || 
         referer.includes('localhost') || 
         referer.includes('127.0.0.1') ||
-        referer.includes('.vercel.app') || // ✅ Allow Vercel referer
-        referer.includes('.onrender.com')  // ✅ Allow Render referer
+        referer.includes('.vercel.app')  // ✅ Allow Vercel referer
       );
       if(!origin && referer && !isAllowedReferer){
         return res.status(403).send('Forbidden (invalid referer)');
@@ -319,6 +317,24 @@ if (S3_ENABLED) {
     app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
   }
 }
+
+// Explicit handlers for root-level image assets
+const imageAssets = ['hollyhub.jpg', 'hollyhubhero.jpg', 'google.png', 'github.png', 'whatsapp.png'];
+imageAssets.forEach(filename => {
+  app.get(`/${filename}`, (req, res) => {
+    try {
+      const filePath = path.join(__dirname, filename);
+      if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+        const ext = path.extname(filename).toLowerCase();
+        const mimeTypes = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.gif': 'image/gif', '.svg': 'image/svg+xml' };
+        res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
+        res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+        return res.sendFile(filePath);
+      }
+    } catch (e) { console.error(`${filename} error:`, e); }
+    return res.status(404).end();
+  });
+});
 
 // Specific handlers for common static assets (ensure correct MIME)
 app.get('/styles.css', (req, res) => {
