@@ -27,7 +27,7 @@ InputFields       : {@{outerHTML=<input type="text" id="searchInput"
                     tagName=INPUT; type=text; id=searchInput; 
                     class=search-input; placeholder=Search...}}
 Links             : {@{outerHTML=<a href="index.html" class="logo-link">
-                              <img src="hollyhub.jpg" class="logo-img" 
+                              <img src="/assets/hollyhub.jpg" class="logo-img" 
                     alt="HollyHub" />
                               <h1 class="brand">HOLLY<span 
                     class="brandkit">DEV</span></h1>
