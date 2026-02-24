@@ -490,6 +490,34 @@ app.use('/assets', express.static(path.join(process.cwd(), 'public', 'assets'), 
   }
 }));
 
+// Fallback: serve assets on-demand by checking multiple candidate paths
+app.get('/assets/:file', (req, res) => {
+  const file = req.params.file || '';
+  const candidates = [
+    path.join(process.cwd(), 'public', 'assets', file),
+    path.join(__dirname, 'public', 'assets', file),
+    path.join('/var/task', 'public', 'assets', file),
+    path.join('public', 'assets', file),
+    path.join(process.cwd(), file),
+    path.join(__dirname, file)
+  ];
+  for (const p of candidates) {
+    try {
+      if (fs.existsSync(p) && fs.statSync(p).isFile()) {
+        const ext = path.extname(p).toLowerCase();
+        const mimeTypes = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.gif': 'image/gif', '.svg': 'image/svg+xml' };
+        res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        const data = fs.readFileSync(p);
+        return res.send(data);
+      }
+    } catch (e) {
+      // continue to next candidate
+    }
+  }
+  return res.status(404).end();
+});
+
 // Specific handlers for common static assets (ensure correct MIME)
 app.get('/styles.css', (req, res) => {
   try {
