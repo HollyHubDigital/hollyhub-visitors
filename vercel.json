@@ -11,6 +11,7 @@
   ],
   "routes": [
     { "src": "^/assets/(.*)", "dest": "/server.js" },
+    { "src": "^/__debug/(.*)", "dest": "/server.js" },
     { "src": "^/(hollyhub.jpg|hollyhubhero.jpg|google.png|github.png|whatsapp.png)", "dest": "/server.js" },
     { "src": "/api/(.*)", "dest": "/server.js" }
   ],
