@@ -334,7 +334,10 @@ imageAssets.forEach(filename => {
     } catch (e) { console.error(`${filename} error:`, e); }
     return res.status(404).end();
   });
-});
+}
+
+// Serve public folder (images, assets - Vercel will optimize)
+app.use('/public', express.static(path.join(__dirname, 'public'), { maxAge: '1y', immutable: true }));
 
 // Specific handlers for common static assets (ensure correct MIME)
 app.get('/styles.css', (req, res) => {
