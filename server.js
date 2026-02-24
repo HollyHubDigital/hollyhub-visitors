@@ -346,13 +346,69 @@ app.use('/public', express.static(publicPath, {
   }
 }));
 
-// Explicit async image routes for Vercel serverless
+// Debug endpoint to check file system state
+app.get('/__debug/fs', (req, res) => {
+  const paths = [
+    process.cwd(),
+    path.join(process.cwd(), 'public'),
+    path.join(process.cwd(), 'public/assets'),
+    '/var/task',
+    '/var/task/public',
+    '/var/task/public/assets',
+    __dirname,
+    path.join(__dirname, 'public'),
+    path.join(__dirname, 'public/assets')
+  ];
+  
+  const info = {};
+  paths.forEach(p => {
+    try {
+      const exists = fs.existsSync(p);
+      let files = [];
+      if (exists && fs.statSync(p).isDirectory()) {
+        files = fs.readdirSync(p).slice(0, 5);
+      }
+      info[p] = { exists, isDir: exists && fs.statSync(p).isDirectory(), files };
+    } catch (e) {
+      info[p] = { error: e.message };
+    }
+  });
+  
+  return res.json({ __dirname, cwd: process.cwd(), paths: info });
+});
+
+// Explicit async image routes for Vercel serverless - simplified
 const imageRoutes = {
-  '/public/assets/hollyhub.jpg': { paths: [path.join(process.cwd(), 'public/assets/hollyhub.jpg'), '/var/task/public/assets/hollyhub.jpg'], mime: 'image/jpeg' },
-  '/public/assets/hollyhubhero.jpg': { paths: [path.join(process.cwd(), 'public/assets/hollyhubhero.jpg'), '/var/task/public/assets/hollyhubhero.jpg'], mime: 'image/jpeg' },
-  '/public/assets/google.png': { paths: [path.join(process.cwd(), 'public/assets/google.png'), '/var/task/public/assets/google.png'], mime: 'image/png' },
-  '/public/assets/github.png': { paths: [path.join(process.cwd(), 'public/assets/github.png'), '/var/task/public/assets/github.png'], mime: 'image/png' },
-  '/public/assets/whatsapp.png': { paths: [path.join(process.cwd(), 'public/assets/whatsapp.png'), '/var/task/public/assets/whatsapp.png'], mime: 'image/png' }
+  '/public/assets/hollyhub.jpg': { paths: [
+    path.join(process.cwd(), 'public/assets/hollyhub.jpg'),
+    path.join(__dirname, 'public/assets/hollyhub.jpg'),
+    '/var/task/public/assets/hollyhub.jpg',
+    'public/assets/hollyhub.jpg'
+  ], mime: 'image/jpeg' },
+  '/public/assets/hollyhubhero.jpg': { paths: [
+    path.join(process.cwd(), 'public/assets/hollyhubhero.jpg'),
+    path.join(__dirname, 'public/assets/hollyhubhero.jpg'),
+    '/var/task/public/assets/hollyhubhero.jpg',
+    'public/assets/hollyhubhero.jpg'
+  ], mime: 'image/jpeg' },
+  '/public/assets/google.png': { paths: [
+    path.join(process.cwd(), 'public/assets/google.png'),
+    path.join(__dirname, 'public/assets/google.png'),
+    '/var/task/public/assets/google.png',
+    'public/assets/google.png'
+  ], mime: 'image/png' },
+  '/public/assets/github.png': { paths: [
+    path.join(process.cwd(), 'public/assets/github.png'),
+    path.join(__dirname, 'public/assets/github.png'),
+    '/var/task/public/assets/github.png',
+    'public/assets/github.png'
+  ], mime: 'image/png' },
+  '/public/assets/whatsapp.png': { paths: [
+    path.join(process.cwd(), 'public/assets/whatsapp.png'),
+    path.join(__dirname, 'public/assets/whatsapp.png'),
+    '/var/task/public/assets/whatsapp.png',
+    'public/assets/whatsapp.png'
+  ], mime: 'image/png' }
 };
 
 Object.entries(imageRoutes).forEach(([route, config]) => {
@@ -364,27 +420,38 @@ Object.entries(imageRoutes).forEach(([route, config]) => {
       // Try each possible path
       for (const p of config.paths) {
         try {
-          const fullPath = p.startsWith('/') ? p : path.join(__dirname, p);
-          data = await fs.promises.readFile(fullPath);
+          // Direct read without path manipulation
+          data = await fs.promises.readFile(p);
           found = true;
-          console.log(`[Image] Served ${route} from ${fullPath}`);
+          console.log(`[Image] Served ${route} from ${p}`);
           break;
         } catch (e) {
-          // Try next path
+          // Try next path - include more fallbacks
+          const cwdPath = path.join(process.cwd(), 'public/assets', path.basename(p));
+          try {
+            data = await fs.promises.readFile(cwdPath);
+            found = true;
+            console.log(`[Image] Served ${route} from ${cwdPath}`);
+            break;
+          } catch (e2) {
+            // Continue to next path
+          }
         }
       }
       
       if (!found) {
-        console.error(`[Image] Failed to find ${route} in any path`, { __dirname, paths: config.paths });
-        return res.status(404).json({ error: 'File not found' });
+        console.error(`[Image] Failed to find ${route}. Tried paths:`, config.paths);
+        console.error(`[Image] cwd=${process.cwd()}, dirname=${__dirname}`);
+        return res.status(404).json({ error: 'File not found', paths: config.paths, cwd: process.cwd() });
       }
       
       res.setHeader('Content-Type', config.mime);
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      res.setHeader('Content-Length', data.length);
       return res.send(data);
     } catch (e) {
-      console.error(`[Image] Error serving ${route}:`, e.message);
-      return res.status(500).json({ error: 'Server error' });
+      console.error(`[Image] Error serving ${route}:`, e.message, e.stack);
+      return res.status(500).json({ error: 'Server error', message: e.message });
     }
   });
 });
