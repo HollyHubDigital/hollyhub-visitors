@@ -20,5 +20,6 @@
   ],
   "env": {
     "NODE_ENV": "production"
-  }
+  },
+  "buildCommand": "echo 'Build step'"
 }
