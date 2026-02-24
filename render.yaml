@@ -1,5 +1,5 @@
-# Render service specification for the visitors site
-# Visit https://render.com/docs/render-yaml for details and to customize
+# This file is no longer used - visitors site is now deployed on Vercel
+# See DEPLOYMENT_GUIDE.md for current deployment instructions
 services:
   - type: web
     name: holly-visitors

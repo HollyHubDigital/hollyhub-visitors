@@ -1,13 +1,13 @@
-# Repository Split: Deployment & Verification Guide
+# Deployment Guide - Vercel
 
-## What Was Split?
+## Current Deployment
 
-Your monolithic project has been split into **2 separate repositories** that will deploy to **2 different Vercel projects**:
+The visitors site is deployed on **Vercel** with all necessary API endpoints:
 
-| Repo | Domain | Purpose | Contents |
-|------|--------|---------|----------|
-| **visitors-repo** | https://hollyhubdigital.vercel.app | Visitor website + Full API backend | All HTML pages, /api, /data, /public |
-| **admin-repo** | https://admin-hollyhubdigital.vercel.app | Admin dashboard + API proxy | /admin folder, proxy server.js |
+| Component | Domain | Purpose |
+|-----------|--------|------|
+| **Visitors API** | https://hollyhubdigitals.vercel.app | Visitor website + Full API backend |
+| **Admin Site** | https://admin-hollyhub.vercel.app | Admin dashboard (separate Vercel account) |
 
 ---
 
