@@ -336,16 +336,23 @@ imageAssets.forEach(filename => {
   });
 }
 
-// Serve public folder (images, assets - Vercel will optimize)
-app.use('/public', express.static(path.join(__dirname, 'public'), { maxAge: '1y', immutable: true }));
+// Serve public folder - use process.cwd() for Vercel compatibility
+const publicPath = path.join(process.cwd(), 'public');
+app.use('/public', express.static(publicPath, { 
+  maxAge: '1y', 
+  immutable: true,
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  }
+}));
 
 // Explicit async image routes for Vercel serverless
 const imageRoutes = {
-  '/public/assets/hollyhub.jpg': { paths: ['public/assets/hollyhub.jpg', '/var/task/public/assets/hollyhub.jpg'], mime: 'image/jpeg' },
-  '/public/assets/hollyhubhero.jpg': { paths: ['public/assets/hollyhubhero.jpg', '/var/task/public/assets/hollyhubhero.jpg'], mime: 'image/jpeg' },
-  '/public/assets/google.png': { paths: ['public/assets/google.png', '/var/task/public/assets/google.png'], mime: 'image/png' },
-  '/public/assets/github.png': { paths: ['public/assets/github.png', '/var/task/public/assets/github.png'], mime: 'image/png' },
-  '/public/assets/whatsapp.png': { paths: ['public/assets/whatsapp.png', '/var/task/public/assets/whatsapp.png'], mime: 'image/png' }
+  '/public/assets/hollyhub.jpg': { paths: [path.join(process.cwd(), 'public/assets/hollyhub.jpg'), '/var/task/public/assets/hollyhub.jpg'], mime: 'image/jpeg' },
+  '/public/assets/hollyhubhero.jpg': { paths: [path.join(process.cwd(), 'public/assets/hollyhubhero.jpg'), '/var/task/public/assets/hollyhubhero.jpg'], mime: 'image/jpeg' },
+  '/public/assets/google.png': { paths: [path.join(process.cwd(), 'public/assets/google.png'), '/var/task/public/assets/google.png'], mime: 'image/png' },
+  '/public/assets/github.png': { paths: [path.join(process.cwd(), 'public/assets/github.png'), '/var/task/public/assets/github.png'], mime: 'image/png' },
+  '/public/assets/whatsapp.png': { paths: [path.join(process.cwd(), 'public/assets/whatsapp.png'), '/var/task/public/assets/whatsapp.png'], mime: 'image/png' }
 };
 
 Object.entries(imageRoutes).forEach(([route, config]) => {
