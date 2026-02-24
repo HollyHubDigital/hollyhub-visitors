@@ -339,6 +339,30 @@ imageAssets.forEach(filename => {
 // Serve public folder (images, assets - Vercel will optimize)
 app.use('/public', express.static(path.join(__dirname, 'public'), { maxAge: '1y', immutable: true }));
 
+// Explicit async image routes for Vercel serverless
+const imageRoutes = {
+  '/public/assets/hollyhub.jpg': { path: 'public/assets/hollyhub.jpg', mime: 'image/jpeg' },
+  '/public/assets/hollyhubhero.jpg': { path: 'public/assets/hollyhubhero.jpg', mime: 'image/jpeg' },
+  '/public/assets/google.png': { path: 'public/assets/google.png', mime: 'image/png' },
+  '/public/assets/github.png': { path: 'public/assets/github.png', mime: 'image/png' },
+  '/public/assets/whatsapp.png': { path: 'public/assets/whatsapp.png', mime: 'image/png' }
+};
+
+Object.entries(imageRoutes).forEach(([route, config]) => {
+  app.get(route, async (req, res) => {
+    try {
+      const filePath = path.join(__dirname, config.path);
+      const data = await fs.promises.readFile(filePath);
+      res.setHeader('Content-Type', config.mime);
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      return res.send(data);
+    } catch (e) {
+      console.error(`Failed to serve ${route}:`, e.message);
+      return res.status(404).json({ error: 'Not found' });
+    }
+  });
+});
+
 // Specific handlers for common static assets (ensure correct MIME)
 app.get('/styles.css', (req, res) => {
   try {
