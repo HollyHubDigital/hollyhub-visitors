@@ -377,7 +377,19 @@ const imageConfig = {
     '/var/task/public/assets/hollyhub.jpg',
     'public/assets/hollyhub.jpg'
   ], mime: 'image/jpeg' },
+  '/hollyhub.jpg': { paths: [
+    path.join(process.cwd(), 'public/assets/hollyhub.jpg'),
+    path.join(__dirname, 'public/assets/hollyhub.jpg'),
+    '/var/task/public/assets/hollyhub.jpg',
+    'public/assets/hollyhub.jpg'
+  ], mime: 'image/jpeg' },
   '/public/assets/hollyhubhero.jpg': { paths: [
+    path.join(process.cwd(), 'public/assets/hollyhubhero.jpg'),
+    path.join(__dirname, 'public/assets/hollyhubhero.jpg'),
+    '/var/task/public/assets/hollyhubhero.jpg',
+    'public/assets/hollyhubhero.jpg'
+  ], mime: 'image/jpeg' },
+  '/hollyhubhero.jpg': { paths: [
     path.join(process.cwd(), 'public/assets/hollyhubhero.jpg'),
     path.join(__dirname, 'public/assets/hollyhubhero.jpg'),
     '/var/task/public/assets/hollyhubhero.jpg',
@@ -389,7 +401,19 @@ const imageConfig = {
     '/var/task/public/assets/google.png',
     'public/assets/google.png'
   ], mime: 'image/png' },
+  '/google.png': { paths: [
+    path.join(process.cwd(), 'public/assets/google.png'),
+    path.join(__dirname, 'public/assets/google.png'),
+    '/var/task/public/assets/google.png',
+    'public/assets/google.png'
+  ], mime: 'image/png' },
   '/public/assets/github.png': { paths: [
+    path.join(process.cwd(), 'public/assets/github.png'),
+    path.join(__dirname, 'public/assets/github.png'),
+    '/var/task/public/assets/github.png',
+    'public/assets/github.png'
+  ], mime: 'image/png' },
+  '/github.png': { paths: [
     path.join(process.cwd(), 'public/assets/github.png'),
     path.join(__dirname, 'public/assets/github.png'),
     '/var/task/public/assets/github.png',
@@ -400,10 +424,16 @@ const imageConfig = {
     path.join(__dirname, 'public/assets/whatsapp.png'),
     '/var/task/public/assets/whatsapp.png',
     'public/assets/whatsapp.png'
+  ], mime: 'image/png' },
+  '/whatsapp.png': { paths: [
+    path.join(process.cwd(), 'public/assets/whatsapp.png'),
+    path.join(__dirname, 'public/assets/whatsapp.png'),
+    '/var/task/public/assets/whatsapp.png',
+    'public/assets/whatsapp.png'
   ], mime: 'image/png' }
 };
 
-console.log('[Init] Pre-loading', Object.keys(imageConfig).length, 'images into memory...');
+console.log('[Init] Pre-loading', Object.keys(imageConfig).length, 'image routes into memory...');
 Object.entries(imageConfig).forEach(([route, config]) => {
   let cachedData = null;
   for (const p of config.paths) {
