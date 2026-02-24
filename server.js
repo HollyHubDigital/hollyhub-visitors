@@ -481,6 +481,15 @@ app.use('/public', express.static(publicPath, {
   }
 }));
 
+// Also serve assets at /assets for pages referencing /assets/*
+app.use('/assets', express.static(path.join(process.cwd(), 'public', 'assets'), {
+  maxAge: '1y',
+  immutable: true,
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  }
+}));
+
 // Specific handlers for common static assets (ensure correct MIME)
 app.get('/styles.css', (req, res) => {
   try {
