@@ -403,45 +403,68 @@ const imageRoutes = {
 };
 
 Object.entries(imageRoutes).forEach(([route, config]) => {
-  app.get(route, async (req, res) => {
+  app.get(route, (req, res) => {
     try {
       let data = null;
       let found = false;
+      let foundPath = null;
       
-      // Try each possible path
+      // Try each possible path with synchronous read
       for (const p of config.paths) {
         try {
-          // Direct read without path manipulation
-          data = await fs.promises.readFile(p);
-          found = true;
-          console.log(`[Image] Served ${route} from ${p}`);
-          break;
-        } catch (e) {
-          // Try next path - include more fallbacks
-          const cwdPath = path.join(process.cwd(), 'public/assets', path.basename(p));
-          try {
-            data = await fs.promises.readFile(cwdPath);
+          if (fs.existsSync(p)) {
+            data = fs.readFileSync(p);
             found = true;
-            console.log(`[Image] Served ${route} from ${cwdPath}`);
+            foundPath = p;
             break;
-          } catch (e2) {
-            // Continue to next path
           }
+        } catch (e) {
+          // Continue to next path
+        }
+      }
+      
+      // Also try relative paths
+      if (!found) {
+        const relPath = config.paths[0].replace(process.cwd(), '').replace(/^\//, '');
+        try {
+          if (fs.existsSync(relPath)) {
+            data = fs.readFileSync(relPath);
+            found = true;
+            foundPath = relPath;
+          }
+        } catch (e) {
+          // Continue
         }
       }
       
       if (!found) {
-        console.error(`[Image] Failed to find ${route}. Tried paths:`, config.paths);
-        console.error(`[Image] cwd=${process.cwd()}, dirname=${__dirname}`);
-        return res.status(404).json({ error: 'File not found', paths: config.paths, cwd: process.cwd() });
+        console.error(`[Image] Cannot find ${route}. Attempted paths:`, config.paths, {
+          cwd: process.cwd(),
+          dirname: __dirname,
+          cwdPublicAssets: path.join(process.cwd(), 'public/assets'),
+          dirnamePublicAssets: path.join(__dirname, 'public/assets')
+        });
+        return res.status(404).json({ 
+          error: 'Image not found', 
+          route,
+          paths: config.paths,
+          cwd: process.cwd(),
+          dirname: __dirname
+        });
       }
       
+      console.log(`[Image] ✓ Served ${route} from ${foundPath} (${data.length} bytes)`);
       res.setHeader('Content-Type', config.mime);
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
       res.setHeader('Content-Length', data.length);
       return res.send(data);
     } catch (e) {
-      console.error(`[Image] Error serving ${route}:`, e.message, e.stack);
+      console.error(`[Image] ERROR serving ${route}:`, {
+        message: e.message,
+        stack: e.stack,
+        route,
+        cwd: process.cwd()
+      });
       return res.status(500).json({ error: 'Server error', message: e.message });
     }
   });
