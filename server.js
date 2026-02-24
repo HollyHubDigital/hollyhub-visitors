@@ -336,16 +336,6 @@ imageAssets.forEach(filename => {
   });
 }
 
-// Serve public folder - use process.cwd() for Vercel compatibility
-const publicPath = path.join(process.cwd(), 'public');
-app.use('/public', express.static(publicPath, { 
-  maxAge: '1y', 
-  immutable: true,
-  setHeaders: (res) => {
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-  }
-}));
-
 // Debug endpoint to check file system state
 app.get('/__debug/fs', (req, res) => {
   const paths = [
@@ -377,6 +367,7 @@ app.get('/__debug/fs', (req, res) => {
   return res.json({ __dirname, cwd: process.cwd(), paths: info });
 });
 
+// EXPLICIT IMAGE ROUTES MUST COME BEFORE express.static() MIDDLEWARE
 // Explicit async image routes for Vercel serverless - simplified
 const imageRoutes = {
   '/public/assets/hollyhub.jpg': { paths: [
@@ -455,6 +446,17 @@ Object.entries(imageRoutes).forEach(([route, config]) => {
     }
   });
 });
+
+// Serve public folder - use process.cwd() for Vercel compatibility
+// THIS COMES AFTER explicit image routes so they have priority
+const publicPath = path.join(process.cwd(), 'public');
+app.use('/public', express.static(publicPath, { 
+  maxAge: '1y', 
+  immutable: true,
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  }
+}));
 
 // Specific handlers for common static assets (ensure correct MIME)
 app.get('/styles.css', (req, res) => {
