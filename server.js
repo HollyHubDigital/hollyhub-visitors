@@ -368,8 +368,9 @@ app.get('/__debug/fs', (req, res) => {
 });
 
 // EXPLICIT IMAGE ROUTES MUST COME BEFORE express.static() MIDDLEWARE
-// Explicit async image routes for Vercel serverless - simplified
-const imageRoutes = {
+// Pre-load images into memory to work around Vercel's serverless filesystem limitations
+const imageCache = {};
+const imageConfig = {
   '/public/assets/hollyhub.jpg': { paths: [
     path.join(process.cwd(), 'public/assets/hollyhub.jpg'),
     path.join(__dirname, 'public/assets/hollyhub.jpg'),
@@ -402,74 +403,40 @@ const imageRoutes = {
   ], mime: 'image/png' }
 };
 
-console.log('[Init] Registering', Object.keys(imageRoutes).length, 'image routes');
-
-Object.entries(imageRoutes).forEach(([route, config]) => {
-  console.log(`[Init] Route: ${route}`);
-  app.get(route, (req, res) => {
+console.log('[Init] Pre-loading', Object.keys(imageConfig).length, 'images into memory...');
+Object.entries(imageConfig).forEach(([route, config]) => {
+  let cachedData = null;
+  for (const p of config.paths) {
     try {
-      let data = null;
-      let found = false;
-      let foundPath = null;
-      
-      // Try each possible path with synchronous read
-      for (const p of config.paths) {
-        try {
-          if (fs.existsSync(p)) {
-            data = fs.readFileSync(p);
-            found = true;
-            foundPath = p;
-            break;
-          }
-        } catch (e) {
-          // Continue to next path
-        }
+      if (fs.existsSync(p)) {
+        cachedData = fs.readFileSync(p);
+        console.log(`[Init] ✓ Cached ${route} from ${p} (${cachedData.length} bytes)`);
+        break;
       }
-      
-      // Also try relative paths
-      if (!found) {
-        const relPath = config.paths[0].replace(process.cwd(), '').replace(/^\//, '');
-        try {
-          if (fs.existsSync(relPath)) {
-            data = fs.readFileSync(relPath);
-            found = true;
-            foundPath = relPath;
-          }
-        } catch (e) {
-          // Continue
-        }
-      }
-      
-      if (!found) {
-        console.error(`[Image] Cannot find ${route}. Attempted paths:`, config.paths, {
-          cwd: process.cwd(),
-          dirname: __dirname,
-          cwdPublicAssets: path.join(process.cwd(), 'public/assets'),
-          dirnamePublicAssets: path.join(__dirname, 'public/assets')
-        });
-        return res.status(404).json({ 
-          error: 'Image not found', 
-          route,
-          paths: config.paths,
-          cwd: process.cwd(),
-          dirname: __dirname
-        });
-      }
-      
-      console.log(`[Image] ✓ Served ${route} from ${foundPath} (${data.length} bytes)`);
-      res.setHeader('Content-Type', config.mime);
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-      res.setHeader('Content-Length', data.length);
-      return res.send(data);
     } catch (e) {
-      console.error(`[Image] ERROR serving ${route}:`, {
-        message: e.message,
-        stack: e.stack,
-        route,
-        cwd: process.cwd()
-      });
-      return res.status(500).json({ error: 'Server error', message: e.message });
+      // Continue
     }
+  }
+  if (cachedData) {
+    imageCache[route] = { data: cachedData, mime: config.mime };
+  } else {
+    console.error(`[Init] ✗ Failed to load ${route}`);
+  }
+});
+
+// Serve images from cache
+Object.keys(imageConfig).forEach((route) => {
+  app.get(route, (req, res) => {
+    const cached = imageCache[route];
+    if (!cached) {
+      console.error(`[Image] Request for ${route} but not in cache`);
+      return res.status(404).json({ error: 'Image not found', route });
+    }
+    console.log(`[Image] ✓ Serving ${route} from cache (${cached.data.length} bytes)`);
+    res.setHeader('Content-Type', cached.mime);
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.setHeader('Content-Length', cached.data.length);
+    return res.send(cached.data);
   });
 });
 
