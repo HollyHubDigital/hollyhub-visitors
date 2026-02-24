@@ -402,7 +402,10 @@ const imageRoutes = {
   ], mime: 'image/png' }
 };
 
+console.log('[Init] Registering', Object.keys(imageRoutes).length, 'image routes');
+
 Object.entries(imageRoutes).forEach(([route, config]) => {
+  console.log(`[Init] Route: ${route}`);
   app.get(route, (req, res) => {
     try {
       let data = null;
@@ -521,26 +524,38 @@ app.get(/\.(css|js|png|jpg|jpeg|gif|svg|ico|webp|mp4|weba|webm)$/, (req, res, ne
   try {
     // Normalize and remove leading slashes to avoid absolute path issues
     const rel = decodeURIComponent((req.path || '').replace(/^\/+/, ''));
-    const filePath = path.join(__dirname, rel);
-    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-      const ext = path.extname(filePath).toLowerCase();
-      const mimeTypes = {
-        '.css': 'text/css; charset=UTF-8',
-        '.js': 'application/javascript; charset=UTF-8',
-        '.json': 'application/json',
-        '.png': 'image/png',
-        '.jpg': 'image/jpeg',
-        '.jpeg': 'image/jpeg',
-        '.gif': 'image/gif',
-        '.svg': 'image/svg+xml',
-        '.ico': 'image/x-icon',
-        '.webp': 'image/webp',
-        '.mp4': 'video/mp4',
-        '.webm': 'video/webm',
-        '.weba': 'audio/webp'
-      };
-      res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
-      return res.sendFile(filePath);
+    // Try multiple base paths for Vercel compatibility
+    const possiblePaths = [
+      path.join(process.cwd(), rel),       // Vercel runtime cwd
+      path.join(__dirname, rel),            // Traditional __dirname
+      path.join('/var/task', rel)           // Vercel function environment
+    ];
+    
+    for (const filePath of possiblePaths) {
+      try {
+        if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+          const ext = path.extname(filePath).toLowerCase();
+          const mimeTypes = {
+            '.css': 'text/css; charset=UTF-8',
+            '.js': 'application/javascript; charset=UTF-8',
+            '.json': 'application/json',
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.gif': 'image/gif',
+            '.svg': 'image/svg+xml',
+            '.ico': 'image/x-icon',
+            '.webp': 'image/webp',
+            '.mp4': 'video/mp4',
+            '.webm': 'video/webm',
+            '.weba': 'audio/webp'
+          };
+          res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
+          return res.sendFile(filePath);
+        }
+      } catch (e) {
+        // Try next path
+      }
     }
   } catch (e) { console.error('Static file error:', e); }
   return next();
