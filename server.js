@@ -945,7 +945,15 @@ app.get('/api/blog', (req,res)=>{
     ];
     fs.writeFileSync(blogJson, JSON.stringify(posts, null, 2));
   }
-  res.json(posts);
+  const normalize = (it)=>{
+    const copy = Object.assign({}, it);
+    const img = (copy.image||'').trim();
+    if(img && !img.startsWith('http') && !img.startsWith('/')){
+      copy.image = '/uploads/' + encodeURIComponent(img);
+    }
+    return copy;
+  };
+  res.json(posts.map(normalize));
 });
 
 app.delete('/api/blog', authRequired, (req,res)=>{
