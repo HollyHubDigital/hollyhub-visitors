@@ -11,6 +11,7 @@
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "/server.js" },
+    { "src": "/(.*\\.(css|js|json|png|jpg|jpeg|gif|svg|ico|webp|weba|webm))?$", "dest": "/server.js" },
     { "src": "/(.*\\.html?)?$", "dest": "/server.js" }
   ],
   "env": {
