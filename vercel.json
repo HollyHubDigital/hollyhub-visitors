@@ -11,8 +11,7 @@
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "/server.js" },
-    { "src": "/(.*\\.html?)$", "dest": "/server.js" },
-    { "src": "^/(?!public|api).*$", "dest": "/server.js" }
+    { "src": "/.*\\.html?$", "dest": "/server.js" }
   ],
   "headers": [
     {
