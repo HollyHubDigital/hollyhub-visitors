@@ -1,6 +1,6 @@
 {
   "name": "hollyhubdigital-visitors",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Visitors-facing website for HollyHub Digital with full API backend",
   "main": "server.js",
   "scripts": {
