@@ -1,4 +1,5 @@
 // Visitors Backend - Full API server for visitor pages and admin proxy
+// Last deployment trigger: 2026-02-26
 require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
