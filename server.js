@@ -192,14 +192,17 @@ app.use((req, res, next) => {
   const send = res.send.bind(res);
   res.send = function (body) {
     try {
-      if (typeof body === 'string' && body.indexOf('<html') !== -1) {
+      if (typeof body === 'string' && (body.indexOf('<html') !== -1 || body.indexOf('<!DOCTYPE') !== -1)) {
         const cdnBase = 'https://cdn.jsdelivr.net/gh/HollyHubDigital/hollyhub-visitors@main/public/assets/';
-        body = body.replace(/src=\"hollyhub.jpg\"/g, `src=\"${cdnBase}hollyhub.jpg\"`);
-        body = body.replace(/src=\"hollyhubhero.jpg\"/g, `src=\"${cdnBase}hollyhubhero.jpg\"`);
-        body = body.replace(/src=\"google.png\"/g, `src=\"${cdnBase}google.png\"`);
-        body = body.replace(/src=\"github.png\"/g, `src=\"${cdnBase}github.png\"`);
-        body = body.replace(/src=\"whatsapp.png\"/g, `src=\"${cdnBase}whatsapp.png\"`);
-        body = body.replace(/src=\"\/assets\/(hollyhub|hollyhubhero|google|github|whatsapp)\.([a-z]+)\"/g, `src=\"${cdnBase}$1.$2\"`);
+        // Replace quoted image filenames with CDN URLs
+        body = body.replace(/src\s*=\s*["']hollyhub\.jpg["']/gi, `src="${cdnBase}hollyhub.jpg"`);
+        body = body.replace(/src\s*=\s*["']hollyhubhero\.jpg["']/gi, `src="${cdnBase}hollyhubhero.jpg"`);
+        body = body.replace(/src\s*=\s*["']google\.png["']/gi, `src="${cdnBase}google.png"`);
+        body = body.replace(/src\s*=\s*["']github\.png["']/gi, `src="${cdnBase}github.png"`);
+        body = body.replace(/src\s*=\s*["']whatsapp\.png["']/gi, `src="${cdnBase}whatsapp.png"`);
+        body = body.replace(/src\s*=\s*["']Internet5\.jpg["']/gi, `src="${cdnBase}Internet5.jpg"`);
+        // Also replace /assets/ prefixed paths
+        body = body.replace(/src\s*=\s*["']\/assets\/([\w-]+\.(?:jpg|png|gif|svg|webp))["']/gi, `src="${cdnBase}$1"`);
       }
     } catch (e) { /* ignore */ }
     return send(body);
