@@ -358,7 +358,7 @@ imageAssets.forEach(filename => {
     } catch (e) { console.error(`${filename} error:`, e); }
     return res.status(404).end();
   });
-}
+});
 
 // Debug endpoint to check file system state
 app.get('/__debug/fs', (req, res) => {
