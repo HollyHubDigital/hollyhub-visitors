@@ -983,14 +983,32 @@ const likesJson = path.join(dataDir, 'blog_likes.json');
 if(!fs.existsSync(commentsJson)) fs.writeFileSync(commentsJson, '[]');
 if(!fs.existsSync(likesJson)) fs.writeFileSync(likesJson, '[]');
 
-app.post('/api/blog/comment', (req,res)=>{
+app.post('/api/blog/comment', async (req,res)=>{
   const { postId, author, content } = req.body || {};
   if(!postId || !content) return res.status(400).send('Missing postId or content');
-  const comments = JSON.parse(fs.readFileSync(commentsJson,'utf8')) || [];
-  const comment = { id: Date.now().toString(), postId, author: author||'Anonymous', content, muted: false, createdAt: new Date().toISOString() };
-  comments.push(comment);
-  fs.writeFileSync(commentsJson, JSON.stringify(comments, null, 2));
-  return res.json(comment);
+  try{
+    const comments = JSON.parse(fs.readFileSync(commentsJson,'utf8')) || [];
+    const comment = { id: Date.now().toString(), postId, author: author||'Anonymous', content, muted: false, createdAt: new Date().toISOString() };
+    comments.push(comment);
+    const commentsJson_str = JSON.stringify(comments, null, 2);
+    
+    // Try to save to GitHub if configured
+    const { getRepoConfig } = require('./api/utils');
+    const repoOpts = await getRepoConfig(req) || {};
+    if(repoOpts && repoOpts.owner && repoOpts.repo){
+      try{
+        const { putFile } = require('./api/gh');
+        await putFile('data/blog_comments.json', commentsJson_str, 'Add comment', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+      }catch(ghErr){ console.warn('GitHub save failed for comment:', ghErr.message); }
+    }
+    
+    // Always save locally
+    fs.writeFileSync(commentsJson, commentsJson_str);
+    return res.json(comment);
+  }catch(e){
+    console.error('Comment save error:', e);
+    return res.status(500).send('Failed to save comment');
+  }
 });
 
 app.get('/api/blog/comments', (req,res)=>{
@@ -1011,16 +1029,34 @@ app.get('/api/blog/comments', (req,res)=>{
   return res.json(filtered);
 });
 
-app.post('/api/blog/comment/mute', authRequired, (req,res)=>{
+app.post('/api/blog/comment/mute', authRequired, async (req,res)=>{
   const { id, mute } = req.body || {};
   if(!id) return res.status(400).send('Missing id');
-  const comments = JSON.parse(fs.readFileSync(commentsJson,'utf8')) || [];
-  const idx = comments.findIndex(c=>c.id===id);
-  if(idx===-1) return res.status(404).send('Not found');
-  comments[idx].muted = !!mute;
-  comments[idx].updatedAt = new Date().toISOString();
-  fs.writeFileSync(commentsJson, JSON.stringify(comments, null, 2));
-  return res.json({ ok:true, id, muted: comments[idx].muted });
+  try{
+    const comments = JSON.parse(fs.readFileSync(commentsJson,'utf8')) || [];
+    const idx = comments.findIndex(c=>c.id===id);
+    if(idx===-1) return res.status(404).send('Not found');
+    comments[idx].muted = !!mute;
+    comments[idx].updatedAt = new Date().toISOString();
+    const commentsJson_str = JSON.stringify(comments, null, 2);
+    
+    // Try to save to GitHub if configured
+    const { getRepoConfig } = require('./api/utils');
+    const repoOpts = await getRepoConfig(req) || {};
+    if(repoOpts && repoOpts.owner && repoOpts.repo){
+      try{
+        const { putFile } = require('./api/gh');
+        await putFile('data/blog_comments.json', commentsJson_str, 'Mute comment', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+      }catch(ghErr){ console.warn('GitHub save failed for mute:', ghErr.message); }
+    }
+    
+    // Always save locally
+    fs.writeFileSync(commentsJson, commentsJson_str);
+    return res.json({ ok:true, id, muted: comments[idx].muted });
+  }catch(e){
+    console.error('Mute error:', e);
+    return res.status(500).send('Failed to mute comment');
+  }
 });
 
 app.delete('/api/blog/comment', authRequired, (req,res)=>{
@@ -1164,11 +1200,28 @@ app.get('/api/settings', authRequired, (req,res)=>{
   res.json(settings);
 });
 
-app.post('/api/settings', authRequired, validate(settingsSchema), (req,res)=>{
+app.post('/api/settings', authRequired, validate(settingsSchema), async (req,res)=>{
   const { gaId, customScripts, whatsappNumber } = req.body;
   const settings = { gaId: gaId||'', customScripts: customScripts||[], whatsappNumber: whatsappNumber||'' };
-  fs.writeFileSync(settingsJson, JSON.stringify(settings, null, 2));
-  return res.json({ ok:true });
+  const settingsJson_str = JSON.stringify(settings, null, 2);
+  try{
+    // Try to save to GitHub if configured
+    const { getRepoConfig } = require('./api/utils');
+    const repoOpts = await getRepoConfig(req) || {};
+    if(repoOpts && repoOpts.owner && repoOpts.repo){
+      try{
+        const { putFile } = require('./api/gh');
+        await putFile('data/settings.json', settingsJson_str, 'Update settings', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+      }catch(ghErr){ console.warn('GitHub save failed for settings:', ghErr.message); }
+    }
+    
+    // Always save locally
+    fs.writeFileSync(settingsJson, settingsJson_str);
+    return res.json({ ok:true });
+  }catch(e){
+    console.error('Settings save error:', e);
+    return res.status(500).send('Failed to save settings');
+  }
 });
 
 app.get('/api/public-settings', (req,res)=>{
