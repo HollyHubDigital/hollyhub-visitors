@@ -218,7 +218,8 @@ a:hover {
   transition: var(--transition) !important;
   font-family: inherit !important;
   font-size: 14px !important;
-  min-width: 140px !important;
+  min-width: 90px !important;
+  max-width: 120px !important;
 }
 
 .goog-te-combo:hover {

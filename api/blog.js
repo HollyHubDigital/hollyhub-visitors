@@ -13,18 +13,14 @@ function requireAuth(req){
 module.exports = async (req, res) => {
   try{
     if(req.method === 'GET'){
+      const { getRepoConfig } = require('./utils');
+      const repoOpts = await getRepoConfig(req) || {};
+      if(repoOpts && repoOpts.owner && repoOpts.repo){ const f = await getFile('data/blog.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); return res.json(JSON.parse(f.content||'[]')); }
       if(process.env.GITHUB_TOKEN){ const f = await getFile('data/blog.json'); return res.json(JSON.parse(f.content||'[]')); }
       const fp = path.join(process.cwd(),'data','blog.json'); if(!fs.existsSync(fp)) return res.json([]); return res.json(JSON.parse(fs.readFileSync(fp,'utf8')));
     }
 
-      if(req.method === 'GET'){
-        const { getRepoConfig } = require('./utils');
-        const repoOpts = await getRepoConfig(req) || {};
-        if(repoOpts && repoOpts.owner && repoOpts.repo){ const f = await getFile('data/blog.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); return res.json(JSON.parse(f.content||'[]')); }
-        const fp = path.join(process.cwd(),'data','blog.json'); if(!fs.existsSync(fp)) return res.json([]); return res.json(JSON.parse(fs.readFileSync(fp,'utf8')));
-      }
-
-      if(req.method === 'POST'){
+    if(req.method === 'POST'){
         if(!requireAuth(req)) return res.status(401).end('Unauthorized');
         const { title, category, image, content } = req.body || {};
         if(!title || !content) return res.status(400).end('Missing title or content');

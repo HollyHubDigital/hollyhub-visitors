@@ -9,6 +9,58 @@
 <body>
   <header style="padding:1rem;display:flex;align-items:center;gap:1rem;">
     <a href="/" style="display:flex;align-items:center;gap:0.5rem;text-decoration:none;color:inherit;"><img src="https://cdn.jsdelivr.net/gh/HollyHubDigital/hollyhub-visitors@main/public/assets/hollyhub.jpg" alt="Holly" style="height:40px;border-radius:6px;"/><h1 style="font-size:1.2rem;margin:0">HOLLY<span style="color:#3b82f6">DEV</span></h1></a>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:1rem;">
+      <select id="languageSelect" class="language-select" aria-label="Select language" style="display:none;">
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+        <option value="de">Deutsch</option>
+        <option value="zh-CN">中文 (简体)</option>
+        <option value="zh-TW">中文 (繁體)</option>
+        <option value="ja">日本語</option>
+        <option value="ko">한국어</option>
+        <option value="ru">Русский</option>
+        <option value="pt">Português</option>
+        <option value="it">Italiano</option>
+        <option value="nl">Nederlands</option>
+        <option value="sv">Svenska</option>
+        <option value="no">Norsk</option>
+        <option value="da">Dansk</option>
+        <option value="fi">Suomi</option>
+        <option value="pl">Polski</option>
+        <option value="tr">Türkçe</option>
+        <option value="ar">العربية</option>
+        <option value="hi">हिन्दी</option>
+        <option value="bn">বাংলা</option>
+        <option value="pa">ਪੰਜਾਬੀ</option>
+        <option value="ur">اردو</option>
+        <option value="vi">Tiếng Việt</option>
+        <option value="th">ไทย</option>
+        <option value="id">Bahasa Indonesia</option>
+        <option value="ms">Bahasa Melayu</option>
+        <option value="he">עברית</option>
+        <option value="el">Ελληνικά</option>
+        <option value="ro">Română</option>
+        <option value="hu">Magyar</option>
+        <option value="cs">Čeština</option>
+        <option value="sk">Slovenčina</option>
+        <option value="bg">Български</option>
+        <option value="uk">Українська</option>
+        <option value="hr">Hrvatski</option>
+        <option value="sr">Српски</option>
+        <option value="sl">Slovenščina</option>
+        <option value="lt">Lietuvių</option>
+        <option value="lv">Latviešu</option>
+        <option value="et">Eesti</option>
+        <option value="mk">Македонски</option>
+        <option value="sq">Shqip</option>
+        <option value="az">Azərbaycan</option>
+        <option value="hy">Հայերեն</option>
+        <option value="ka">ქართული</option>
+        <option value="mn">Монгол</option>
+      </select>
+      <div id="google_translate_element" style="display:none"></div>
+    </div>
   </header>
   <main style="max-width:520px;margin:4rem auto;padding:1rem;">
     <h2>Choose a new password</h2>
@@ -43,5 +95,6 @@
       }catch(e){ document.getElementById('resetMsg').innerText = 'Request failed'; }
     });
   </script>
+  <script src="script.js"></script>
 </body>
 </html>

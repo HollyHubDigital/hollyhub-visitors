@@ -210,6 +210,16 @@ app.use((req, res, next) => {
   next();
 });
 
+// Add no-cache headers to all API responses
+app.use((req, res, next) => {
+  if (req.path && req.path.startsWith('/api')) {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
+
 // CSRF check (skip for public tracking endpoints)
 app.use((req, res, next) => {
   try{
