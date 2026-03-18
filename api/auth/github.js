@@ -1,13 +1,35 @@
-// Ensure a usable `fetch` in server context: prefer global, then node-fetch (CJS/ESM-safe)
-let fetchFn;
-if (typeof fetch === 'function') {
-  fetchFn = fetch;
-} else {
+// Use global fetch if available (Vercel Node 18+ has it), otherwise provide a fallback
+let fetchFn = typeof fetch !== 'undefined' ? fetch : null;
+if (!fetchFn) {
+  // Fallback for older Node.js versions - attempt to use node-fetch if installed
   try {
     fetchFn = require('node-fetch');
     if (fetchFn && fetchFn.default) fetchFn = fetchFn.default;
-  }catch(e){
-    fetchFn = (...args) => import('node-fetch').then(m => m.default(...args));
+  } catch(e) {
+    // If node-fetch not available, create a minimal HTTP client
+    const https = require('https');
+    const http = require('http');
+    const url = require('url');
+    fetchFn = (uri, options = {}) => {
+      return new Promise((resolve, reject) => {
+        const parsedUrl = new url.URL(uri);
+        const protocol = parsedUrl.protocol === 'https:' ? https : http;
+        const opts = {
+          hostname: parsedUrl.hostname,
+          path: parsedUrl.pathname + parsedUrl.search,
+          method: options.method || 'GET',
+          headers: options.headers || {}
+        };
+        const req = protocol.request(opts, (res) => {
+          let data = '';
+          res.on('data', chunk => data += chunk);
+          res.on('end', () => resolve({ ok: res.statusCode < 400, status: res.statusCode, json: () => Promise.resolve(JSON.parse(data)) }));
+        });
+        req.on('error', reject);
+        if (options.body) req.write(options.body);
+        req.end();
+      });
+    };
   }
 }
 const fs = require('fs');
