@@ -118,7 +118,7 @@ app.use((req, res, next) => {
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Permissions-Policy', 'geolocation=(), microphone=()');
     // Content Security Policy: allow known external libs and allow admin sites to embed the visitors site in an iframe
-    res.setHeader('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net https://challenges.cloudflare.com https://cdn.mxpnl.com https://static.klaviyo.com https://www.googletagmanager.com https://translate.google.com https://translate.googleapis.com https://translate-pa.googleapis.com https://www.gstatic.com https://embed.tawk.to https://widget.privy.com https://cdn.yotpo.com https://script.hotjar.com https://cdn.segment.com https://embed.typeform.com https://widget.intercom.io https://api-iam.intercom.io https://assets.freshchat.com https://wchat.freshchat.com https://js.driftt.com https://load.sumome.com; script-src-elem 'self' 'unsafe-inline' https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net https://challenges.cloudflare.com https://cdn.mxpnl.com https://static.klaviyo.com https://www.googletagmanager.com https://translate.google.com https://translate.googleapis.com https://translate-pa.googleapis.com https://www.gstatic.com https://embed.tawk.to https://widget.privy.com https://cdn.yotpo.com https://script.hotjar.com https://cdn.segment.com https://embed.typeform.com https://widget.intercom.io https://api-iam.intercom.io https://assets.freshchat.com https://wchat.freshchat.com https://js.driftt.com https://load.sumome.com; worker-src 'self' blob:; connect-src 'self' https: wss: https://eu.i.posthog.com https://translate.googleapis.com https://translate-pa.googleapis.com https://www.gstatic.com https://challenges.cloudflare.com; frame-src 'self' https://challenges.cloudflare.com https://paystack.com https://js.paystack.co https://embed.tawk.to https://widget.privy.com https://assets.freshchat.com https://wchat.freshchat.com; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https: https://paystack.com https://js.paystack.co https://checkout.paystack.com https://cdn.jsdelivr.net https://widget.privy.com https://cdn.yotpo.com https://script.hotjar.com https://assets.freshchat.com https://wchat.freshchat.com https://fonts.googleapis.com https://www.gstatic.com; frame-ancestors 'self' https://admin-hollyhub.vercel.app https://admin-hollyhubdigital.vercel.app;");
+    res.setHeader('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net https://challenges.cloudflare.com https://cdn.mxpnl.com https://static.klaviyo.com https://www.googletagmanager.com https://translate.google.com https://translate.googleapis.com https://translate-pa.googleapis.com https://www.gstatic.com https://embed.tawk.to https://widget.privy.com https://cdn.yotpo.com https://script.hotjar.com https://cdn.segment.com https://embed.typeform.com https://widget.intercom.io https://api-iam.intercom.io https://assets.freshchat.com https://wchat.freshchat.com https://js.driftt.com https://load.sumome.com; script-src-elem 'self' 'unsafe-inline' https://paystack.com https://js.paystack.co https://cdn.jsdelivr.net https://challenges.cloudflare.com https://cdn.mxpnl.com https://static.klaviyo.com https://www.googletagmanager.com https://translate.google.com https://translate.googleapis.com https://translate-pa.googleapis.com https://www.gstatic.com https://embed.tawk.to https://widget.privy.com https://cdn.yotpo.com https://script.hotjar.com https://cdn.segment.com https://embed.typeform.com https://widget.intercom.io https://api-iam.intercom.io https://assets.freshchat.com https://wchat.freshchat.com https://js.driftt.com https://load.sumome.com; worker-src 'self' blob:; connect-src 'self' https: wss: https://eu.i.posthog.com https://translate.googleapis.com https://translate-pa.googleapis.com https://www.gstatic.com https://challenges.cloudflare.com; frame-src 'self' https://challenges.cloudflare.com https://paystack.com https://checkout.paystack.com https://js.paystack.co https://embed.tawk.to https://widget.privy.com https://assets.freshchat.com https://wchat.freshchat.com; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https: https://paystack.com https://js.paystack.co https://checkout.paystack.com https://cdn.jsdelivr.net https://widget.privy.com https://cdn.yotpo.com https://script.hotjar.com https://assets.freshchat.com https://wchat.freshchat.com https://fonts.googleapis.com https://www.gstatic.com; frame-ancestors 'self' https://admin-hollyhub.vercel.app https://admin-hollyhubdigital.vercel.app;");
     // If hosting platform injected an X-Frame-Options header, remove it so CSP frame-ancestors takes precedence
     try{ if(typeof res.removeHeader === 'function') res.removeHeader('X-Frame-Options'); }catch(e){}
   }catch(e){}
@@ -992,22 +992,23 @@ app.post('/api/blog/comment', async (req,res)=>{
     comments.push(comment);
     const commentsJson_str = JSON.stringify(comments, null, 2);
     
-    // Try to save to GitHub if configured
-    const { getRepoConfig } = require('./api/utils');
-    const repoOpts = await getRepoConfig(req) || {};
-    if(repoOpts && repoOpts.owner && repoOpts.repo){
-      try{
-        const { putFile } = require('./api/gh');
-        await putFile('data/blog_comments.json', commentsJson_str, 'Add comment', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
-      }catch(ghErr){ console.warn('GitHub save failed for comment:', ghErr.message); }
-    }
-    
-    // Always save locally
+    // Always save locally FIRST
     fs.writeFileSync(commentsJson, commentsJson_str);
+    
+    // Then try to save to GitHub if configured (async, don't block response)
+    try{
+      const { getRepoConfig } = require('./api/utils');
+      const repoOpts = await getRepoConfig(req) || {};
+      if(repoOpts && repoOpts.owner && repoOpts.repo){
+        const { putFile } = require('./api/gh');
+        await putFile('data/blog_comments.json', commentsJson_str, 'Add comment', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }).catch(e => console.warn('GitHub comment save failed:', e.message));
+      }
+    }catch(ghErr){ console.warn('GitHub config error for comment:', ghErr.message); }
+    
     return res.json(comment);
   }catch(e){
     console.error('Comment save error:', e);
-    return res.status(500).send('Failed to save comment');
+    return res.status(500).json({ error: 'Failed to save comment', details: e.message });
   }
 });
 
@@ -1070,15 +1071,34 @@ app.delete('/api/blog/comment', authRequired, (req,res)=>{
   return res.json({ ok:true });
 });
 
-app.post('/api/blog/like', (req,res)=>{
+app.post('/api/blog/like', async (req,res)=>{
   const { postId } = req.body || {};
   if(!postId) return res.status(400).send('Missing postId');
-  const likes = JSON.parse(fs.readFileSync(likesJson,'utf8')) || [];
-  const rec = { id: Date.now().toString(), postId, createdAt: new Date().toISOString() };
-  likes.push(rec);
-  fs.writeFileSync(likesJson, JSON.stringify(likes, null, 2));
-  const count = likes.filter(l=>l.postId===postId).length;
-  return res.json({ ok:true, count });
+  try{
+    const likes = JSON.parse(fs.readFileSync(likesJson,'utf8')) || [];
+    const rec = { id: Date.now().toString(), postId, createdAt: new Date().toISOString() };
+    likes.push(rec);
+    const likesJson_str = JSON.stringify(likes, null, 2);
+    
+    // Save locally first
+    fs.writeFileSync(likesJson, likesJson_str);
+    
+    // Try GitHub in background
+    try{
+      const { getRepoConfig } = require('./api/utils');
+      const repoOpts = await getRepoConfig(req) || {};
+      if(repoOpts && repoOpts.owner && repoOpts.repo){
+        const { putFile } = require('./api/gh');
+        await putFile('data/blog_likes.json', likesJson_str, 'Add like', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }).catch(e => console.warn('GitHub like save failed:', e.message));
+      }
+    }catch(ghErr){ console.warn('GitHub config error for like:', ghErr.message); }
+    
+    const count = likes.filter(l=>l.postId===postId).length;
+    return res.json({ ok:true, count });
+  }catch(e){
+    console.error('Like save error:', e);
+    return res.status(500).json({ error: 'Failed to save like', details: e.message });
+  }
 });
 
 app.get('/api/blog/likes', (req,res)=>{
