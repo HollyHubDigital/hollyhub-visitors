@@ -275,5 +275,19 @@
   </footer>
 
   <script src="script.js"></script>
+  <!-- Google Translate Initialization -->
+  <script>
+    function googleTranslateElementInit() {
+      try {
+        new google.translate.TranslateElement(
+          {pageLanguage: 'en', includedLanguages: 'en,es,fr,de,zh-CN,zh-TW,ja,ko,ru,pt,it,nl,sv,no,da,fi,pl,tr,ar,hi', layout: google.translate.TranslateElement.InlineLayout.SIMPLE},
+          'google_translate_element'
+        );
+      } catch(e) { console.log('Google Translate init error:', e); }
+    }
+    window.addEventListener('load', () => { if (typeof google !== 'undefined' && google.translate) googleTranslateElementInit(); });
+  </script>
+  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  <script src="app-loader.js"></script>
 </body>
 </html>
