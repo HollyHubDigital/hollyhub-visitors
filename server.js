@@ -1116,8 +1116,6 @@ app.post('/api/blog/comment/mute', authRequired, (req,res)=>{
     return res.status(500).json({ error: 'Server error', details: e.message });
   }
 });
-  }
-});
 
 app.delete('/api/blog/comment', authRequired, (req,res)=>{
   const id = req.query.id;
