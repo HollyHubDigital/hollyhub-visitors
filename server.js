@@ -983,32 +983,63 @@ const likesJson = path.join(dataDir, 'blog_likes.json');
 if(!fs.existsSync(commentsJson)) fs.writeFileSync(commentsJson, '[]');
 if(!fs.existsSync(likesJson)) fs.writeFileSync(likesJson, '[]');
 
-app.post('/api/blog/comment', async (req,res)=>{
-  const { postId, author, content } = req.body || {};
-  if(!postId || !content) return res.status(400).send('Missing postId or content');
+app.post('/api/blog/comment', (req,res)=>{
   try{
-    const comments = JSON.parse(fs.readFileSync(commentsJson,'utf8')) || [];
-    const comment = { id: Date.now().toString(), postId, author: author||'Anonymous', content, muted: false, createdAt: new Date().toISOString() };
-    comments.push(comment);
-    const commentsJson_str = JSON.stringify(comments, null, 2);
+    const { postId, author, content } = req.body || {};
+    if(!postId || !content) return res.status(400).json({ error: 'Missing postId or content' });
     
-    // Always save locally FIRST
-    fs.writeFileSync(commentsJson, commentsJson_str);
-    
-    // Then try to save to GitHub if configured (async, don't block response)
+    // Read current comments
+    let comments = [];
     try{
-      const { getRepoConfig } = require('./api/utils');
-      const repoOpts = await getRepoConfig(req) || {};
-      if(repoOpts && repoOpts.owner && repoOpts.repo){
-        const { putFile } = require('./api/gh');
-        await putFile('data/blog_comments.json', commentsJson_str, 'Add comment', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }).catch(e => console.warn('GitHub comment save failed:', e.message));
+      if(fs.existsSync(commentsJson)){
+        const fileContent = fs.readFileSync(commentsJson, 'utf8');
+        comments = JSON.parse(fileContent || '[]');
       }
-    }catch(ghErr){ console.warn('GitHub config error for comment:', ghErr.message); }
+    }catch(e){
+      console.error('Error reading comments.json:', e.message);
+      comments = [];
+    }
+    
+    // Create new comment
+    const comment = {
+      id: Date.now().toString(),
+      postId,
+      author: author || 'Anonymous',
+      content,
+      muted: false,
+      createdAt: new Date().toISOString()
+    };
+    comments.push(comment);
+    
+    // Save comments synchronously
+    try{
+      fs.writeFileSync(commentsJson, JSON.stringify(comments, null, 2), 'utf8');
+    }catch(writeErr){
+      console.error('Error writing comments.json:', writeErr.message);
+      return res.status(500).json({ error: 'Failed to save comment' });
+    }
+    
+    // Try to save to GitHub asynchronously (don't block response)
+    if(process.env.GITHUB_TOKEN && process.env.REPO_OWNER && process.env.REPO_NAME){
+      setImmediate(() => {
+        try{
+          const { putFile } = require('./api/gh');
+          putFile('data/blog_comments.json', JSON.stringify(comments, null, 2), 'Add comment', null, {
+            owner: process.env.REPO_OWNER,
+            repo: process.env.REPO_NAME,
+            branch: process.env.REPO_BRANCH || 'main',
+            token: process.env.GITHUB_TOKEN
+          }).catch(err => console.warn('GitHub comment sync failed:', err.message));
+        }catch(e){
+          console.warn('GitHub comment sync error:', e.message);
+        }
+      });
+    }
     
     return res.json(comment);
   }catch(e){
-    console.error('Comment save error:', e);
-    return res.status(500).json({ error: 'Failed to save comment', details: e.message });
+    console.error('Comment endpoint error:', e);
+    return res.status(500).json({ error: 'Server error', details: e.message });
   }
 });
 
@@ -1030,33 +1061,61 @@ app.get('/api/blog/comments', (req,res)=>{
   return res.json(filtered);
 });
 
-app.post('/api/blog/comment/mute', authRequired, async (req,res)=>{
-  const { id, mute } = req.body || {};
-  if(!id) return res.status(400).send('Missing id');
+app.post('/api/blog/comment/mute', authRequired, (req,res)=>{
   try{
-    const comments = JSON.parse(fs.readFileSync(commentsJson,'utf8')) || [];
-    const idx = comments.findIndex(c=>c.id===id);
-    if(idx===-1) return res.status(404).send('Not found');
-    comments[idx].muted = !!mute;
-    comments[idx].updatedAt = new Date().toISOString();
-    const commentsJson_str = JSON.stringify(comments, null, 2);
+    const { id, mute } = req.body || {};
+    if(!id) return res.status(400).json({ error: 'Missing id' });
     
-    // Try to save to GitHub if configured
-    const { getRepoConfig } = require('./api/utils');
-    const repoOpts = await getRepoConfig(req) || {};
-    if(repoOpts && repoOpts.owner && repoOpts.repo){
-      try{
-        const { putFile } = require('./api/gh');
-        await putFile('data/blog_comments.json', commentsJson_str, 'Mute comment', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
-      }catch(ghErr){ console.warn('GitHub save failed for mute:', ghErr.message); }
+    // Read comments
+    let comments = [];
+    try{
+      if(fs.existsSync(commentsJson)){
+        const content = fs.readFileSync(commentsJson, 'utf8');
+        comments = JSON.parse(content || '[]');
+      }
+    }catch(e){
+      console.error('Error reading comments.json:', e.message);
+      return res.status(500).json({ error: 'Failed to read comments' });
     }
     
-    // Always save locally
-    fs.writeFileSync(commentsJson, commentsJson_str);
-    return res.json({ ok:true, id, muted: comments[idx].muted });
+    // Find and update comment
+    const idx = comments.findIndex(c => c.id === id);
+    if(idx === -1) return res.status(404).json({ error: 'Comment not found' });
+    
+    comments[idx].muted = !!mute;
+    comments[idx].updatedAt = new Date().toISOString();
+    
+    // Save synchronously
+    try{
+      fs.writeFileSync(commentsJson, JSON.stringify(comments, null, 2), 'utf8');
+    }catch(writeErr){
+      console.error('Error writing comments.json:', writeErr.message);
+      return res.status(500).json({ error: 'Failed to save' });
+    }
+    
+    // Try GitHub asynchronously in background
+    if(process.env.GITHUB_TOKEN && process.env.REPO_OWNER && process.env.REPO_NAME){
+      setImmediate(() => {
+        try{
+          const { putFile } = require('./api/gh');
+          putFile('data/blog_comments.json', JSON.stringify(comments, null, 2), 'Mute comment', null, {
+            owner: process.env.REPO_OWNER,
+            repo: process.env.REPO_NAME,
+            branch: process.env.REPO_BRANCH || 'main',
+            token: process.env.GITHUB_TOKEN
+          }).catch(err => console.warn('GitHub mute sync failed:', err.message));
+        }catch(e){
+          console.warn('GitHub mute sync error:', e.message);
+        }
+      });
+    }
+    
+    return res.json({ ok: true, id, muted: comments[idx].muted });
   }catch(e){
-    console.error('Mute error:', e);
-    return res.status(500).send('Failed to mute comment');
+    console.error('Mute endpoint error:', e);
+    return res.status(500).json({ error: 'Server error', details: e.message });
+  }
+});
   }
 });
 
@@ -1071,33 +1130,63 @@ app.delete('/api/blog/comment', authRequired, (req,res)=>{
   return res.json({ ok:true });
 });
 
-app.post('/api/blog/like', async (req,res)=>{
-  const { postId } = req.body || {};
-  if(!postId) return res.status(400).send('Missing postId');
+app.post('/api/blog/like', (req,res)=>{
   try{
-    const likes = JSON.parse(fs.readFileSync(likesJson,'utf8')) || [];
-    const rec = { id: Date.now().toString(), postId, createdAt: new Date().toISOString() };
-    likes.push(rec);
-    const likesJson_str = JSON.stringify(likes, null, 2);
+    const { postId } = req.body || {};
+    if(!postId) return res.status(400).json({ error: 'Missing postId' });
     
-    // Save locally first
-    fs.writeFileSync(likesJson, likesJson_str);
-    
-    // Try GitHub in background
+    // Read current likes
+    let likes = [];
     try{
-      const { getRepoConfig } = require('./api/utils');
-      const repoOpts = await getRepoConfig(req) || {};
-      if(repoOpts && repoOpts.owner && repoOpts.repo){
-        const { putFile } = require('./api/gh');
-        await putFile('data/blog_likes.json', likesJson_str, 'Add like', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }).catch(e => console.warn('GitHub like save failed:', e.message));
+      if(fs.existsSync(likesJson)){
+        const content = fs.readFileSync(likesJson, 'utf8');
+        likes = JSON.parse(content || '[]');
       }
-    }catch(ghErr){ console.warn('GitHub config error for like:', ghErr.message); }
+    }catch(e){
+      console.error('Error reading likes.json:', e.message);
+      likes = [];
+    }
     
-    const count = likes.filter(l=>l.postId===postId).length;
-    return res.json({ ok:true, count });
+    // Add new like
+    const rec = { 
+      id: Date.now().toString(), 
+      postId, 
+      createdAt: new Date().toISOString() 
+    };
+    likes.push(rec);
+    
+    // Save likes synchronously
+    try{
+      fs.writeFileSync(likesJson, JSON.stringify(likes, null, 2), 'utf8');
+    }catch(writeErr){
+      console.error('Error writing likes.json:', writeErr.message);
+      return res.status(500).json({ error: 'Failed to save like' });
+    }
+    
+    // Count likes for this post
+    const count = likes.filter(l => l.postId === postId).length;
+    
+    // Try to save to GitHub asynchronously (don't block response)
+    if(process.env.GITHUB_TOKEN && process.env.REPO_OWNER && process.env.REPO_NAME){
+      setImmediate(() => {
+        try{
+          const { putFile } = require('./api/gh');
+          putFile('data/blog_likes.json', JSON.stringify(likes, null, 2), 'Add like', null, {
+            owner: process.env.REPO_OWNER,
+            repo: process.env.REPO_NAME,
+            branch: process.env.REPO_BRANCH || 'main',
+            token: process.env.GITHUB_TOKEN
+          }).catch(err => console.warn('GitHub like sync failed:', err.message));
+        }catch(e){
+          console.warn('GitHub like sync error:', e.message);
+        }
+      });
+    }
+    
+    return res.json({ ok: true, count });
   }catch(e){
-    console.error('Like save error:', e);
-    return res.status(500).json({ error: 'Failed to save like', details: e.message });
+    console.error('Like endpoint error:', e);
+    return res.status(500).json({ error: 'Server error', details: e.message });
   }
 });
 
