@@ -1,5 +1,38 @@
 // Helper for GitHub Contents API (used when GITHUB_TOKEN is provided)
-const fetch = require('node-fetch');
+// Use global fetch if available (Vercel Node 18+ has it), otherwise provide a fallback
+let fetchFn = typeof fetch !== 'undefined' ? fetch : null;
+if (!fetchFn) {
+  // Fallback for older Node.js versions - attempt to use node-fetch if installed
+  try {
+    const nodeFetch = require('node-fetch');
+    fetchFn = nodeFetch && nodeFetch.default ? nodeFetch.default : nodeFetch;
+  } catch(e) {
+    // If node-fetch not available, create a minimal HTTP client
+    const https = require('https');
+    const http = require('http');
+    const url = require('url');
+    fetchFn = (uri, options = {}) => {
+      return new Promise((resolve, reject) => {
+        const parsedUrl = new url.URL(uri);
+        const protocol = parsedUrl.protocol === 'https:' ? https : http;
+        const opts = {
+          hostname: parsedUrl.hostname,
+          path: parsedUrl.pathname + parsedUrl.search,
+          method: options.method || 'GET',
+          headers: options.headers || {}
+        };
+        const req = protocol.request(opts, (res) => {
+          let data = '';
+          res.on('data', chunk => data += chunk);
+          res.on('end', () => resolve({ ok: res.statusCode < 400, status: res.statusCode, json: () => Promise.resolve(JSON.parse(data)), text: () => Promise.resolve(data) }));
+        });
+        req.on('error', reject);
+        if (options.body) req.write(options.body);
+        req.end();
+      });
+    };
+  }
+}
 const base = 'https://api.github.com';
 
 function getAuthHeaders(token){ return { 'Authorization': `token ${token}`, 'User-Agent': 'holly-admin' }; }
@@ -12,7 +45,7 @@ async function ghRequest(path, opts={}, repoOpts={}){
   if(!TOKEN || !OWNER || !REPO) throw new Error('GitHub not configured');
   const url = `${base}/repos/${OWNER}/${REPO}${path}`;
   const headers = Object.assign({}, opts.headers || {}, getAuthHeaders(TOKEN));
-  const res = await fetch(url, { ...opts, headers });
+  const res = await fetchFn(url, { ...opts, headers });
   if(res.status >= 400){ const txt = await res.text(); const e = new Error(`GitHub API error ${res.status}: ${txt}`); e.status = res.status; throw e; }
   return res.json();
 }

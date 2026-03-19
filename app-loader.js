@@ -99,56 +99,9 @@
         }catch(e){ this.log('loadPublicSettings error', e); }
             // Initialize Google Translate if the placeholder element exists and populate WhatsApp links
             try{
-              const gEl = document.getElementById('google_translate_element');
-              if(gEl){
-                // Make widget area visible (some templates hide it by default)
-                try{ gEl.style.display = gEl.style.display === 'none' ? '' : gEl.style.display; }catch(e){}
-                // Load Google Translate script and init
-                window.googleTranslateElementInit = function(){
-                  try{
-                    // Initialize Google Translate widget using default overlay
-                    new window.google.translate.TranslateElement({ pageLanguage: 'en', autoDisplay: true }, 'google_translate_element');
-                    // make placeholder visible
-                    const gEl = document.getElementById('google_translate_element');
-                    if(gEl) try{ gEl.style.display = ''; }catch(e){}
-
-                    // Style the injected Google Translate combobox for better appearance
-                    const styleCombo = () => {
-                      try{
-                        const combo = document.querySelector('.goog-te-combo');
-                        if(!combo) return false;
-                        // Enhanced styling
-                        combo.style.padding = '8px 12px';
-                        combo.style.fontSize = '14px';
-                        combo.style.borderRadius = '6px';
-                        combo.style.border = '1px solid #ddd';
-                        combo.style.backgroundColor = '#fff';
-                        combo.style.color = '#333';
-                        combo.style.cursor = 'pointer';
-                        combo.style.fontFamily = 'inherit';
-                        combo.style.minWidth = '140px';
-                        // Add hover effect via onmouseover
-                        combo.onmouseover = () => { combo.style.borderColor = 'var(--secondary-accent)'; combo.style.boxShadow = '0 0 8px rgba(67, 97, 238, 0.2)'; };
-                        combo.onmouseout = () => { combo.style.borderColor = '#ddd'; combo.style.boxShadow = 'none'; };
-                        return true;
-                      }catch(e){ return false; }
-                    };
-
-                    // The google combo is added asynchronously; poll briefly to style it
-                    let attempts = 0;
-                    const iv = setInterval(() => {
-                      attempts++;
-                      if(styleCombo() || attempts > 15) clearInterval(iv);
-                    }, 300);
-                  }catch(e){ /* ignore */ }
-                };
-                const gt = document.createElement('script');
-                gt.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-                gt.async = true;
-                document.head.appendChild(gt);
-                this.log('Google Translate loader injected');
-              }
-            }catch(e){ this.log('google translate init failed', e); }
+              // Google Translate is now initialized per-page via HTML script tags
+              // Skip injecting another one to avoid conflicts
+            }catch(e){ /* ignore */ }
 
             // Ensure WhatsApp links use wa.me and tel formats when public settings available
             try{

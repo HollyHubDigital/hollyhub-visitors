@@ -4,6 +4,40 @@ const crypto = require('crypto');
 let nodemailer = null;
 try{ nodemailer = require('nodemailer'); }catch(e){ nodemailer = null; }
 
+// Ensure fetch is available (Vercel Node 18+ has it, older versions need fallback)
+let fetchFn = typeof fetch !== 'undefined' ? fetch : null;
+if (!fetchFn) {
+  try {
+    const nodeFetch = require('node-fetch');
+    fetchFn = nodeFetch && nodeFetch.default ? nodeFetch.default : nodeFetch;
+  } catch(e) {
+    // Fallback if node-fetch not available
+    const https = require('https');
+    const http = require('http');
+    const url = require('url');
+    fetchFn = (uri, options = {}) => {
+      return new Promise((resolve, reject) => {
+        const parsedUrl = new url.URL(uri);
+        const protocol = parsedUrl.protocol === 'https:' ? https : http;
+        const opts = {
+          hostname: parsedUrl.hostname,
+          path: parsedUrl.pathname + parsedUrl.search,
+          method: options.method || 'GET',
+          headers: options.headers || {}
+        };
+        const req = protocol.request(opts, (res) => {
+          let data = '';
+          res.on('data', chunk => data += chunk);
+          res.on('end', () => resolve({ ok: res.statusCode < 400, status: res.statusCode, json: () => Promise.resolve(JSON.parse(data)), text: () => Promise.resolve(data) }));
+        });
+        req.on('error', reject);
+        if (options.body) req.write(options.body);
+        req.end();
+      });
+    };
+  }
+}
+
 const resetsJson = path.join(process.cwd(), 'data', 'password_resets.json');
 const usersJson = path.join(process.cwd(), 'data', 'users.json');
 
@@ -74,7 +108,53 @@ module.exports = async (req, res) => {
     }
 
     // If RESEND API key is provided, try sending via Resend HTTP API
-    if(process.env.RESEND_API_KEY){
+    const resendApiKey = process.env.RESEND_API_KEY || (process.env.SMTP_PASS && process.env.SMTP_PASS.startsWith('re_') ? process.env.SMTP_PASS : null);
+    if(resendApiKey && fetchFn){
+      try{
+        const resendFrom = process.env.RESEND_FROM || process.env.SMTP_FROM || 'onboarding@resend.dev';
+        const payload = {
+          from: resendFrom,
+          to: [user.email],
+          subject: 'Password reset',
+          html: `<p>Click to reset your password: <a href="${resetUrl}">${resetUrl}</a></p>`
+        };
+        console.log('[reset-request] Sending via Resend API with key:', resendApiKey.substring(0, 10) + '...', 'to', user.email);
+        const r = await fetchFn('https://api.resend.com/emails', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${resendApiKey}` }, body: JSON.stringify(payload) });
+        if(r.ok) {
+          console.log('[reset-request] Resend API response OK');
+          const text = await r.text();
+          try{ fs.appendFileSync(urlsLog, `[${new Date().toISOString()}] resend-sent to ${user.email}: ${resetUrl} -- response: ${text}\n`, 'utf8'); }catch(e){ console.error('Failed to write reset-urls.log', e); }
+          return res.json(devResp);
+        }
+        const text = await r.text();
+        console.error('[reset-request] Resend API failed with status:', r.status, 'response:', text);
+        const urlsLog = path.join(process.cwd(), 'data', 'reset-urls.log');
+        const entry = `[${new Date().toISOString()}] resend-failed for ${user.email}: ${resetUrl} -- response (${r.status}): ${text}\n`;
+        try{ fs.appendFileSync(urlsLog, entry, 'utf8'); }catch(e){ console.error('Failed to write reset-urls.log', e); }
+        return res.json(devResp);
+      }catch(e){
+        console.error('Resend send failed:', e && e.message ? e.message : e);
+        const urlsLog = path.join(process.cwd(), 'data', 'reset-urls.log');
+        try{ fs.appendFileSync(urlsLog, `[${new Date().toISOString()}] resend-exception for ${user.email}: ${resetUrl} -- ${e && e.message ? e.message : JSON.stringify(e)}\n`, 'utf8'); }catch(_){}
+        return res.json(devResp);
+      }
+    }
+
+    // No email service - log and return url for dev
+    console.log('[reset-request] No email service configured, logging reset URL for', user.email);
+    console.log('Password reset link for', user.email, resetUrl);
+    try{ fs.appendFileSync(urlsLog, `[${new Date().toISOString()}] logged-reset-url for ${user.email}: ${resetUrl}\n`, 'utf8'); }catch(e){}
+    return res.json(devResp);
+  }catch(e){
+    console.error('reset-request error:', e);
+    try{
+      const logPath = path.join(process.cwd(), 'data', 'reset-errors.log');
+      const entry = `[${new Date().toISOString()}] ${e && e.stack ? e.stack : JSON.stringify(e)}\n\n`;
+      fs.appendFileSync(logPath, entry, 'utf8');
+    }catch(err){ console.error('Failed to write reset error log', err); }
+    return res.status(500).json({ error: e.message });
+  }
+};
       try{
         const resendFrom = process.env.RESEND_FROM || process.env.SMTP_FROM || 'onboarding@resend.dev';
         const payload = {
