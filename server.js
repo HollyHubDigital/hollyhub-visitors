@@ -401,6 +401,47 @@ app.get('/__debug/fs', (req, res) => {
   return res.json({ __dirname, cwd: process.cwd(), paths: info });
 });
 
+// Debug endpoint to check GitHub configuration and connectivity
+app.get('/__debug/github', async (req, res) => {
+  try {
+    const hasGithubToken = !!process.env.GITHUB_TOKEN;
+    const hasRepoOwner = !!process.env.REPO_OWNER;
+    const hasRepoName = !!process.env.REPO_NAME;
+    const hasBranch = !!process.env.REPO_BRANCH;
+    
+    // Try to test GitHub API
+    let githubTest = null;
+    if (hasGithubToken && hasRepoOwner && hasRepoName) {
+      try {
+        const { getFile } = require('./api/gh');
+        const testResult = await getFile('data/users.json');
+        githubTest = { ok: true, message: 'Successfully read users.json from GitHub' };
+      } catch (e) {
+        githubTest = { ok: false, error: e.message };
+      }
+    }
+    
+    // Check getRepoConfig
+    const repoConfig = await require('./api/utils').getRepoConfig({ body: {}, query: {} });
+    
+    return res.json({
+      env: {
+        hasGithubToken,
+        hasRepoOwner,
+        hasRepoName,
+        hasBranch,
+        REPO_OWNER: process.env.REPO_OWNER || '(not set)',
+        REPO_NAME: process.env.REPO_NAME || '(not set)',
+        REPO_BRANCH: process.env.REPO_BRANCH || '(not set)',
+      },
+      githubTest,
+      repoConfig: repoConfig ? { owner: repoConfig.owner, repo: repoConfig.repo, branch: repoConfig.branch, hasToken: !!repoConfig.token } : null
+    });
+  } catch (e) {
+    return res.status(500).json({ error: e.message });
+  }
+});
+
 // EXPLICIT IMAGE ROUTES MUST COME BEFORE express.static() MIDDLEWARE
 // Pre-load images into memory to work around Vercel's serverless filesystem limitations
 const imageCache = {};
