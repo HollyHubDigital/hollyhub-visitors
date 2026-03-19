@@ -16,6 +16,9 @@
     { "src": "/(.*\\.html?)?$", "dest": "/server.js" }
   ],
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "REPO_OWNER": "HollyHubDigital",
+    "REPO_NAME": "hollyhub-visitors",
+    "REPO_BRANCH": "main"
   }
 }
