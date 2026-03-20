@@ -1692,9 +1692,31 @@ app.post('/api/admin/update-credentials', authRequired, validate(adminUpdateCred
 });
 
 // ===== SETTINGS =====
-app.get('/api/settings', authRequired, (req,res)=>{
-  const settings = JSON.parse(fs.readFileSync(settingsJson,'utf8')) || {};
-  res.json(settings);
+app.get('/api/settings', authRequired, async (req,res)=>{
+  try {
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+    let settings = {};
+    
+    // Read from GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+      try { 
+        const f = await getFile('data/settings.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); 
+        settings = JSON.parse(f.content||'{}');
+        console.log('[settings GET] Read from GitHub');
+      } catch(e) {
+        console.error('[settings GET] GitHub read error:', e.message);
+        settings = {};
+      }
+    } else {
+      try { settings = JSON.parse(fs.readFileSync(settingsJson,'utf8')) || {}; } catch(e) { settings = {}; }
+    }
+    res.json(settings);
+  } catch(e) {
+    console.error('[settings GET] Error:', e.message);
+    return res.status(500).json({ error: e.message });
+  }
 });
 
 app.post('/api/settings', authRequired, validate(settingsSchema), async (req,res)=>{
@@ -1721,11 +1743,29 @@ app.post('/api/settings', authRequired, validate(settingsSchema), async (req,res
   }
 });
 
-app.get('/api/public-settings', (req,res)=>{
-  try{
-    const settings = JSON.parse(fs.readFileSync(settingsJson,'utf8')) || {};
+app.get('/api/public-settings', async (req,res)=>{
+  try {
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+    let settings = {};
+    
+    // Read from GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+      try { 
+        const f = await getFile('data/settings.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); 
+        settings = JSON.parse(f.content||'{}');
+        console.log('[public-settings GET] Read from GitHub');
+      } catch(e) {
+        console.error('[public-settings GET] GitHub read error:', e.message);
+        settings = {};
+      }
+    } else {
+      try { settings = JSON.parse(fs.readFileSync(settingsJson,'utf8')) || {}; } catch(e) { settings = {}; }
+    }
     return res.json({ whatsappNumber: settings.whatsappNumber || '' });
-  }catch(e){
+  } catch(e) {
+    console.error('[public-settings GET] Error:', e.message);
     return res.json({ whatsappNumber: '' });
   }
 });
