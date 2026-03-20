@@ -138,6 +138,8 @@ module.exports = async (req, res) => {
 
     // If RESEND API key is provided, try sending via Resend HTTP API
     const resendApiKey = process.env.RESEND_API_KEY || (process.env.SMTP_PASS && process.env.SMTP_PASS.startsWith('re_') ? process.env.SMTP_PASS : null);
+    console.log('[reset-request] Checking email sending options:',  { hasResendKey: !!resendApiKey, hasSmtpHost: !!process.env.SMTP_HOST, hasNodemailer: !!nodemailer, hasFetchFn: !!fetchFn });
+    
     if(resendApiKey && fetchFn){
       try{
         const resendFrom = process.env.RESEND_FROM || process.env.SMTP_FROM || 'onboarding@resend.dev';
@@ -147,28 +149,35 @@ module.exports = async (req, res) => {
           subject: 'Password reset',
           html: `<p>Click to reset your password: <a href="${resetUrl}">${resetUrl}</a></p>`
         };
-        console.log('[reset-request] Sending via Resend API with key:', resendApiKey.substring(0, 10) + '...', 'to', user.email);
+        console.log('[reset-request] Sending via Resend API');
+        console.log('[reset-request]   - From:', resendFrom);
+        console.log('[reset-request]   - To:', user.email);
+        console.log('[reset-request]   - URL:', resetUrl);
+        console.log('[reset-request]   - API Key:', resendApiKey.substring(0, 10) + '...');
+        
         const r = await fetchFn('https://api.resend.com/emails', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${resendApiKey}` }, body: JSON.stringify(payload) });
+        const text = await r.text();
+        
+        console.log('[reset-request] Resend API response:', { ok: r.ok, status: r.status, response: text.substring(0, 200) });
+        
         if(r.ok) {
-          console.log('[reset-request] Resend API response OK');
-          const text = await r.text();
+          console.log('[reset-request] SUCCESS: Resend API response OK');
           try{ fs.appendFileSync(urlsLog, `[${new Date().toISOString()}] resend-sent to ${user.email}: ${resetUrl} -- response: ${text}\n`, 'utf8'); }catch(e){ console.error('Failed to write reset-urls.log', e); }
           return res.json(devResp);
         }
-        const text = await r.text();
-        console.error('[reset-request] Resend API failed with status:', r.status, 'response:', text);
+        console.error('[reset-request] FAILED: Resend API failed with status:', r.status, 'response:', text);
         const entry = `[${new Date().toISOString()}] resend-failed for ${user.email}: ${resetUrl} -- response (${r.status}): ${text}\n`;
         try{ fs.appendFileSync(urlsLog, entry, 'utf8'); }catch(e){ console.error('Failed to write reset-urls.log', e); }
         return res.json(devResp);
       }catch(e){
-        console.error('Resend send failed:', e && e.message ? e.message : e);
+        console.error('[reset-request] Resend send exception:', e && e.message ? e.message : e);
         try{ fs.appendFileSync(urlsLog, `[${new Date().toISOString()}] resend-exception for ${user.email}: ${resetUrl} -- ${e && e.message ? e.message : JSON.stringify(e)}\n`, 'utf8'); }catch(_){}
         return res.json(devResp);
       }
     }
 
     // No email service - log and return url for dev
-    console.log('[reset-request] No email service configured, logging reset URL for', user.email);
+    console.log('[reset-request] No email service configured: hasSmtp=' + !!(nodemailer && process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) + ', hasResend=' + !!resendApiKey + ', logging reset URL for', user.email);
     console.log('Password reset link for', user.email, resetUrl);
     try{ fs.appendFileSync(urlsLog, `[${new Date().toISOString()}] logged-reset-url for ${user.email}: ${resetUrl}\n`, 'utf8'); }catch(e){}
     return res.json(devResp);

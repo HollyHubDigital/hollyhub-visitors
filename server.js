@@ -628,6 +628,19 @@ app.get('/app-loader.js', (req, res) => {
   return res.status(404).end();
 });
 
+// Explicit checkout.js handler
+app.get('/checkout.js', (req, res) => {
+  try {
+    const filePath = path.join(__dirname, 'checkout.js');
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
+      return res.sendFile(filePath);
+    }
+  } catch (e) { console.error('checkout.js error:', e); }
+  return res.status(404).end();
+});
+
+
 // Generic static asset handler (fallback)
 app.get(/\.(css|js|png|jpg|jpeg|gif|svg|ico|webp|mp4|weba|webm)$/, (req, res, next) => {
   try {
