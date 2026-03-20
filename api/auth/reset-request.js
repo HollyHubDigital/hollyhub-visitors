@@ -39,10 +39,7 @@ if (!fetchFn) {
 }
 
 const resetsJson = path.join(process.cwd(), 'data', 'password_resets.json');
-const usersJson = path.join(process.cwd(), 'data', 'users.json');
-
 if(!fs.existsSync(path.dirname(resetsJson))){ fs.mkdirSync(path.dirname(resetsJson), { recursive: true }); }
-if(!fs.existsSync(resetsJson)) fs.writeFileSync(resetsJson, '[]');
 
 module.exports = async (req, res) => {
   try{
@@ -50,16 +47,50 @@ module.exports = async (req, res) => {
     const { email } = req.body || {};
     if(!email) return res.status(400).json({ error: 'Missing email' });
 
-    const users = fs.existsSync(usersJson) ? JSON.parse(fs.readFileSync(usersJson,'utf8')||'[]') : [];
+    const { getRepoConfig } = require('../utils');
+    const { getFile } = require('../gh');
+    const repoOpts = await getRepoConfig(req) || {};
+    
+    // Try to read users from GitHub
+    let users = [];
+    if(repoOpts && repoOpts.owner && repoOpts.repo){
+      try{
+        const f = await getFile('data/users.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+        users = JSON.parse(f.content || '[]');
+        console.log('[reset-request] Read ' + users.length + ' users from GitHub');
+      }catch(e){
+        console.error('[reset-request] GitHub read error:', e.message);
+        users = [];
+      }
+    } else {
+      // Fallback to local fs
+      try{
+        const usersJson = path.join(process.cwd(), 'data', 'users.json');
+        if(fs.existsSync(usersJson)){
+          users = JSON.parse(fs.readFileSync(usersJson,'utf8')||'[]');
+        }
+      }catch(e){
+        console.error('[reset-request] Local fs read error:', e.message);
+        users = [];
+      }
+    }
+    
     console.log('[reset-request] received email:', email, 'lowercased:', email.toLowerCase(), 'users with emails:', users.map(u=>u.email||'N/A').join(', '));
     const user = users.find(u=>u.email===email.toLowerCase());
     if(!user) { console.log('[reset-request] email not found'); return res.status(200).json({ ok:true, message: 'If the email exists, a reset link has been sent' }); }
 
     const token = crypto.randomBytes(24).toString('hex');
     const expires = Date.now() + (60*60*1000); // 1 hour
-    const arr = JSON.parse(fs.readFileSync(resetsJson,'utf8')||'[]');
+    const arr = [];
+    try {
+      if(fs.existsSync(resetsJson)) {
+        arr.push(...JSON.parse(fs.readFileSync(resetsJson,'utf8')||'[]'));
+      }
+    } catch(e) { console.warn('[reset-request] Failed to read resets.json:', e.message); }
     arr.push({ token, email: user.email, expires });
-    fs.writeFileSync(resetsJson, JSON.stringify(arr, null, 2), 'utf8');
+    try {
+      fs.writeFileSync(resetsJson, JSON.stringify(arr, null, 2), 'utf8');
+    } catch(e) { console.warn('[reset-request] Failed to write resets.json:', e.message); }
 
     const origin = (req.protocol || 'https') + '://' + (req.get('host') || 'hollyhubdigitals.vercel.app');
     const resetUrl = origin + '/reset.html?token=' + token;
@@ -93,14 +124,12 @@ module.exports = async (req, res) => {
           }catch(retryErr){
             console.error('Fallback sendMail failed:', retryErr && retryErr.message ? retryErr.message : retryErr);
             // write reset url locally so developer can copy it for testing
-            const urlsLog = path.join(process.cwd(), 'data', 'reset-urls.log');
             const entry = `[${new Date().toISOString()}] failed-send for ${user.email}: ${resetUrl} -- error: ${retryErr && retryErr.message ? retryErr.message : JSON.stringify(retryErr)}\n`;
             try{ fs.appendFileSync(urlsLog, entry, 'utf8'); }catch(e){ console.error('Failed to write reset-urls.log', e); }
             return res.json(devResp);
           }
         }
         // Other mail errors: log and fallback to local logging
-        const urlsLog = path.join(process.cwd(), 'data', 'reset-urls.log');
         const entry = `[${new Date().toISOString()}] failed-send for ${user.email}: ${resetUrl} -- error: ${msg}\n`;
         try{ fs.appendFileSync(urlsLog, entry, 'utf8'); }catch(e){ console.error('Failed to write reset-urls.log', e); }
         return res.json(devResp);
@@ -128,13 +157,11 @@ module.exports = async (req, res) => {
         }
         const text = await r.text();
         console.error('[reset-request] Resend API failed with status:', r.status, 'response:', text);
-        const urlsLog = path.join(process.cwd(), 'data', 'reset-urls.log');
         const entry = `[${new Date().toISOString()}] resend-failed for ${user.email}: ${resetUrl} -- response (${r.status}): ${text}\n`;
         try{ fs.appendFileSync(urlsLog, entry, 'utf8'); }catch(e){ console.error('Failed to write reset-urls.log', e); }
         return res.json(devResp);
       }catch(e){
         console.error('Resend send failed:', e && e.message ? e.message : e);
-        const urlsLog = path.join(process.cwd(), 'data', 'reset-urls.log');
         try{ fs.appendFileSync(urlsLog, `[${new Date().toISOString()}] resend-exception for ${user.email}: ${resetUrl} -- ${e && e.message ? e.message : JSON.stringify(e)}\n`, 'utf8'); }catch(_){}
         return res.json(devResp);
       }
@@ -155,35 +182,4 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: e.message });
   }
 };
-      try{
-        const resendFrom = process.env.RESEND_FROM || process.env.SMTP_FROM || 'onboarding@resend.dev';
-        const payload = {
-          from: resendFrom,
-          to: [user.email],
-          subject: 'Password reset',
-          html: `<p>Click to reset your password: <a href="${resetUrl}">${resetUrl}</a></p>`
-        };
-        const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.RESEND_API_KEY}` }, body: JSON.stringify(payload) });
-        if(r.ok) return res.json(devResp);
-        const text = await r.text();
-        const urlsLog = path.join(process.cwd(), 'data', 'reset-urls.log');
-        const entry = `[${new Date().toISOString()}] resend-failed for ${user.email}: ${resetUrl} -- response: ${text}\n`;
-        try{ fs.appendFileSync(urlsLog, entry, 'utf8'); }catch(e){ console.error('Failed to write reset-urls.log', e); }
-        return res.json(devResp);
-      }catch(e){ console.error('Resend send failed', e); const urlsLog = path.join(process.cwd(), 'data', 'reset-urls.log'); try{ fs.appendFileSync(urlsLog, `[${new Date().toISOString()}] resend-exception for ${user.email}: ${resetUrl} -- ${e && e.message ? e.message : JSON.stringify(e)}\n`, 'utf8'); }catch(_){} return res.json(devResp); }
-    }
 
-    // No SMTP - log and return url for dev
-    console.log('Password reset link for', user.email, resetUrl);
-    try{ fs.appendFileSync(urlsLog, `[${new Date().toISOString()}] logged-reset-url for ${user.email}: ${resetUrl}\n`, 'utf8'); }catch(e){}
-    return res.json(devResp);
-  }catch(e){
-    console.error(e);
-    try{
-      const logPath = path.join(process.cwd(), 'data', 'reset-errors.log');
-      const entry = `[${new Date().toISOString()}] ${e && e.stack ? e.stack : JSON.stringify(e)}\n\n`;
-      fs.appendFileSync(logPath, entry, 'utf8');
-    }catch(err){ console.error('Failed to write reset error log', err); }
-    return res.status(500).json({ error: e.message });
-  }
-};

@@ -58,8 +58,21 @@ async function getFile(path, repoOpts={}){
 
 async function putFile(path, content, message, sha, repoOpts={}){
   const BRANCH = repoOpts.branch || process.env.REPO_BRANCH || 'main';
+  
+  // If sha not provided, try to fetch it from existing file
+  let fileSha = sha;
+  if(!fileSha){
+    try{
+      const existing = await ghRequest(`/contents/${encodeURIComponent(path)}?ref=${BRANCH}`, {}, repoOpts);
+      fileSha = existing.sha;
+    }catch(e){
+      // File doesn't exist yet, that's fine - we'll create it
+      fileSha = null;
+    }
+  }
+  
   const body = { message: message || `Update ${path}`, content: Buffer.from(content, 'utf8').toString('base64'), branch: BRANCH };
-  if(sha) body.sha = sha;
+  if(fileSha) body.sha = fileSha;
   return await ghRequest(`/contents/${encodeURIComponent(path)}`, { method: 'PUT', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } }, repoOpts);
 }
 
