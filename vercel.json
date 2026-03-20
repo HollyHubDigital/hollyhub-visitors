@@ -10,6 +10,7 @@
     }
   ],
   "routes": [
+    { "src": "/__debug/(.*)", "dest": "/server.js" },
     { "src": "/api/(.*)", "dest": "/server.js" },
     { "src": "/uploads/(.*)", "dest": "/server.js" },
     { "src": "/(.*\\.(css|js|json|png|jpg|jpeg|gif|svg|ico|webp|mp4|weba|webm))?$", "dest": "/server.js" },
