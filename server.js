@@ -1018,20 +1018,55 @@ app.post('/api/blog', authRequired, async (req,res)=>{
   }
 });
 
-app.put('/api/blog', authRequired, (req,res)=>{
-  const id = req.query.id;
-  if(!id) return res.status(400).send('Missing id');
-  const { title, category, image, content } = req.body || {};
-  const posts = JSON.parse(fs.readFileSync(blogJson,'utf8')) || [];
-  const post = posts.find(p=>p.id===id);
-  if(!post) return res.status(404).send('Post not found');
-  if(title) post.title = title;
-  if(typeof category !== 'undefined') post.category = category;
-  if(typeof image !== 'undefined') post.image = image;
-  if(typeof content !== 'undefined') post.content = content;
-  post.updatedAt = new Date().toISOString();
-  fs.writeFileSync(blogJson, JSON.stringify(posts, null, 2));
-  return res.json(post);
+app.put('/api/blog', authRequired, async (req,res)=>{
+  try {
+    const id = req.query.id;
+    if(!id) return res.status(400).send('Missing id');
+    const { title, category, image, content } = req.body || {};
+    
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+    let posts = [];
+    
+    // Read from GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+      try { 
+        const f = await getFile('data/blog.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); 
+        posts = JSON.parse(f.content||'[]');
+      } catch(e) {
+        console.error('[blog PUT] GitHub read error:', e.message);
+        posts = [];
+      }
+    } else {
+      try { posts = JSON.parse(fs.readFileSync(blogJson,'utf8')) || []; } catch(e) { posts = []; }
+    }
+    
+    const post = posts.find(p=>p.id===id);
+    if(!post) return res.status(404).send('Post not found');
+    if(title) post.title = title;
+    if(typeof category !== 'undefined') post.category = category;
+    if(typeof image !== 'undefined') post.image = image;
+    if(typeof content !== 'undefined') post.content = content;
+    post.updatedAt = new Date().toISOString();
+    const json = JSON.stringify(posts, null, 2);
+    
+    // Save to GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+      try {
+        await putFile('data/blog.json', json, 'Update blog post', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+        console.log('[blog PUT] Saved to GitHub');
+      } catch(e) {
+        console.error('[blog PUT] GitHub write error:', e.message);
+      }
+    } else {
+      fs.writeFileSync(blogJson, json);
+    }
+    return res.json(post);
+  } catch(e) {
+    console.error('[blog PUT] Error:', e.message);
+    return res.status(500).json({ error: e.message });
+  }
 });
 
 app.get('/api/blog', async (req,res)=>{
@@ -1083,15 +1118,50 @@ app.get('/api/blog', async (req,res)=>{
   }
 });
 
-app.delete('/api/blog', authRequired, (req,res)=>{
-  const id = req.query.id;
-  if(!id) return res.status(400).send('Missing id');
-  const posts = JSON.parse(fs.readFileSync(blogJson,'utf8')) || [];
-  const idx = posts.findIndex(p=>p.id===id);
-  if(idx===-1) return res.status(404).send('Post not found');
-  posts.splice(idx,1);
-  fs.writeFileSync(blogJson, JSON.stringify(posts, null, 2));
-  return res.json({ ok:true });
+app.delete('/api/blog', authRequired, async (req,res)=>{
+  try {
+    const id = req.query.id;
+    if(!id) return res.status(400).send('Missing id');
+    
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+    let posts = [];
+    
+    // Read from GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+      try { 
+        const f = await getFile('data/blog.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); 
+        posts = JSON.parse(f.content||'[]');
+      } catch(e) {
+        console.error('[blog DELETE] GitHub read error:', e.message);
+        posts = [];
+      }
+    } else {
+      try { posts = JSON.parse(fs.readFileSync(blogJson,'utf8')) || []; } catch(e) { posts = []; }
+    }
+    
+    const idx = posts.findIndex(p=>p.id===id);
+    if(idx===-1) return res.status(404).send('Post not found');
+    posts.splice(idx,1);
+    const json = JSON.stringify(posts, null, 2);
+    
+    // Save to GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+      try {
+        await putFile('data/blog.json', json, 'Delete blog post', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+        console.log('[blog DELETE] Saved to GitHub');
+      } catch(e) {
+        console.error('[blog DELETE] GitHub write error:', e.message);
+      }
+    } else {
+      fs.writeFileSync(blogJson, json);
+    }
+    return res.json({ ok:true });
+  } catch(e) {
+    console.error('[blog DELETE] Error:', e.message);
+    return res.status(500).json({ error: e.message });
+  }
 });
 
 // ===== BLOG COMMENTS & LIKES =====
@@ -1412,60 +1482,189 @@ app.put('/api/pages/sections/save', authRequired, (req,res)=>{
 });
 
 // ===== PORTFOLIO =====
-app.post('/api/portfolio', authRequired, (req,res)=>{
-  const { title, category, description, image, url } = req.body || {};
-  if(!title || !description || !image) return res.status(400).send('Missing required fields');
-  const items = JSON.parse(fs.readFileSync(portfolioJson,'utf8')) || [];
-  const item = { id: Date.now().toString(), title, category: category||'', description, image, url: url||'', createdAt: new Date().toISOString() };
-  items.push(item);
-  fs.writeFileSync(portfolioJson, JSON.stringify(items, null, 2));
-  return res.json(item);
+app.post('/api/portfolio', authRequired, async (req,res)=>{
+  try {
+    const { title, category, description, image, url } = req.body || {};
+    if(!title || !description || !image) return res.status(400).send('Missing required fields');
+    
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+    let items = [];
+    
+    // Read existing items from GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+      try { 
+        const f = await getFile('data/portfolio.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); 
+        items = JSON.parse(f.content||'[]');
+      } catch(e) {
+        console.error('[portfolio POST] GitHub read error:', e.message);
+        items = [];
+      }
+    } else {
+      try { items = JSON.parse(fs.readFileSync(portfolioJson,'utf8')) || []; } catch(e) { items = []; }
+    }
+    
+    const item = { id: Date.now().toString(), title, category: category||'', description, image, url: url||'', createdAt: new Date().toISOString() };
+    items.push(item);
+    const json = JSON.stringify(items, null, 2);
+    
+    // Save to GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+      try {
+        await putFile('data/portfolio.json', json, 'Add portfolio item', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+        console.log('[portfolio POST] Saved to GitHub');
+      } catch(e) {
+        console.error('[portfolio POST] GitHub write error:', e.message);
+      }
+    } else {
+      fs.writeFileSync(portfolioJson, json);
+    }
+    return res.json(item);
+  } catch(e) {
+    console.error('[portfolio POST] Error:', e.message);
+    return res.status(500).json({ error: e.message });
+  }
 });
 
-app.get('/api/portfolio', (req,res)=>{
-  const id = req.query.id;
-  const items = JSON.parse(fs.readFileSync(portfolioJson,'utf8')) || [];
-  const normalize = (it)=>{
-    const copy = Object.assign({}, it);
-    const img = (copy.image||'').trim();
-    if(img && !img.startsWith('http') && !img.startsWith('/')){
-      copy.image = '/uploads/' + encodeURIComponent(img);
+app.get('/api/portfolio', async (req,res)=>{
+  try {
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+    const id = req.query.id;
+    let items = [];
+    
+    // Read from GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+      try { 
+        const f = await getFile('data/portfolio.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); 
+        items = JSON.parse(f.content||'[]');
+        console.log('[portfolio GET] Read ' + items.length + ' items from GitHub');
+      } catch(e) {
+        console.error('[portfolio GET] GitHub read error:', e.message);
+        items = [];
+      }
+    } else {
+      try { items = JSON.parse(fs.readFileSync(portfolioJson,'utf8')) || []; } catch(e) { items = []; }
     }
-    return copy;
-  };
-  if(id){
+    
+    const normalize = (it)=>{
+      const copy = Object.assign({}, it);
+      const img = (copy.image||'').trim();
+      if(img && !img.startsWith('http') && !img.startsWith('/')) {
+        copy.image = '/uploads/' + encodeURIComponent(img);
+      }
+      return copy;
+    };
+    if(id){
+      const item = items.find(x=>x.id===id);
+      if(!item) return res.status(404).send('Not found');
+      return res.json(normalize(item));
+    }
+    return res.json(items.map(normalize));
+  } catch(e) {
+    console.error('[portfolio GET] Error:', e.message);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/portfolio', authRequired, async (req,res)=>{
+  try {
+    const id = req.query.id;
+    if(!id) return res.status(400).send('Missing id');
+    const { title, category, description, image, url } = req.body || {};
+    
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+    let items = [];
+    
+    // Read from GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+      try { 
+        const f = await getFile('data/portfolio.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); 
+        items = JSON.parse(f.content||'[]');
+      } catch(e) {
+        console.error('[portfolio PUT] GitHub read error:', e.message);
+        items = [];
+      }
+    } else {
+      try { items = JSON.parse(fs.readFileSync(portfolioJson,'utf8')) || []; } catch(e) { items = []; }
+    }
+    
     const item = items.find(x=>x.id===id);
     if(!item) return res.status(404).send('Not found');
-    return res.json(normalize(item));
+    if(title) item.title = title;
+    if(typeof category !== 'undefined') item.category = category;
+    if(typeof description !== 'undefined') item.description = description;
+    if(typeof image !== 'undefined') item.image = image;
+    if(typeof url !== 'undefined') item.url = url;
+    item.updatedAt = new Date().toISOString();
+    const json = JSON.stringify(items, null, 2);
+    
+    // Save to GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+      try {
+        await putFile('data/portfolio.json', json, 'Update portfolio item', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+        console.log('[portfolio PUT] Saved to GitHub');
+      } catch(e) {
+        console.error('[portfolio PUT] GitHub write error:', e.message);
+      }
+    } else {
+      fs.writeFileSync(portfolioJson, json);
+    }
+    return res.json(item);
+  } catch(e) {
+    console.error('[portfolio PUT] Error:', e.message);
+    return res.status(500).json({ error: e.message });
   }
-  return res.json(items.map(normalize));
 });
 
-app.put('/api/portfolio', authRequired, (req,res)=>{
-  const id = req.query.id;
-  if(!id) return res.status(400).send('Missing id');
-  const { title, category, description, image, url } = req.body || {};
-  const items = JSON.parse(fs.readFileSync(portfolioJson,'utf8')) || [];
-  const item = items.find(x=>x.id===id);
-  if(!item) return res.status(404).send('Not found');
-  item.title = title;
-  item.category = category;
-  item.description = description;
-  item.image = image;
-  item.url = url;
-  fs.writeFileSync(portfolioJson, JSON.stringify(items, null, 2));
-  return res.json(item);
-});
-
-app.delete('/api/portfolio', authRequired, (req,res)=>{
-  const id = req.query.id;
-  if(!id) return res.status(400).send('Missing id');
-  const items = JSON.parse(fs.readFileSync(portfolioJson,'utf8')) || [];
-  const idx = items.findIndex(x=>x.id===id);
-  if(idx===-1) return res.status(404).send('Not found');
-  items.splice(idx,1);
-  fs.writeFileSync(portfolioJson, JSON.stringify(items, null, 2));
-  return res.json({ ok:true });
+app.delete('/api/portfolio', authRequired, async (req,res)=>{
+  try {
+    const id = req.query.id;
+    if(!id) return res.status(400).send('Missing id');
+    
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+    let items = [];
+    
+    // Read from GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+      try { 
+        const f = await getFile('data/portfolio.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); 
+        items = JSON.parse(f.content||'[]');
+      } catch(e) {
+        console.error('[portfolio DELETE] GitHub read error:', e.message);
+        items = [];
+      }
+    } else {
+      try { items = JSON.parse(fs.readFileSync(portfolioJson,'utf8')) || []; } catch(e) { items = []; }
+    }
+    
+    const idx = items.findIndex(x=>x.id===id);
+    if(idx===-1) return res.status(404).send('Not found');
+    items.splice(idx,1);
+    const json = JSON.stringify(items, null, 2);
+    
+    // Save to GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+      try {
+        await putFile('data/portfolio.json', json, 'Delete portfolio item', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+        console.log('[portfolio DELETE] Saved to GitHub');
+      } catch(e) {
+        console.error('[portfolio DELETE] GitHub write error:', e.message);
+      }
+    } else {
+      fs.writeFileSync(portfolioJson, json);
+    }
+    return res.json({ ok:true });
+  } catch(e) {
+    console.error('[portfolio DELETE] Error:', e.message);
+    return res.status(500).json({ error: e.message });
+  }
 });
 
 // ===== ADMIN CREDENTIALS =====
