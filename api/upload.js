@@ -13,9 +13,7 @@ function requireAuth(req){
 
 module.exports = async (req, res) => {
   if(req.method !== 'POST') return res.status(405).end('Method');
-  // Require authentication for file uploads
   if(!requireAuth(req)) return res.status(401).end('Unauthorized');
-  // Parse multipart
   const form = new formidable.IncomingForm();
   form.parse(req, async (err, fields, files) => {
     if(err) return res.status(500).end(err.message);
@@ -24,19 +22,14 @@ module.exports = async (req, res) => {
     const descr = fields.description || '';
     const targets = (fields.targets||'').split(',').map(s=>s.trim()).filter(Boolean);
     const buffer = fs.readFileSync(file.filepath || file.path);
-    // server-side validation
     const type = file.mimetype || file.type || '';
-    // default max size 10MB for images and general files
     const IMG_MAX = 10 * 1024 * 1024;
-    // allow larger for video uploads (50MB)
     const VID_MAX = 50 * 1024 * 1024;
     if(targets.includes('portfolio')){
-      // portfolio may include images or videos
       if(!(type.startsWith('image/') || type.startsWith('video/'))) return res.status(400).end('Portfolio uploads must be images or videos');
       if(type.startsWith('video/') && file.size > VID_MAX) return res.status(400).end('Video exceeds 50MB limit');
       if(type.startsWith('image/') && file.size > IMG_MAX) return res.status(400).end('Image exceeds 10MB limit');
     } else {
-      // general uploads: allow common types but enforce image size limits for images
       if(type.startsWith('video/') && file.size > VID_MAX) return res.status(400).end('Video exceeds 50MB limit');
       if(type.startsWith('image/') && file.size > IMG_MAX) return res.status(400).end('Image exceeds 10MB limit');
       if(!type.startsWith('image/') && !type.startsWith('video/') && file.size > IMG_MAX) return res.status(400).end('File exceeds 10MB limit');
@@ -45,18 +38,12 @@ module.exports = async (req, res) => {
     try{
       const { getRepoConfig } = require('./utils');
       const repoOpts = await getRepoConfig(req);
-      
-      // Log the config attempt for debugging
       console.log('[upload.js] repoOpts:', repoOpts ? { owner: repoOpts.owner, repo: repoOpts.repo, hasToken: !!repoOpts.token } : 'NULL');
       console.log('[upload.js] ENV vars - REPO_OWNER:', process.env.REPO_OWNER, 'REPO_NAME:', process.env.REPO_NAME, 'GITHUB_TOKEN:', process.env.GITHUB_TOKEN ? 'SET' : 'MISSING');
-      
       if(!repoOpts || !repoOpts.owner || !repoOpts.repo) {
-        return res.status(500).end('GitHub repository not configured. Please set REPO_OWNER, REPO_NAME, and GITHUB_TOKEN environment variables.');
+        return res.status(500).end('GitHub repository not configured');
       }
-      
-      // Only upload to GitHub (Vercel serverless has read-only filesystem)
       await require('./gh').putFile(`public/uploads/${filename}`, buffer.toString('base64'), `Upload ${filename}`, null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
-      // update data/files.json
       let filesArr = [];
       try{ const f = await require('./gh').getFile('data/files.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); filesArr = JSON.parse(f.content); }catch(e){ filesArr = []; }
       const meta = { id: Date.now().toString(), filename, originalname: file.originalFilename||file.name, description: descr, targets, uploadedAt: new Date().toISOString() };
