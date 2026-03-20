@@ -957,14 +957,52 @@ app.delete('/api/files/:filename', authRequired, (req,res)=>{
 });
 
 // ===== BLOG =====
-app.post('/api/blog', authRequired, (req,res)=>{
-  const { title, category, image, content } = req.body || {};
-  if(!title || !content) return res.status(400).send('Missing title or content');
-  const posts = JSON.parse(fs.readFileSync(blogJson,'utf8')) || [];
-  const post = { id: Date.now().toString(), title, category: category||'', image: image||'', content, createdAt: new Date().toISOString() };
-  posts.unshift(post);
-  fs.writeFileSync(blogJson, JSON.stringify(posts, null, 2));
-  return res.json(post);
+app.post('/api/blog', authRequired, async (req,res)=>{
+  try {
+    const { title, category, image, content } = req.body || {};
+    if(!title || !content) return res.status(400).send('Missing title or content');
+    
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+    let posts = [];
+    
+    // Read existing posts from GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+      try { 
+        const f = await getFile('data/blog.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); 
+        posts = JSON.parse(f.content||'[]');
+      } catch(e) {
+        console.error('[blog POST] GitHub read error:', e.message);
+        posts = [];
+      }
+    } else {
+      // Fallback to local fs
+      try { posts = JSON.parse(fs.readFileSync(blogJson,'utf8')) || []; } catch(e) { posts = []; }
+    }
+    
+    const post = { id: Date.now().toString(), title, category: category||'', image: image||'', content, createdAt: new Date().toISOString() };
+    posts.unshift(post);
+    const json = JSON.stringify(posts, null, 2);
+    
+    // Save to GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+      try {
+        await putFile('data/blog.json', json, 'Add blog post', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+        console.log('[blog POST] Saved to GitHub');
+      } catch(e) {
+        console.error('[blog POST] GitHub write error:', e.message);
+      }
+    } else {
+      // Fallback to local fs
+      fs.writeFileSync(blogJson, json);
+    }
+    
+    return res.json(post);
+  } catch(e) {
+    console.error('[blog POST] Error:', e.message);
+    return res.status(500).json({ error: e.message });
+  }
 });
 
 app.put('/api/blog', authRequired, (req,res)=>{
@@ -983,28 +1021,53 @@ app.put('/api/blog', authRequired, (req,res)=>{
   return res.json(post);
 });
 
-app.get('/api/blog', (req,res)=>{
-  let posts = JSON.parse(fs.readFileSync(blogJson,'utf8')) || [];
-  if(!posts || posts.length === 0){
-    posts = [
-      { id: Date.now().toString(), title: 'Top 10 Web Development Trends in 2025', category: 'Web Development', image: '', content: 'Explore the latest web development technologies and trends that are shaping the industry.', createdAt: new Date().toISOString() },
-      { id: (Date.now()+1).toString(), title: 'Complete SEO Guide for Beginners', category: 'SEO', image: '', content: 'Learn the fundamentals of SEO and how to optimize your website for search engines.', createdAt: new Date().toISOString() },
-      { id: (Date.now()+2).toString(), title: 'Content Marketing Strategy That Works', category: 'Digital Marketing', image: '', content: 'Discover how to create a content marketing strategy that attracts your target audience.', createdAt: new Date().toISOString() },
-      { id: (Date.now()+3).toString(), title: 'Building a Profitable Online Store', category: 'E-Commerce', image: '', content: 'Everything you need to know about building and launching a successful online store.', createdAt: new Date().toISOString() },
-      { id: (Date.now()+4).toString(), title: '7 Ways to Increase Website Conversions', category: 'Conversion', image: '', content: 'Proven tactics to increase your website conversion rate.', createdAt: new Date().toISOString() },
-      { id: (Date.now()+5).toString(), title: 'Understanding Website Analytics', category: 'Analytics', image: '', content: 'Learn how to read and interpret website analytics and KPIs.', createdAt: new Date().toISOString() }
-    ];
-    fs.writeFileSync(blogJson, JSON.stringify(posts, null, 2));
-  }
-  const normalize = (it)=>{
-    const copy = Object.assign({}, it);
-    const img = (copy.image||'').trim();
-    if(img && !img.startsWith('http') && !img.startsWith('/')){
-      copy.image = '/uploads/' + encodeURIComponent(img);
+app.get('/api/blog', async (req,res)=>{
+  try {
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+    let posts = [];
+    
+    // Read from GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+      try { 
+        const f = await getFile('data/blog.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); 
+        posts = JSON.parse(f.content||'[]');
+        console.log('[blog GET] Read ' + posts.length + ' posts from GitHub');
+      } catch(e) {
+        console.error('[blog GET] GitHub read error:', e.message);
+        posts = [];
+      }
+    } else {
+      // Fallback to local fs
+      try { posts = JSON.parse(fs.readFileSync(blogJson,'utf8')) || []; } catch(e) { posts = []; }
     }
-    return copy;
-  };
-  res.json(posts.map(normalize));
+    
+    // Default posts if empty
+    if(!posts || posts.length === 0){
+      posts = [
+        { id: Date.now().toString(), title: 'Top 10 Web Development Trends in 2025', category: 'Web Development', image: '', content: 'Explore the latest web development technologies and trends that are shaping the industry.', createdAt: new Date().toISOString() },
+        { id: (Date.now()+1).toString(), title: 'Complete SEO Guide for Beginners', category: 'SEO', image: '', content: 'Learn the fundamentals of SEO and how to optimize your website for search engines.', createdAt: new Date().toISOString() },
+        { id: (Date.now()+2).toString(), title: 'Content Marketing Strategy That Works', category: 'Digital Marketing', image: '', content: 'Discover how to create a content marketing strategy that attracts your target audience.', createdAt: new Date().toISOString() },
+        { id: (Date.now()+3).toString(), title: 'Building a Profitable Online Store', category: 'E-Commerce', image: '', content: 'Everything you need to know about building and launching a successful online store.', createdAt: new Date().toISOString() },
+        { id: (Date.now()+4).toString(), title: '7 Ways to Increase Website Conversions', category: 'Conversion', image: '', content: 'Proven tactics to increase your website conversion rate.', createdAt: new Date().toISOString() },
+        { id: (Date.now()+5).toString(), title: 'Understanding Website Analytics', category: 'Analytics', image: '', content: 'Learn how to read and interpret website analytics and KPIs.', createdAt: new Date().toISOString() }
+      ];
+    }
+    
+    const normalize = (it)=>{
+      const copy = Object.assign({}, it);
+      const img = (copy.image||'').trim();
+      if(img && !img.startsWith('http') && !img.startsWith('/')){
+        copy.image = '/uploads/' + encodeURIComponent(img);
+      }
+      return copy;
+    };
+    res.json(posts.map(normalize));
+  } catch(e) {
+    console.error('[blog GET] Error:', e.message);
+    return res.status(500).json({ error: e.message });
+  }
 });
 
 app.delete('/api/blog', authRequired, (req,res)=>{
@@ -1024,21 +1087,37 @@ const likesJson = path.join(dataDir, 'blog_likes.json');
 if(!fs.existsSync(commentsJson)) fs.writeFileSync(commentsJson, '[]');
 if(!fs.existsSync(likesJson)) fs.writeFileSync(likesJson, '[]');
 
-app.post('/api/blog/comment', (req,res)=>{
+app.post('/api/blog/comment', async (req,res)=>{
   try{
     const { postId, author, content } = req.body || {};
     if(!postId || !content) return res.status(400).json({ error: 'Missing postId or content' });
     
-    // Read current comments
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+    
+    // Read current comments from GitHub
     let comments = [];
-    try{
-      if(fs.existsSync(commentsJson)){
-        const fileContent = fs.readFileSync(commentsJson, 'utf8');
-        comments = JSON.parse(fileContent || '[]');
+    if(repoOpts && repoOpts.owner && repoOpts.repo){
+      try{
+        const f = await getFile('data/blog_comments.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+        comments = JSON.parse(f.content || '[]');
+        console.log('[blog comment] Read ' + comments.length + ' comments from GitHub');
+      }catch(e){
+        console.error('[blog comment] GitHub read error:', e.message);
+        comments = [];
       }
-    }catch(e){
-      console.error('Error reading comments.json:', e.message);
-      comments = [];
+    } else {
+      // Fallback to local fs
+      try{
+        if(fs.existsSync(commentsJson)){
+          const fileContent = fs.readFileSync(commentsJson, 'utf8');
+          comments = JSON.parse(fileContent || '[]');
+        }
+      }catch(e){
+        console.error('[blog comment] Error reading local comments.json:', e.message);
+        comments = [];
+      }
     }
     
     // Create new comment
@@ -1052,54 +1131,75 @@ app.post('/api/blog/comment', (req,res)=>{
     };
     comments.push(comment);
     
-    // Save comments synchronously
-    try{
-      fs.writeFileSync(commentsJson, JSON.stringify(comments, null, 2), 'utf8');
-    }catch(writeErr){
-      console.error('Error writing comments.json:', writeErr.message);
-      return res.status(500).json({ error: 'Failed to save comment' });
-    }
+    const json = JSON.stringify(comments, null, 2);
     
-    // Try to save to GitHub asynchronously (don't block response)
-    if(process.env.GITHUB_TOKEN && process.env.REPO_OWNER && process.env.REPO_NAME){
+    // Save comments to GitHub (async, don't block)
+    if(repoOpts && repoOpts.owner && repoOpts.repo){
       setImmediate(() => {
-        try{
-          const { putFile } = require('./api/gh');
-          putFile('data/blog_comments.json', JSON.stringify(comments, null, 2), 'Add comment', null, {
-            owner: process.env.REPO_OWNER,
-            repo: process.env.REPO_NAME,
-            branch: process.env.REPO_BRANCH || 'main',
-            token: process.env.GITHUB_TOKEN
-          }).catch(err => console.warn('GitHub comment sync failed:', err.message));
-        }catch(e){
-          console.warn('GitHub comment sync error:', e.message);
-        }
+        putFile('data/blog_comments.json', json, 'Add comment', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token })
+          .catch(err => console.warn('[blog comment] GitHub save failed:', err.message));
       });
+    } else {
+      // Fallback to local fs
+      try{
+        fs.writeFileSync(commentsJson, json, 'utf8');
+      }catch(writeErr){
+        console.error('[blog comment] Error writing local comments.json:', writeErr.message);
+      }
     }
     
     return res.json(comment);
   }catch(e){
-    console.error('Comment endpoint error:', e);
+    console.error('[blog comment] Error:', e);
     return res.status(500).json({ error: 'Server error', details: e.message });
   }
 });
 
-app.get('/api/blog/comments', (req,res)=>{
-  const postId = req.query.postId;
-  const includeMuted = req.query.includeMuted === '1' || false;
-  const comments = JSON.parse(fs.readFileSync(commentsJson,'utf8')) || [];
-  let isAdminReq = false;
-  try{
-    const h = req.headers.authorization;
-    if(h){ const t = h.split(' ')[1]; if(t){ jwt.verify(t, JWT_SECRET); isAdminReq = true; } }
-  }catch(e){ isAdminReq = false; }
+app.get('/api/blog/comments', async (req,res)=>{
+  try {
+    const postId = req.query.postId;
+    const includeMuted = req.query.includeMuted === '1' || false;
+    
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+    
+    let comments = [];
+    // Read from GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo){
+      try {
+        const f = await getFile('data/blog_comments.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+        comments = JSON.parse(f.content || '[]');
+        console.log('[blog comments GET] Read ' + comments.length + ' comments from GitHub');
+      } catch(e) {
+        console.error('[blog comments GET] GitHub read error:', e.message);
+        comments = [];
+      }
+    } else {
+      // Fallback to local fs
+      try {
+        comments = JSON.parse(fs.readFileSync(commentsJson,'utf8')) || [];
+      } catch(e) {
+        comments = [];
+      }
+    }
+    
+    let isAdminReq = false;
+    try{
+      const h = req.headers.authorization;
+      if(h){ const t = h.split(' ')[1]; if(t){ jwt.verify(t, JWT_SECRET); isAdminReq = true; } }
+    }catch(e){ isAdminReq = false; }
 
-  const filtered = comments.filter(c=>{
-    if(!isAdminReq && c.muted) return false;
-    if(postId) return c.postId===postId;
-    return true;
-  });
-  return res.json(filtered);
+    const filtered = comments.filter(c=>{
+      if(!isAdminReq && c.muted) return false;
+      if(postId) return c.postId===postId;
+      return true;
+    });
+    return res.json(filtered);
+  } catch(e) {
+    console.error('[blog comments GET] Error:', e.message);
+    return res.status(500).json({ error: e.message });
+  }
 });
 
 app.post('/api/blog/comment/mute', authRequired, (req,res)=>{
@@ -1169,21 +1269,37 @@ app.delete('/api/blog/comment', authRequired, (req,res)=>{
   return res.json({ ok:true });
 });
 
-app.post('/api/blog/like', (req,res)=>{
+app.post('/api/blog/like', async (req,res)=>{
   try{
     const { postId } = req.body || {};
     if(!postId) return res.status(400).json({ error: 'Missing postId' });
     
-    // Read current likes
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+    
+    // Read current likes from GitHub
     let likes = [];
-    try{
-      if(fs.existsSync(likesJson)){
-        const content = fs.readFileSync(likesJson, 'utf8');
-        likes = JSON.parse(content || '[]');
+    if(repoOpts && repoOpts.owner && repoOpts.repo){
+      try{
+        const f = await getFile('data/blog_likes.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+        likes = JSON.parse(f.content || '[]');
+        console.log('[blog like] Read ' + likes.length + ' likes from GitHub');
+      }catch(e){
+        console.error('[blog like] GitHub read error:', e.message);
+        likes = [];
       }
-    }catch(e){
-      console.error('Error reading likes.json:', e.message);
-      likes = [];
+    } else {
+      // Fallback to local fs
+      try{
+        if(fs.existsSync(likesJson)){
+          const content = fs.readFileSync(likesJson, 'utf8');
+          likes = JSON.parse(content || '[]');
+        }
+      }catch(e){
+        console.error('[blog like] Error reading local likes.json:', e.message);
+        likes = [];
+      }
     }
     
     // Add new like
@@ -1194,48 +1310,69 @@ app.post('/api/blog/like', (req,res)=>{
     };
     likes.push(rec);
     
-    // Save likes synchronously
-    try{
-      fs.writeFileSync(likesJson, JSON.stringify(likes, null, 2), 'utf8');
-    }catch(writeErr){
-      console.error('Error writing likes.json:', writeErr.message);
-      return res.status(500).json({ error: 'Failed to save like' });
-    }
+    const json = JSON.stringify(likes, null, 2);
     
     // Count likes for this post
     const count = likes.filter(l => l.postId === postId).length;
     
-    // Try to save to GitHub asynchronously (don't block response)
-    if(process.env.GITHUB_TOKEN && process.env.REPO_OWNER && process.env.REPO_NAME){
+    // Save to GitHub (async, don't block)
+    if(repoOpts && repoOpts.owner && repoOpts.repo){
       setImmediate(() => {
-        try{
-          const { putFile } = require('./api/gh');
-          putFile('data/blog_likes.json', JSON.stringify(likes, null, 2), 'Add like', null, {
-            owner: process.env.REPO_OWNER,
-            repo: process.env.REPO_NAME,
-            branch: process.env.REPO_BRANCH || 'main',
-            token: process.env.GITHUB_TOKEN
-          }).catch(err => console.warn('GitHub like sync failed:', err.message));
-        }catch(e){
-          console.warn('GitHub like sync error:', e.message);
-        }
+        putFile('data/blog_likes.json', json, 'Add like', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token })
+          .catch(err => console.warn('[blog like] GitHub save failed:', err.message));
       });
+    } else {
+      // Fallback to local fs
+      try{
+        fs.writeFileSync(likesJson, json, 'utf8');
+      }catch(writeErr){
+        console.error('[blog like] Error writing local likes.json:', writeErr.message);
+      }
     }
     
     return res.json({ ok: true, count });
   }catch(e){
-    console.error('Like endpoint error:', e);
+    console.error('[blog like] Error:', e);
     return res.status(500).json({ error: 'Server error', details: e.message });
   }
 });
 
-app.get('/api/blog/likes', (req,res)=>{
-  const postId = req.query.postId;
-  const likes = JSON.parse(fs.readFileSync(likesJson,'utf8')) || [];
-  if(postId) return res.json({ postId, count: likes.filter(l=>l.postId===postId).length });
-  const counts = {};
-  likes.forEach(l=>{ counts[l.postId] = (counts[l.postId]||0)+1; });
-  return res.json(counts);
+app.get('/api/blog/likes', async (req,res)=>{
+  try {
+    const postId = req.query.postId;
+    
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+    
+    let likes = [];
+    // Read from GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo){
+      try {
+        const f = await getFile('data/blog_likes.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+        likes = JSON.parse(f.content || '[]');
+        console.log('[blog likes GET] Read ' + likes.length + ' likes from GitHub');
+      } catch(e) {
+        console.error('[blog likes GET] GitHub read error:', e.message);
+        likes = [];
+      }
+    } else {
+      // Fallback to local fs
+      try {
+        likes = JSON.parse(fs.readFileSync(likesJson,'utf8')) || [];
+      } catch(e) {
+        likes = [];
+      }
+    }
+    
+    if(postId) return res.json({ postId, count: likes.filter(l=>l.postId===postId).length });
+    const counts = {};
+    likes.forEach(l=>{ counts[l.postId] = (counts[l.postId]||0)+1; });
+    return res.json(counts);
+  } catch(e) {
+    console.error('[blog likes GET] Error:', e.message);
+    return res.status(500).json({ error: e.message });
+  }
 });
 
 // ===== PAGES/SECTIONS =====

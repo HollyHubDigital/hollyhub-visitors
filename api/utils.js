@@ -33,7 +33,11 @@ async function getRepoConfig(req){
   }catch(e){ /* ignore */ }
 
   // fall back to env
-  if(process.env.REPO_OWNER && process.env.REPO_NAME) return { owner: process.env.REPO_OWNER, repo: process.env.REPO_NAME, branch: process.env.REPO_BRANCH || 'main', token: process.env.GITHUB_TOKEN };
+  if(process.env.REPO_OWNER && process.env.REPO_NAME) {
+    const cfg = { owner: process.env.REPO_OWNER, repo: process.env.REPO_NAME, branch: process.env.REPO_BRANCH || 'main', token: process.env.GITHUB_TOKEN };
+    return cfg;
+  }
+  console.error('[getRepoConfig] WARNING: No GitHub config found! REPO_OWNER=' + (process.env.REPO_OWNER||'MISSING') + ', REPO_NAME=' + (process.env.REPO_NAME||'MISSING') + ', GITHUB_TOKEN=' + (process.env.GITHUB_TOKEN ? 'SET' : 'MISSING'));
   return null;
 }
 

@@ -23,9 +23,9 @@ module.exports = async (req, res) => {
     let users = [];
     const dataPath = 'data/users.json';
     if(repoOpts && repoOpts.owner && repoOpts.repo){
-      try{ const f = await getFile(dataPath, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); users = JSON.parse(f.content||'[]'); }catch(e){ users = []; }
+      try{ const f = await getFile(dataPath, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); users = JSON.parse(f.content||'[]'); console.log('[register] Read ' + users.length + ' users from GitHub'); }catch(e){ console.error('[register] GitHub read error:', e.message); users = []; }
     } else {
-      const fp = path.join(process.cwd(),'data','users.json'); if(fs.existsSync(fp)) users = JSON.parse(fs.readFileSync(fp,'utf8')||'[]');
+      console.warn('[register] No repoOpts provided, falling back to local fs'); const fp = path.join(process.cwd(),'data','users.json'); if(fs.existsSync(fp)) users = JSON.parse(fs.readFileSync(fp,'utf8')||'[]');
     }
 
     // If Cloudflare Turnstile is enabled, verify token server-side

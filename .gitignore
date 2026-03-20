@@ -44,3 +44,5 @@ tmp/
 secrets.txt
 private.json
 .vercel
+set-vercel-env.js
+set-vercel-env.ps1

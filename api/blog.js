@@ -15,8 +15,9 @@ module.exports = async (req, res) => {
     if(req.method === 'GET'){
       const { getRepoConfig } = require('./utils');
       const repoOpts = await getRepoConfig(req) || {};
-      if(repoOpts && repoOpts.owner && repoOpts.repo){ const f = await getFile('data/blog.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); return res.json(JSON.parse(f.content||'[]')); }
-      if(process.env.GITHUB_TOKEN){ const f = await getFile('data/blog.json'); return res.json(JSON.parse(f.content||'[]')); }
+      console.log('[blog GET] repoOpts:', repoOpts ? { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, hasToken: !!repoOpts.token } : 'NONE');
+      if(repoOpts && repoOpts.owner && repoOpts.repo){ const f = await getFile('data/blog.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); const posts = JSON.parse(f.content||'[]'); console.log('[blog GET] Read ' + posts.length + ' posts from GitHub'); return res.json(posts); }
+      if(process.env.GITHUB_TOKEN){ const f = await getFile('data/blog.json'); console.log('[blog GET] Read from GitHub using GITHUB_TOKEN directly'); return res.json(JSON.parse(f.content||'[]')); }
       const fp = path.join(process.cwd(),'data','blog.json'); if(!fs.existsSync(fp)) return res.json([]); return res.json(JSON.parse(fs.readFileSync(fp,'utf8')));
     }
 
