@@ -1,10 +1,20 @@
 const formidable = require('formidable');
 const fs = require('fs');
 const path = require('path');
+const jwt = require('jsonwebtoken');
 const { putFile } = require('./gh');
+
+function requireAuth(req){
+  const auth = req.headers && (req.headers.authorization || req.headers.Authorization);
+  if(!auth) return false;
+  const parts = auth.split(' '); if(parts.length!==2) return false;
+  try{ const payload = jwt.verify(parts[1], process.env.JWT_SECRET || 'devsecret'); return !!payload; }catch(e){ return false; }
+}
 
 module.exports = async (req, res) => {
   if(req.method !== 'POST') return res.status(405).end('Method');
+  // Require authentication for file uploads
+  if(!requireAuth(req)) return res.status(401).end('Unauthorized');
   // Parse multipart
   const form = new formidable.IncomingForm();
   form.parse(req, async (err, fields, files) => {
@@ -34,21 +44,25 @@ module.exports = async (req, res) => {
     const filename = Date.now() + '-' + (file.originalFilename || file.name);
     try{
       const { getRepoConfig } = require('./utils');
-      const repoOpts = await getRepoConfig(req) || {};
-      if(repoOpts && repoOpts.owner && repoOpts.repo){
-        // commit binary content to repo
-        await require('./gh').putFile(`public/uploads/${filename}`, buffer.toString('base64'), `Upload ${filename}`, null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
-        // update data/files.json
-        let filesArr = [];
-        try{ const f = await require('./gh').getFile('data/files.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); filesArr = JSON.parse(f.content); }catch(e){ filesArr = []; }
-        const meta = { id: Date.now().toString(), filename, originalname: file.originalFilename||file.name, description: descr, targets, uploadedAt: new Date().toISOString() };
-        filesArr.push(meta);
-        await require('./gh').putFile('data/files.json', JSON.stringify(filesArr, null, 2), 'Update files.json', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
-        return res.json(meta);
-      } else {
-        const updir = path.join(process.cwd(), 'public', 'uploads'); fs.mkdirSync(updir, { recursive: true }); const fp = path.join(updir, filename); fs.writeFileSync(fp, buffer);
-        const dataPath = path.join(process.cwd(), 'data', 'files.json'); let arr = JSON.parse(fs.readFileSync(dataPath,'utf8')||'[]'); const meta = { id: Date.now().toString(), filename, originalname: file.originalFilename||file.name, description: descr, targets, uploadedAt: new Date().toISOString() }; arr.push(meta); fs.writeFileSync(dataPath, JSON.stringify(arr, null, 2)); return res.json(meta);
+      const repoOpts = await getRepoConfig(req);
+      
+      // Log the config attempt for debugging
+      console.log('[upload.js] repoOpts:', repoOpts ? { owner: repoOpts.owner, repo: repoOpts.repo, hasToken: !!repoOpts.token } : 'NULL');
+      console.log('[upload.js] ENV vars - REPO_OWNER:', process.env.REPO_OWNER, 'REPO_NAME:', process.env.REPO_NAME, 'GITHUB_TOKEN:', process.env.GITHUB_TOKEN ? 'SET' : 'MISSING');
+      
+      if(!repoOpts || !repoOpts.owner || !repoOpts.repo) {
+        return res.status(500).end('GitHub repository not configured. Please set REPO_OWNER, REPO_NAME, and GITHUB_TOKEN environment variables.');
       }
-    }catch(e){ console.error(e); return res.status(500).end(e.message); }
+      
+      // Only upload to GitHub (Vercel serverless has read-only filesystem)
+      await require('./gh').putFile(`public/uploads/${filename}`, buffer.toString('base64'), `Upload ${filename}`, null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+      // update data/files.json
+      let filesArr = [];
+      try{ const f = await require('./gh').getFile('data/files.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); filesArr = JSON.parse(f.content); }catch(e){ filesArr = []; }
+      const meta = { id: Date.now().toString(), filename, originalname: file.originalFilename||file.name, description: descr, targets, uploadedAt: new Date().toISOString() };
+      filesArr.push(meta);
+      await require('./gh').putFile('data/files.json', JSON.stringify(filesArr, null, 2), 'Update files.json', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+      return res.json(meta);
+    }catch(e){ console.error('[upload.js] Error:', e.message); return res.status(500).end(e.message); }
   });
 };
