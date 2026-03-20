@@ -176,7 +176,7 @@
 		}
 
 		async function fetchPosts(){
-			const r = await fetch('/api/blog');
+			const r = await fetch('/api/blog?t=' + Date.now());
 			if(!r.ok) return console.error('Failed to load posts');
 			const posts = await r.json();
 			const list = document.getElementById('blogList');
@@ -222,7 +222,7 @@
 				// likes
 				const likeBtn = el.querySelector('.btn-like');
 				const likeCountEl = el.querySelector('.like-count');
-				async function loadLikes(){ const lr = await fetch('/api/blog/likes?postId='+encodeURIComponent(p.id)); if(lr.ok){ const d = await lr.json(); likeCountEl.textContent = d.count||0; } }
+				async function loadLikes(){ const lr = await fetch('/api/blog/likes?postId='+encodeURIComponent(p.id)+'&t='+Date.now()); if(lr.ok){ const d = await lr.json(); likeCountEl.textContent = d.count||0; } }
 				loadLikes();
 				likeBtn.addEventListener('click', async ()=>{ const r = await fetch('/api/blog/like',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ postId: p.id })}); if(r.ok){ const d = await r.json(); likeCountEl.textContent = d.count; } });
 
@@ -232,7 +232,7 @@
 					opts = opts || {};
 					const forModal = !!opts.forModal;
 					const adminToken = localStorage.getItem('adminToken') || localStorage.getItem('authToken') || localStorage.getItem('token');
-					let url = '/api/blog/comments?postId='+encodeURIComponent(p.id);
+					let url = '/api/blog/comments?postId='+encodeURIComponent(p.id)+'&t='+Date.now();
 					if(forModal && adminToken) url += '&includeMuted=1';
 					const headers = {};
 					if(forModal && adminToken) headers['Authorization'] = 'Bearer ' + adminToken;
@@ -245,7 +245,7 @@
 				}
 				// Load comments count on initial render
 				const updateCommentCount = async () => {
-					const cs = await fetch('/api/blog/comments?postId='+encodeURIComponent(p.id)).then(r => r.ok ? r.json() : []);
+					const cs = await fetch('/api/blog/comments?postId='+encodeURIComponent(p.id)+'&t='+Date.now()).then(r => r.ok ? r.json() : []);
 					const countEl = el.querySelector('.comment-count'); 
 					if(countEl) countEl.textContent = cs.filter(x=>!x.muted).length || 0;
 				};

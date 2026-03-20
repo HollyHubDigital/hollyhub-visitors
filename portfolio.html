@@ -206,7 +206,7 @@
     // dynamic portfolio rendering
     async function loadPortfolioItems(){
       try{
-        const r = await fetch('/api/portfolio');
+        const r = await fetch('/api/portfolio?t=' + Date.now());
         if(!r.ok) return;
         const items = await r.json();
         const grid = document.getElementById('portfolioGrid');

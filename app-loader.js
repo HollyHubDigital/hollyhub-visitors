@@ -105,7 +105,7 @@
 
             // Ensure WhatsApp links use wa.me and tel formats when public settings available
             try{
-              const r = await fetch('/api/public-settings');
+              const r = await fetch('/api/public-settings?t=' + Date.now());
               if(r.ok){
                 const s = await r.json();
                 const raw = (s.whatsappNumber || '').toString();
@@ -126,7 +126,7 @@
     // Fetch public settings and apply dynamic elements on pages
     async loadPublicSettings(){
       try{
-        const r = await fetch('/api/public-settings');
+        const r = await fetch('/api/public-settings?t=' + Date.now());
         if(!r.ok) { this.log('No public settings found'); return; }
         const s = await r.json();
         const num = (s.whatsappNumber || '').replace(/\s+/g,'');

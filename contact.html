@@ -254,7 +254,7 @@
     // Populate WhatsApp links dynamically from public settings
     (async function(){
       try{
-        const res = await fetch('/api/public-settings');
+        const res = await fetch('/api/public-settings?t=' + Date.now());
         if(!res.ok) return;
         const data = await res.json();
         const num = (data && data.whatsappNumber) ? data.whatsappNumber : null;
