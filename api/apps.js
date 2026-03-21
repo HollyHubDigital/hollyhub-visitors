@@ -2,40 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const { appRegistry, getAllApps, getApp } = require('./app-registry');
-
-const dataDir = path.join(process.cwd(), 'data');
-const appsConfigPath = path.join(dataDir, 'apps-config.json');
-
-// Ensure data directory exists
-if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-
-// Initialize apps config file if it doesn't exist
-function initAppsConfig() {
-  if (!fs.existsSync(appsConfigPath)) {
-    fs.writeFileSync(appsConfigPath, JSON.stringify({ enabled: {}, disabled: [] }, null, 2), 'utf8');
-  }
-}
-
-// Get current apps config
-function getAppsConfig() {
-  try {
-    if (!fs.existsSync(appsConfigPath)) initAppsConfig();
-    return JSON.parse(fs.readFileSync(appsConfigPath, 'utf8') || '{"enabled":{},"disabled":[]}');
-  } catch (e) {
-    return { enabled: {}, disabled: [] };
-  }
-}
-
-// Save apps config
-function saveAppsConfig(config) {
-  try {
-    fs.writeFileSync(appsConfigPath, JSON.stringify(config, null, 2), 'utf8');
-    return true;
-  } catch (e) {
-    console.error('Failed to save apps config:', e);
-    return false;
-  }
-}
+const { getFile, putFile } = require('./gh');
 
 // Check if admin is authenticated
 function requireAuth(req) {
@@ -51,9 +18,54 @@ function requireAuth(req) {
   }
 }
 
+// Get repo config from environment
+function getRepoConfig() {
+  if (!process.env.GITHUB_TOKEN || !process.env.REPO_OWNER || !process.env.REPO_NAME) {
+    return null;
+  }
+  return {
+    owner: process.env.REPO_OWNER,
+    repo: process.env.REPO_NAME,
+    branch: process.env.REPO_BRANCH || 'main',
+    token: process.env.GITHUB_TOKEN
+  };
+}
+
+// Get current apps config from GitHub
+async function getAppsConfig() {
+  try {
+    const repoOpts = getRepoConfig();
+    if (!repoOpts) {
+      console.warn('[apps] No GitHub config - returning empty apps config');
+      return { enabled: {}, disabled: [] };
+    }
+    
+    const f = await getFile('data/apps-config.json', repoOpts);
+    return JSON.parse(f.content || '{"enabled":{},"disabled":[]}');
+  } catch (e) {
+    console.warn('[apps] Failed to read from GitHub, using default:', e.message);
+    return { enabled: {}, disabled: [] };
+  }
+}
+
+// Save apps config to GitHub
+async function saveAppsConfig(config) {
+  try {
+    const repoOpts = getRepoConfig();
+    if (!repoOpts) {
+      console.error('[apps] No GitHub config - cannot save');
+      return false;
+    }
+
+    await putFile('data/apps-config.json', JSON.stringify(config, null, 2), 'Update apps config', null, repoOpts);
+    return true;
+  } catch (e) {
+    console.error('[apps] Failed to save apps config to GitHub:', e.message);
+    return false;
+  }
+}
+
 module.exports = async (req, res) => {
-  initAppsConfig();
-  
   try {
     // GET /api/apps - Get all available apps and current config
     if (req.method === 'GET') {
@@ -66,14 +78,14 @@ module.exports = async (req, res) => {
         return res.json({ app });
       }
 
-      // Get all apps registry
+      // Get all apps registry (doesn't require GitHub config)
       if (query.registry === 'true') {
         return res.json({ apps: getAllApps() });
       }
 
       // Get current configuration (if auth -> full, else public-safe)
       if (query.config === 'true') {
-        const config = getAppsConfig();
+        const config = await getAppsConfig();
         const allApps = getAllApps();
         if (requireAuth(req)) {
           return res.json(config);
@@ -98,7 +110,7 @@ module.exports = async (req, res) => {
 
       // Preview generated injection scripts for enabled apps
       if (query.preview === 'true') {
-        const appsCfg = getAppsConfig();
+        const appsCfg = await getAppsConfig();
         const allApps = getAllApps();
         let inject = '';
         for (const [appId, cfg] of Object.entries(appsCfg.enabled || {})) {
@@ -118,7 +130,7 @@ module.exports = async (req, res) => {
       }
 
       // Default: return all apps with their status
-      const config = getAppsConfig();
+      const config = await getAppsConfig();
       const allApps = getAllApps();
       const appsWithStatus = Object.keys(allApps).map(appId => ({
         ...allApps[appId],
@@ -161,7 +173,7 @@ module.exports = async (req, res) => {
       const app = getApp(appId);
       if (!app) return res.status(404).json({ error: 'App not found' });
 
-      const appsConfig = getAppsConfig();
+      const appsConfig = await getAppsConfig();
 
       if (action === 'enable') {
         // Enable app with initial config
@@ -184,7 +196,7 @@ module.exports = async (req, res) => {
         return res.status(400).json({ error: 'Invalid action' });
       }
 
-      if (saveAppsConfig(appsConfig)) {
+      if (await saveAppsConfig(appsConfig)) {
         return res.json({ 
           success: true, 
           message: `App ${appId} ${action}d`,
@@ -209,7 +221,6 @@ module.exports = async (req, res) => {
 
       if (action === 'test') {
         // Test app connection/configuration
-        // This is a placeholder - implement specific testing for each app
         if (!config) return res.status(400).json({ error: 'Missing config' });
 
         // Validate required fields
@@ -241,13 +252,13 @@ module.exports = async (req, res) => {
       const appId = req.query.id;
       if (!appId) return res.status(400).json({ error: 'Missing appId' });
 
-      const appsConfig = getAppsConfig();
+      const appsConfig = await getAppsConfig();
       delete appsConfig.enabled[appId];
       if (!appsConfig.disabled.includes(appId)) {
         appsConfig.disabled.push(appId);
       }
 
-      if (saveAppsConfig(appsConfig)) {
+      if (await saveAppsConfig(appsConfig)) {
         return res.json({ success: true, message: `App ${appId} deleted` });
       } else {
         return res.status(500).json({ error: 'Failed to delete configuration' });
