@@ -37,6 +37,7 @@ module.exports = async (req, res) => {
         posts.unshift(post);
         const postsJson = JSON.stringify(posts, null, 2);
         await putFile('data/blog.json', postsJson, 'Add blog post', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+        // regenerate blog.html listing for visitor site
         const listing = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Blog - Holly</title><link rel="stylesheet" href="styles.css"></head><body><header class="sticky-header"><div class="header-container"><a href="index.html" class="logo-link">HOLLYDEV</a></div></header><main class="container" style="padding:2rem"><h1>Blog</h1><div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem">${posts.map(p=>`<article style="background:#111;padding:1rem;border-radius:8px"><h3>${p.title}</h3><p style="opacity:0.8">${p.category} • ${new Date(p.createdAt).toLocaleDateString()}</p><p style="opacity:0.85">${(p.content||'').slice(0,180)}...</p></article>`).join('')}</div></main></body></html>`;
         await putFile('blog.html', listing, 'Regenerate blog listing', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
         return res.json(post);
