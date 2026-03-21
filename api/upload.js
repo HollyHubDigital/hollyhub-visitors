@@ -98,12 +98,12 @@ module.exports = async (req, res) => {
         }
 
       } catch(e) {
-        console.error('[upload] Error:', e.message);
-        return res.status(500).json({error: 'Upload failed: ' + e.message});
+        console.error('[upload] Handler exception:', e.message);
+        return res.status(500).json({error: e.message});
       }
     });
   } catch(e) {
-    console.error('[upload] Parse error:', e.message);
-    return res.status(500).json({error: 'Upload failed: ' + e.message});
+    console.error('[upload] Outer exception:', e.message);
+    return res.status(500).json({error: 'Server error'});
   }
 };
