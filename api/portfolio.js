@@ -39,6 +39,7 @@ module.exports = async (req, res) => {
       items.unshift(item);
       const json = JSON.stringify(items, null, 2);
       await putFile(dataPath, json, 'Add portfolio item', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+      // regenerate portfolio.html
       const listing = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Portfolio - Holly</title><link rel="stylesheet" href="styles.css"></head><body><header class="sticky-header"><div class="header-container"><a href="index.html" class="logo-link">HOLLYDEV</a></div></header><main class="container" style="padding:2rem"><h1>Portfolio</h1><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem">${items.map(p=>`<article style="background:#111;padding:1rem;border-radius:8px"><div style="height:160px;background:#222;border-radius:6px;margin-bottom:8px;background-image:url('${p.image}');background-size:cover;background-position:center"></div><h3>${p.title}</h3><p style="opacity:0.8">${p.category}</p><p style="opacity:0.85">${(p.description||'').slice(0,160)}...</p><a href="${p.url||'#'}" style="color:var(--secondary-accent);">View Project</a></article>`).join('')}</div></main></body></html>`;
       await putFile('portfolio.html', listing, 'Regenerate portfolio listing', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
       return res.json(item);
