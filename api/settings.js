@@ -13,14 +13,20 @@ function requireAuth(req){
 module.exports = async (req, res) => {
   try{
     if(req.method === 'GET'){
-      // Prefer remote settings when env config is present (admin repo configured)
+      // Prefer remote settings when env config is present
       try{
         if(process.env.GITHUB_TOKEN && process.env.REPO_OWNER && process.env.REPO_NAME){
-          const f = await getFile('data/settings.json');
+          const f = await getFile('data/settings.json', { 
+            owner: process.env.REPO_OWNER, 
+            repo: process.env.REPO_NAME,
+            branch: process.env.REPO_BRANCH || 'main',
+            token: process.env.GITHUB_TOKEN
+          });
           return res.json(JSON.parse(f.content || '{}'));
         }
-      }catch(e){ /* ignore remote read errors */ }
+      }catch(e){ console.warn('[settings] Remote read failed:', e.message); }
 
+      // Local fallback (read-only, won't cause 503)
       const fp = path.join(process.cwd(),'data','settings.json');
       if(!fs.existsSync(fp)) return res.json({});
       return res.json(JSON.parse(fs.readFileSync(fp,'utf8')||'{}'));
@@ -38,18 +44,25 @@ module.exports = async (req, res) => {
         repoToken: body.repoToken || ''
       };
       const json = JSON.stringify(out, null, 2);
-      // write local settings
-      const dir = path.join(process.cwd(),'data'); if(!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      fs.writeFileSync(path.join(dir,'settings.json'), json, 'utf8');
-
-      // optionally push to configured admin repo (if environment provides GitHub token and repo)
-      try{
-        if(process.env.GITHUB_TOKEN && process.env.REPO_OWNER && process.env.REPO_NAME){
-          await putFile('data/settings.json', json, 'Update settings', null, { owner: process.env.REPO_OWNER, repo: process.env.REPO_NAME, branch: process.env.REPO_BRANCH || 'main', token: process.env.GITHUB_TOKEN });
+      
+      // Write to GitHub if configured
+      if(process.env.GITHUB_TOKEN && process.env.REPO_OWNER && process.env.REPO_NAME){
+        try{
+          await putFile('data/settings.json', json, 'Update settings', null, { 
+            owner: process.env.REPO_OWNER, 
+            repo: process.env.REPO_NAME, 
+            branch: process.env.REPO_BRANCH || 'main', 
+            token: process.env.GITHUB_TOKEN 
+          });
+          return res.json({ ok: true });
+        }catch(e){ 
+          console.error('[settings] GitHub save failed:', e.message);
+          return res.status(500).json({error: 'Failed to save settings: ' + e.message});
         }
-      }catch(e){ console.warn('Remote save failed', e.message); }
-
-      return res.json({ ok: true });
+      } else {
+        // No GitHub config - cannot write on Vercel
+        return res.status(500).json({error: 'GitHub repository not configured. Cannot save settings on serverless.'});
+      }
     }
 
     return res.status(405).end('Method not allowed');
