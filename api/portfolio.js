@@ -28,19 +28,19 @@ module.exports = async (req, res) => {
       const { title, category, image, description, url, tags } = req.body || {};
       if(!title) return res.status(400).end('Missing title');
       const { getRepoConfig } = require('./utils');
-      const repoOpts = await getRepoConfig(req) || {};
+      const repoOpts = await getRepoConfig(req);
+      if(!repoOpts || !repoOpts.owner || !repoOpts.repo) {
+        console.error('[portfolio POST] No repo config');
+        return res.status(500).json({error: 'GitHub repository not configured'});
+      }
       let items = [];
-      if(repoOpts && repoOpts.owner && repoOpts.repo){ items = JSON.parse((await getFile(dataPath, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token })).content || '[]'); }
-      else { items = process.env.GITHUB_TOKEN ? JSON.parse((await getFile(dataPath)).content || '[]') : (fs.existsSync(path.join(process.cwd(), dataPath)) ? JSON.parse(fs.readFileSync(path.join(process.cwd(), dataPath),'utf8')) : []); }
+      items = JSON.parse((await getFile(dataPath, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token })).content || '[]');
       const item = { id: Date.now().toString(), title, category: category||'', image: image||'', description: description||'', url: url||'', tags: Array.isArray(tags) ? tags : (tags ? tags.split(',').map(s=>s.trim()).filter(Boolean) : []), createdAt: new Date().toISOString() };
       items.unshift(item);
       const json = JSON.stringify(items, null, 2);
-      if(repoOpts && repoOpts.owner && repoOpts.repo){ await putFile(dataPath, json, 'Add portfolio item', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); }
-      else { fs.writeFileSync(path.join(process.cwd(), dataPath), json, 'utf8'); }
-      // regenerate portfolio.html
+      await putFile(dataPath, json, 'Add portfolio item', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
       const listing = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Portfolio - Holly</title><link rel="stylesheet" href="styles.css"></head><body><header class="sticky-header"><div class="header-container"><a href="index.html" class="logo-link">HOLLYDEV</a></div></header><main class="container" style="padding:2rem"><h1>Portfolio</h1><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem">${items.map(p=>`<article style="background:#111;padding:1rem;border-radius:8px"><div style="height:160px;background:#222;border-radius:6px;margin-bottom:8px;background-image:url('${p.image}');background-size:cover;background-position:center"></div><h3>${p.title}</h3><p style="opacity:0.8">${p.category}</p><p style="opacity:0.85">${(p.description||'').slice(0,160)}...</p><a href="${p.url||'#'}" style="color:var(--secondary-accent);">View Project</a></article>`).join('')}</div></main></body></html>`;
-      if(repoOpts && repoOpts.owner && repoOpts.repo){ await putFile('portfolio.html', listing, 'Regenerate portfolio listing', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); }
-      else { fs.writeFileSync(path.join(process.cwd(),'portfolio.html'), listing, 'utf8'); }
+      await putFile('portfolio.html', listing, 'Regenerate portfolio listing', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
       return res.json(item);
     }
 
@@ -49,21 +49,18 @@ module.exports = async (req, res) => {
       const id = req.query.id || (req.body && req.body.id);
       if(!id) return res.status(400).end('Missing id');
       const { getRepoConfig } = require('./utils');
-      const repoOpts = await getRepoConfig(req) || {};
+      const repoOpts = await getRepoConfig(req);
+      if(!repoOpts || !repoOpts.owner || !repoOpts.repo) return res.status(500).json({error: 'GitHub repository not configured'});
       let items = [];
-      if(repoOpts && repoOpts.owner && repoOpts.repo){ items = JSON.parse((await getFile(dataPath, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token })).content || '[]'); }
-      else { items = process.env.GITHUB_TOKEN ? JSON.parse((await getFile(dataPath)).content || '[]') : (fs.existsSync(path.join(process.cwd(), dataPath)) ? JSON.parse(fs.readFileSync(path.join(process.cwd(), dataPath),'utf8')) : []); }
+      items = JSON.parse((await getFile(dataPath, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token })).content || '[]');
       const idx = items.findIndex(x=>x.id===id);
       if(idx===-1) return res.status(404).end('Not found');
       const payload = req.body || {};
       items[idx] = { ...items[idx], title: payload.title||items[idx].title, category: payload.category||items[idx].category, image: payload.image||items[idx].image, description: payload.description||items[idx].description, url: payload.url||items[idx].url, tags: Array.isArray(payload.tags) ? payload.tags : (payload.tags ? payload.tags.split(',').map(s=>s.trim()).filter(Boolean) : items[idx].tags) };
       const json2 = JSON.stringify(items, null, 2);
-      if(repoOpts && repoOpts.owner && repoOpts.repo){ await putFile(dataPath, json2, 'Update portfolio item', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); }
-      else { fs.writeFileSync(path.join(process.cwd(), dataPath), json2, 'utf8'); }
-      // regenerate listing
+      await putFile(dataPath, json2, 'Update portfolio item', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
       const listing2 = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Portfolio - Holly</title><link rel="stylesheet" href="styles.css"></head><body><header class="sticky-header"><div class="header-container"><a href="index.html" class="logo-link">HOLLYDEV</a></div></header><main class="container" style="padding:2rem"><h1>Portfolio</h1><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem">${items.map(p=>`<article style="background:#111;padding:1rem;border-radius:8px"><div style="height:160px;background:#222;border-radius:6px;margin-bottom:8px;background-image:url('${p.image}');background-size:cover;background-position:center"></div><h3>${p.title}</h3><p style="opacity:0.8">${p.category}</p><p style="opacity:0.85">${(p.description||'').slice(0,160)}...</p><a href="${p.url||'#'}" style="color:var(--secondary-accent);">View Project</a></article>`).join('')}</div></main></body></html>`;
-      if(repoOpts && repoOpts.owner && repoOpts.repo){ await putFile('portfolio.html', listing2, 'Regenerate portfolio listing', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); }
-      else { fs.writeFileSync(path.join(process.cwd(),'portfolio.html'), listing2, 'utf8'); }
+      await putFile('portfolio.html', listing2, 'Regenerate portfolio listing', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
       return res.json(items[idx]);
     }
 
@@ -72,20 +69,17 @@ module.exports = async (req, res) => {
       const id = req.query.id;
       if(!id) return res.status(400).end('Missing id');
       const { getRepoConfig } = require('./utils');
-      const repoOpts = await getRepoConfig(req) || {};
+      const repoOpts = await getRepoConfig(req);
+      if(!repoOpts || !repoOpts.owner || !repoOpts.repo) return res.status(500).json({error: 'GitHub repository not configured'});
       let items = [];
-      if(repoOpts && repoOpts.owner && repoOpts.repo){ items = JSON.parse((await getFile(dataPath, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token })).content || '[]'); }
-      else { items = process.env.GITHUB_TOKEN ? JSON.parse((await getFile(dataPath)).content || '[]') : (fs.existsSync(path.join(process.cwd(), dataPath)) ? JSON.parse(fs.readFileSync(path.join(process.cwd(), dataPath),'utf8')) : []); }
+      items = JSON.parse((await getFile(dataPath, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token })).content || '[]');
       const idx = items.findIndex(x=>x.id===id);
       if(idx===-1) return res.status(404).end('Not found');
       items.splice(idx,1);
       const json3 = JSON.stringify(items, null, 2);
-      if(repoOpts && repoOpts.owner && repoOpts.repo){ await putFile(dataPath, json3, 'Remove portfolio item', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); }
-      else { fs.writeFileSync(path.join(process.cwd(), dataPath), json3, 'utf8'); }
-      // regenerate listing
+      await putFile(dataPath, json3, 'Remove portfolio item', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
       const listing3 = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Portfolio - Holly</title><link rel="stylesheet" href="styles.css"></head><body><header class="sticky-header"><div class="header-container"><a href="index.html" class="logo-link">HOLLYDEV</a></div></header><main class="container" style="padding:2rem"><h1>Portfolio</h1><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem">${items.map(p=>`<article style="background:#111;padding:1rem;border-radius:8px"><div style="height:160px;background:#222;border-radius:6px;margin-bottom:8px;background-image:url('${p.image}');background-size:cover;background-position:center"></div><h3>${p.title}</h3><p style="opacity:0.8">${p.category}</p><p style="opacity:0.85">${(p.description||'').slice(0,160)}...</p><a href="${p.url||'#'}" style="color:var(--secondary-accent);">View Project</a></article>`).join('')}</div></main></body></html>`;
-      if(repoOpts && repoOpts.owner && repoOpts.repo){ await putFile('portfolio.html', listing3, 'Regenerate portfolio listing', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); }
-      else { fs.writeFileSync(path.join(process.cwd(),'portfolio.html'), listing3, 'utf8'); }
+      await putFile('portfolio.html', listing3, 'Regenerate portfolio listing', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
       return res.json({ ok:true });
     }
 
