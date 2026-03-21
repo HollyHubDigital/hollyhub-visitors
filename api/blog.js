@@ -26,18 +26,22 @@ module.exports = async (req, res) => {
         const { title, category, image, content } = req.body || {};
         if(!title || !content) return res.status(400).end('Missing title or content');
         const { getRepoConfig } = require('./utils');
-        const repoOpts = await getRepoConfig(req) || {};
+        const repoOpts = await getRepoConfig(req);
+        if(!repoOpts || !repoOpts.owner || !repoOpts.repo) {
+          console.error('[blog POST] No repo config - REPO_OWNER, REPO_NAME, GITHUB_TOKEN required');
+          return res.status(500).json({error: 'GitHub repository not configured'});
+        }
         let posts = [];
-        if(repoOpts && repoOpts.owner && repoOpts.repo){ posts = JSON.parse((await getFile('data/blog.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token })).content || '[]'); }
-        else { posts = JSON.parse(fs.readFileSync(path.join(process.cwd(),'data','blog.json'),'utf8')||'[]'); }
+        posts = JSON.parse((await getFile('data/blog.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token })).content || '[]');
         const post = { id: Date.now().toString(), title, category: category||'', image: image||'', content, createdAt: new Date().toISOString() };
         posts.unshift(post);
         const postsJson = JSON.stringify(posts, null, 2);
-        if(repoOpts && repoOpts.owner && repoOpts.repo){ await putFile('data/blog.json', postsJson, 'Add blog post', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); }
-        else { fs.writeFileSync(path.join(process.cwd(),'data','blog.json'), postsJson, 'utf8'); }
-        // optionally regenerate blog.html listing for visitor site
+        await putFile('data/blog.json', postsJson, 'Add blog post', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
         const listing = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Blog - Holly</title><link rel="stylesheet" href="styles.css"></head><body><header class="sticky-header"><div class="header-container"><a href="index.html" class="logo-link">HOLLYDEV</a></div></header><main class="container" style="padding:2rem"><h1>Blog</h1><div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem">${posts.map(p=>`<article style="background:#111;padding:1rem;border-radius:8px"><h3>${p.title}</h3><p style="opacity:0.8">${p.category} • ${new Date(p.createdAt).toLocaleDateString()}</p><p style="opacity:0.85">${(p.content||'').slice(0,180)}...</p></article>`).join('')}</div></main></body></html>`;
-        if(repoOpts && repoOpts.owner && repoOpts.repo){ await putFile('blog.html', listing, 'Regenerate blog listing', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); }
-        else { fs.writeFileSync(path.join(process.cwd(),'blog.html'), listing, 'utf8'); }
+        await putFile('blog.html', listing, 'Regenerate blog listing', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
         return res.json(post);
       }
+
+    return res.status(405).end('Method not allowed');
+  }catch(e){ console.error(e); res.status(500).end(e.message); }
+};
