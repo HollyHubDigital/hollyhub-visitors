@@ -13,20 +13,20 @@ function requireAuth(req){
 module.exports = async (req, res) => {
   try{
     if(req.method === 'GET'){
-      // Prefer remote settings when env config is present
+      // Try remote settings first (GitHub)
       try{
         if(process.env.GITHUB_TOKEN && process.env.REPO_OWNER && process.env.REPO_NAME){
-          const f = await getFile('data/settings.json', { 
-            owner: process.env.REPO_OWNER, 
+          const f = await getFile('data/settings.json', {
+            owner: process.env.REPO_OWNER,
             repo: process.env.REPO_NAME,
             branch: process.env.REPO_BRANCH || 'main',
             token: process.env.GITHUB_TOKEN
           });
           return res.json(JSON.parse(f.content || '{}'));
         }
-      }catch(e){ console.warn('[settings] Remote read failed:', e.message); }
+      }catch(e){ console.warn('[settings GET] Remote read failed:', e.message); }
 
-      // Local fallback (read-only, won't cause 503)
+      // Fallback to local (read-only, won't cause 503)
       const fp = path.join(process.cwd(),'data','settings.json');
       if(!fs.existsSync(fp)) return res.json({});
       return res.json(JSON.parse(fs.readFileSync(fp,'utf8')||'{}'));
@@ -34,6 +34,7 @@ module.exports = async (req, res) => {
 
     if(req.method === 'PUT'){
       if(!requireAuth(req)) return res.status(401).end('Unauthorized');
+      
       const body = req.body || {};
       const out = {
         siteTitle: body.siteTitle || '',
@@ -45,10 +46,10 @@ module.exports = async (req, res) => {
       };
       const json = JSON.stringify(out, null, 2);
       
-      // Write to GitHub if configured
+      // Save to GitHub (Vercel can't write to filesystem)
       if(process.env.GITHUB_TOKEN && process.env.REPO_OWNER && process.env.REPO_NAME){
         try{
-          await putFile('data/settings.json', json, 'Update settings', null, { 
+          await putFile('data/settings.json', json, 'Update site settings', null, { 
             owner: process.env.REPO_OWNER, 
             repo: process.env.REPO_NAME, 
             branch: process.env.REPO_BRANCH || 'main', 
@@ -56,7 +57,7 @@ module.exports = async (req, res) => {
           });
           return res.json({ ok: true });
         }catch(e){ 
-          console.error('[settings] GitHub save failed:', e.message);
+          console.error('[settings PUT] GitHub save failed:', e.message);
           return res.status(500).json({error: 'Failed to save settings: ' + e.message});
         }
       } else {
@@ -66,5 +67,5 @@ module.exports = async (req, res) => {
     }
 
     return res.status(405).end('Method not allowed');
-  }catch(e){ console.error(e); res.status(500).end(e.message); }
+  }catch(e){ console.error('[settings]', e); res.status(500).end(e.message); }
 };
