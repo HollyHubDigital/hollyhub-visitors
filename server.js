@@ -127,28 +127,18 @@ app.use((req, res, next) => {
   next();
 });
 
-// Rate limiting
+// Rate limiting - TEMPORARILY DISABLED for troubleshooting (429 and WAF issue)
+// Re-enable when Vercel Security Checkpoint is resolved
 const _rateMap = new Map();
-const RATE_WINDOW_MS = parseInt(process.env.RATE_WINDOW_MS || '900000', 10); // 15 minutes
-const RATE_MAX = parseInt(process.env.RATE_MAX || '5000', 10); // 5000 requests per 15 min
-app.use((req, res, next) => {
-  try{
-    const ip = req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 'unknown';
-    const now = Date.now();
-    let entry = _rateMap.get(ip);
-    if(!entry || now > entry.reset){
-      entry = { count: 1, reset: now + RATE_WINDOW_MS };
-      _rateMap.set(ip, entry);
-    } else {
-      entry.count++;
-      if(entry.count > RATE_MAX){
-        res.setHeader('Retry-After', Math.ceil((entry.reset - now) / 1000));
-        return res.status(429).send('Too many requests - try again later');
-      }
-    }
-  }catch(e){ /* if rate limiter fails, allow request to proceed */ }
+const RATE_WINDOW_MS = parseInt(process.env.RATE_WINDOW_MS || '900000', 10);
+const RATE_MAX = parseInt(process.env.RATE_MAX || '5000', 10);
+// DISABLED: app.use(rateLimitMiddleware)
+// Allowing all requests through to diagnose Vercel WAF issue
+const rateLimitMiddleware = (req, res, next) => {
+  // Rate limiting disabled - see comments above
   next();
-});
+};
+app.use(rateLimitMiddleware);
 
 setInterval(() => {
   const now = Date.now();
