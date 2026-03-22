@@ -869,6 +869,17 @@ function getStoredAdmin(){
   }catch(e){ return null; }
 }
 
+// ===== DEBUG ENDPOINTS =====
+app.get('/api/debug/env', (req,res)=>{
+  return res.json({
+    GITHUB_TOKEN: process.env.GITHUB_TOKEN ? '✓ SET' : '✗ MISSING',
+    REPO_OWNER: process.env.REPO_OWNER || '✗ MISSING',
+    REPO_NAME: process.env.REPO_NAME || '✗ MISSING',
+    REPO_BRANCH: process.env.REPO_BRANCH || 'main',
+    NODE_ENV: process.env.NODE_ENV || 'not set'
+  });
+});
+
 // ===== ADMIN ENDPOINTS =====
 app.get('/api/admin/check', (req,res)=>{
   const a = getStoredAdmin();
