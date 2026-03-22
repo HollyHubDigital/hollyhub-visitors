@@ -17,19 +17,36 @@ function getRepoConfig() {
   };
 }
 
-// Get current apps config from GitHub
+// Get current apps config from GitHub, fall back to local filesystem
 async function getAppsConfig() {
   try {
     const repoOpts = getRepoConfig();
-    if (!repoOpts) {
-      console.warn('[apps] No GitHub config - returning empty apps config');
-      return { enabled: {}, disabled: [] };
+    if (repoOpts) {
+      // Try to get from GitHub
+      try {
+        const f = await getFile('data/apps-config.json', repoOpts);
+        return JSON.parse(f.content || '{"enabled":{},"disabled":[]}');
+      } catch (e) {
+        console.warn('[apps] GitHub read failed:', e.message);
+      }
     }
     
-    const f = await getFile('data/apps-config.json', repoOpts);
-    return JSON.parse(f.content || '{"enabled":{},"disabled":[]}');
+    // Fall back to local filesystem
+    try {
+      const fp = path.join(process.cwd(), 'data', 'apps-config.json');
+      if (fs.existsSync(fp)) {
+        const content = fs.readFileSync(fp, 'utf8');
+        return JSON.parse(content || '{"enabled":{},"disabled":[]}');
+      }
+    } catch (e) {
+      console.warn('[apps] Local file read failed:', e.message);
+    }
+    
+    // Default empty config
+    console.warn('[apps] No GitHub token and no local file - using default empty config');
+    return { enabled: {}, disabled: [] };
   } catch (e) {
-    console.warn('[apps] Failed to read from GitHub, using default:', e.message);
+    console.error('[apps] getAppsConfig error:', e.message);
     return { enabled: {}, disabled: [] };
   }
 }
