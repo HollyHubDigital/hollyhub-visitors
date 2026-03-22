@@ -56,7 +56,7 @@ async function getFile(path, repoOpts={}){
   return { content: Buffer.from(data.content, 'base64').toString('utf8'), sha: data.sha };
 }
 
-async function putFile(path, content, message, sha, repoOpts={}){
+async function putFile(path, content, message, sha, repoOpts={}, isBase64=false){
   const BRANCH = repoOpts.branch || process.env.REPO_BRANCH || 'main';
   
   // If sha not provided, try to fetch it from existing file
@@ -71,7 +71,9 @@ async function putFile(path, content, message, sha, repoOpts={}){
     }
   }
   
-  const body = { message: message || `Update ${path}`, content: Buffer.from(content, 'utf8').toString('base64'), branch: BRANCH };
+  // If content is already base64 (e.g., binary file), use as-is; otherwise encode it
+  let encodedContent = isBase64 ? content : Buffer.from(content, 'utf8').toString('base64');
+  const body = { message: message || `Update ${path}`, content: encodedContent, branch: BRANCH };
   if(fileSha) body.sha = fileSha;
   return await ghRequest(`/contents/${encodeURIComponent(path)}`, { method: 'PUT', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } }, repoOpts);
 }
