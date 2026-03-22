@@ -9,6 +9,7 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const { putFile, getFile } = require('./api/gh');
+const os = require('os');
 // Safe FS wrappers: if running in read-only serverless, fall back to in-memory store
 let READ_ONLY_FS = false;
 const _fs_readFileSync = fs.readFileSync.bind(fs);
@@ -966,24 +967,21 @@ app.post('/api/upload', authRequired, upload.single('file'), async (req,res)=>{
       return res.json(meta);
     }
     
-    // If read-only and no GitHub/S3, fail
-    if(READ_ONLY_FS){
-      return res.status(503).json({ error: 'Uploads disabled', message: 'Configure GITHUB_TOKEN or enable S3/R2.' });
-    }
-    
-    // Disk storage (local dev only)
-    if(req.file.path){
-      const filename = path.basename(req.file.path || req.file.filename || '');
-      const meta = { id: Date.now().toString(), filename, originalname: req.file.originalname, description, targets, uploadedAt: new Date().toISOString() };
-      try{
-        const arr = JSON.parse(fs.readFileSync(filesJson,'utf8')) || [];
-        arr.push(meta);
-        fs.writeFileSync(filesJson, JSON.stringify(arr, null, 2));
-      }catch(e){ console.error('Upload metadata write failed', e); }
+    // Fallback: Store to /tmp on Vercel (not persistent across deployments but works immediately)
+    const tmpDir = os.tmpdir();
+    const uploadDir = path.join(tmpDir, 'uploads');
+    try {
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+      const safe = Date.now() + '-' + (req.file.originalname || 'upload').replace(/[^a-zA-Z0-9._-]/g,'_');
+      const filePath = path.join(uploadDir, safe);
+      fs.writeFileSync(filePath, req.file.buffer);
+      
+      const meta = { id: Date.now().toString(), filename: safe, originalname: req.file.originalname, description, targets, uploadedAt: new Date().toISOString(), storage: 'tmpdir' };
       return res.json(meta);
+    } catch (tmpErr) {
+      console.error('[upload] tmp fallback failed:', tmpErr.message);
+      return res.status(503).json({ error: 'Uploads unavailable', message: 'Configure GITHUB_TOKEN environment variable on Vercel for persistent file storage.' });
     }
-    
-    return res.status(500).send('Upload handling not supported in this environment');
   }catch(e){ console.error('[upload] Error', e); return res.status(500).send('Upload failed: '+e.message); }
 });
 
