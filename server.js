@@ -68,7 +68,7 @@ const ADMIN_USER = process.env.ADMIN_USER || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASS || 'password';
 const JWT_SECRET = process.env.JWT_SECRET || 'devsecret';
 
-// âœ… CORS: Allow admin.hollyhubdigital.vercel.app and visitors on Render to access this API
+// ✅ CORS: Allow admin.hollyhubdigital.vercel.app and visitors on Render to access this API
 const ALLOWED_ORIGINS = [
   // Vercel admin site (production)
   'https://admin-hollyhub.vercel.app',
@@ -238,7 +238,7 @@ app.use((req, res, next) => {
         origin === host || 
         origin.includes('localhost') || 
         origin.includes('127.0.0.1') ||
-        origin.endsWith('.vercel.app')  // âœ… Allow Vercel origins
+        origin.endsWith('.vercel.app')  // ✅ Allow Vercel origins
       );
       if(origin && !isAllowedOrigin){
         return res.status(403).send('Forbidden (invalid origin)');
@@ -249,7 +249,7 @@ app.use((req, res, next) => {
         referer.startsWith(host) || 
         referer.includes('localhost') || 
         referer.includes('127.0.0.1') ||
-        referer.includes('.vercel.app')  // âœ… Allow Vercel referer
+        referer.includes('.vercel.app')  // ✅ Allow Vercel referer
       );
       if(!origin && referer && !isAllowedReferer){
         return res.status(403).send('Forbidden (invalid referer)');
@@ -516,7 +516,7 @@ Object.entries(imageConfig).forEach(([route, config]) => {
     try {
       if (fs.existsSync(p)) {
         cachedData = fs.readFileSync(p);
-        console.log(`[Init] âœ“ Cached ${route} from ${p} (${cachedData.length} bytes)`);
+        console.log(`[Init] ✓ Cached ${route} from ${p} (${cachedData.length} bytes)`);
         break;
       }
     } catch (e) {
@@ -526,7 +526,7 @@ Object.entries(imageConfig).forEach(([route, config]) => {
   if (cachedData) {
     imageCache[route] = { data: cachedData, mime: config.mime };
   } else {
-    console.error(`[Init] âœ— Failed to load ${route}`);
+    console.error(`[Init] ✗ Failed to load ${route}`);
   }
 });
 
@@ -538,7 +538,7 @@ Object.keys(imageConfig).forEach((route) => {
       console.error(`[Image] Request for ${route} but not in cache`);
       return res.status(404).json({ error: 'Image not found', route });
     }
-    console.log(`[Image] âœ“ Serving ${route} from cache (${cached.data.length} bytes)`);
+    console.log(`[Image] ✓ Serving ${route} from cache (${cached.data.length} bytes)`);
     res.setHeader('Content-Type', cached.mime);
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     res.setHeader('Content-Length', cached.data.length);
@@ -940,8 +940,8 @@ app.post('/api/upload', authRequired, upload.single('file'), async (req,res)=>{
       const safe = Date.now() + '-' + (req.file.originalname || 'upload').replace(/[^a-zA-Z0-9._-]/g,'_');
       const base64 = req.file.buffer.toString('base64');
       
-      // Upload to GitHub
-      await putFile(`public/uploads/${safe}`, base64, `Upload: ${safe}`, null, { owner, repo, branch, token });
+      // Upload to GitHub (pass isBase64=true since content is already base64-encoded)
+      await putFile(`public/uploads/${safe}`, base64, `Upload: ${safe}`, null, { owner, repo, branch, token }, true);
       
       // Update metadata file
       const meta = { id: Date.now().toString(), filename: safe, originalname: req.file.originalname, description, targets, uploadedAt: new Date().toISOString() };
@@ -1898,7 +1898,7 @@ app.all('/api/*', async (req, res) => {
   }catch(e){ console.error('Dynamic API loader error', e); return res.status(500).send(e.message); }
 });
 
-app.listen(PORT, ()=>{ console.log('âœ… Visitors Backend running on port', PORT); });
+app.listen(PORT, ()=>{ console.log('✅ Visitors Backend running on port', PORT); });
 
 app.use((err, req, res, next) => {
   if (!err) return next();
