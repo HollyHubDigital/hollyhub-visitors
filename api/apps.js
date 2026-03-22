@@ -4,20 +4,6 @@ const jwt = require('jsonwebtoken');
 const { appRegistry, getAllApps, getApp } = require('./app-registry');
 const { getFile, putFile } = require('./gh');
 
-// Check if admin is authenticated
-function requireAuth(req) {
-  const auth = req.headers && (req.headers.authorization || req.headers.Authorization);
-  if (!auth) return false;
-  const parts = auth.split(' ');
-  if (parts.length !== 2) return false;
-  try {
-    const payload = jwt.verify(parts[1], process.env.JWT_SECRET || 'devsecret');
-    return !!payload;
-  } catch (e) {
-    return false;
-  }
-}
-
 // Get repo config from environment
 function getRepoConfig() {
   if (!process.env.GITHUB_TOKEN || !process.env.REPO_OWNER || !process.env.REPO_NAME) {
@@ -48,7 +34,7 @@ async function getAppsConfig() {
   }
 }
 
-// Save apps config to GitHub
+// Save apps config to GitHub (NOT to filesystem - Vercel is read-only!)
 async function saveAppsConfig(config) {
   try {
     const repoOpts = getRepoConfig();
@@ -61,6 +47,20 @@ async function saveAppsConfig(config) {
     return true;
   } catch (e) {
     console.error('[apps] Failed to save apps config to GitHub:', e.message);
+    return false;
+  }
+}
+
+// Check if admin is authenticated
+function requireAuth(req) {
+  const auth = req.headers && (req.headers.authorization || req.headers.Authorization);
+  if (!auth) return false;
+  const parts = auth.split(' ');
+  if (parts.length !== 2) return false;
+  try {
+    const payload = jwt.verify(parts[1], process.env.JWT_SECRET || 'devsecret');
+    return !!payload;
+  } catch (e) {
     return false;
   }
 }
@@ -78,7 +78,7 @@ module.exports = async (req, res) => {
         return res.json({ app });
       }
 
-      // Get all apps registry (doesn't require GitHub config)
+      // Get all apps registry
       if (query.registry === 'true') {
         return res.json({ apps: getAllApps() });
       }
@@ -99,7 +99,7 @@ module.exports = async (req, res) => {
           const publicCfg = {};
           const fields = appDef.configFields || [];
           for (const f of fields) {
-            if (f.adminOnly) continue; // skip admin-only
+            if (f.adminOnly) continue;
             if (appCfg[f.name] !== undefined) publicCfg[f.name] = appCfg[f.name];
           }
           returnedConfig.enabled[appId] = publicCfg;
@@ -124,7 +124,6 @@ module.exports = async (req, res) => {
             }
           }
         }
-        // Return with proper content type and error handling
         res.setHeader('Content-Type', 'application/json');
         return res.json({ scripts: inject });
       }
@@ -138,20 +137,18 @@ module.exports = async (req, res) => {
         configured: !!config.enabled[appId] && Object.keys(config.enabled[appId]).length > 0
       }));
 
-      // If requester is not authenticated, filter out admin-only fields from app configs
       const isAuthed = requireAuth(req);
       let returnedConfig = { enabled: {}, disabled: config.disabled || [] };
       if (isAuthed) {
         returnedConfig = config;
       } else {
-        // Build public-facing enabled config (remove adminOnly fields)
         for (const [appId, appCfg] of Object.entries(config.enabled || {})) {
           const appDef = allApps[appId];
           if (!appDef || !appCfg) continue;
           const publicCfg = {};
           const fields = appDef.configFields || [];
           for (const f of fields) {
-            if (f.adminOnly) continue; // skip admin-only
+            if (f.adminOnly) continue;
             if (appCfg[f.name] !== undefined) publicCfg[f.name] = appCfg[f.name];
           }
           returnedConfig.enabled[appId] = publicCfg;
@@ -176,18 +173,14 @@ module.exports = async (req, res) => {
       const appsConfig = await getAppsConfig();
 
       if (action === 'enable') {
-        // Enable app with initial config
         appsConfig.enabled[appId] = config || {};
-        // Remove from disabled list if present
         appsConfig.disabled = appsConfig.disabled.filter(id => id !== appId);
       } else if (action === 'disable') {
-        // Disable app
         delete appsConfig.enabled[appId];
         if (!appsConfig.disabled.includes(appId)) {
           appsConfig.disabled.push(appId);
         }
       } else if (action === 'update') {
-        // Update existing app config
         if (!appsConfig.enabled[appId]) {
           return res.status(400).json({ error: 'App not enabled' });
         }
@@ -220,10 +213,8 @@ module.exports = async (req, res) => {
       if (!app) return res.status(404).json({ error: 'App not found' });
 
       if (action === 'test') {
-        // Test app connection/configuration
         if (!config) return res.status(400).json({ error: 'Missing config' });
 
-        // Validate required fields
         const missingFields = app.configFields
           .filter(field => field.required && !config[field.name])
           .map(field => field.name);
@@ -235,7 +226,6 @@ module.exports = async (req, res) => {
           });
         }
 
-        // For now, just validate structure
         return res.json({ 
           success: true,
           message: `${app.name} configuration is valid`
