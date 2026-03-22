@@ -8,6 +8,7 @@ let AWS = null;
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const { putFile, getFile } = require('./api/gh');
 // Safe FS wrappers: if running in read-only serverless, fall back to in-memory store
 let READ_ONLY_FS = false;
 const _fs_readFileSync = fs.readFileSync.bind(fs);
@@ -931,7 +932,6 @@ app.post('/api/upload', authRequired, upload.single('file'), async (req,res)=>{
   try{
     // Use GitHub for uploads (more reliable than S3 for small files)
     if(process.env.GITHUB_TOKEN && process.env.REPO_OWNER && process.env.REPO_NAME){
-      const { putFile, getFile } = require('./api/gh');
       const owner = process.env.REPO_OWNER;
       const repo = process.env.REPO_NAME;
       const branch = process.env.REPO_BRANCH || 'main';
