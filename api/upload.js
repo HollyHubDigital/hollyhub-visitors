@@ -1,16 +1,28 @@
 const formidable = require('formidable');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const { putFile } = require('./gh');
 
 module.exports = async (req, res) => {
   if(req.method !== 'POST') return res.status(405).json({error: 'Method not allowed'});
   
   try {
-    // Parse multipart form data
-    const form = new formidable.IncomingForm();
+    console.log('[upload] Request received', { method: req.method });
+    
+    // Use /tmp for uploads â€“ ONLY writable directory on Vercel (fixes EROFS)
+    const uploadDir = os.tmpdir();
+    const form = new formidable.IncomingForm({
+      uploadDir: uploadDir,
+      keepExtensions: true,
+      maxFileSize: 50 * 1024 * 1024,
+      multiples: false
+    });
+    
     form.parse(req, async (err, fields, files) => {
       try {
+        console.log('[upload] Form parsed', { err: err?.message, fileCount: Object.keys(files).length });
+        
         if(err) {
           console.error('[upload] Form parse error:', err.message);
           return res.status(400).json({error: 'Form error: ' + err.message});
@@ -19,8 +31,10 @@ module.exports = async (req, res) => {
         const file = files.file;
         if(!file) return res.status(400).json({error: 'No file provided'});
 
-        // Read file buffer
-        const buffer = fs.readFileSync(file.filepath || file.path);
+        // Read file buffer using async (better for Vercel)
+        const filePath = file.filepath || file.path;
+        console.log('[upload] Temp file path:', filePath);
+        const buffer = await fs.promises.readFile(filePath);
         const type = file.mimetype || file.type || '';
         const originalname = file.originalFilename || file.name || 'file';
         
@@ -100,6 +114,21 @@ module.exports = async (req, res) => {
       } catch(e) {
         console.error('[upload] Handler exception:', e.message);
         return res.status(500).json({error: e.message});
+      } finally {
+        // Clean up temp files from formidable (not always needed in /tmp, but good practice)
+        if(files && files.file) {
+          try {
+            const fileObj = Array.isArray(files.file) ? files.file[0] : files.file;
+            const tempPath = fileObj.filepath || fileObj.path;
+            if(tempPath && tempPath.startsWith('/tmp')) {
+              fs.unlink(tempPath, (err) => {
+                if(err) console.warn('[upload] Failed to clean temp file:', tempPath, err.message);
+              });
+            }
+          } catch(cleanupError) {
+            console.warn('[upload] Cleanup error:', cleanupError.message);
+          }
+        }
       }
     });
   } catch(e) {
