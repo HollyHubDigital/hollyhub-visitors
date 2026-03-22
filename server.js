@@ -941,73 +941,55 @@ app.put('/api/pages/:page', authRequired, (req,res)=>{
 // ===== FILE UPLOAD =====
 app.post('/api/upload', authRequired, upload.single('file'), async (req,res)=>{
   if(!req.file) return res.status(400).send('No file');
+  
+  // Uploads REQUIRE GitHub token on Vercel (serverless can't write to /tmp persistently)
+  if(!process.env.GITHUB_TOKEN || !process.env.REPO_OWNER || !process.env.REPO_NAME){
+    return res.status(501).json({ 
+      error: 'Uploads not configured', 
+      message: 'GITHUB_TOKEN, REPO_OWNER, and REPO_NAME must be set in Vercel environment variables'
+    });
+  }
+
   const description = req.body.description || '';
   const targets = (req.body.targets || '').split(',').map(s=>s.trim()).filter(Boolean);
 
   try{
-    // Use GitHub for uploads (more reliable than S3 for small files)
-    if(process.env.GITHUB_TOKEN && process.env.REPO_OWNER && process.env.REPO_NAME){
-      try {
-        const owner = process.env.REPO_OWNER;
-        const repo = process.env.REPO_NAME;
-        const branch = process.env.REPO_BRANCH || 'main';
-        const token = process.env.GITHUB_TOKEN;
-        
-        const safe = Date.now() + '-' + (req.file.originalname || 'upload').replace(/[^a-zA-Z0-9._-]/g,'_');
-        const base64 = req.file.buffer.toString('base64');
-        
-        console.log('[upload] GitHub upload attempt:', { safe, size: base64.length, owner, repo, branch });
-        
-        // Upload to GitHub (pass isBase64=true since content is already base64-encoded)
-        await putFile(`public/uploads/${safe}`, base64, `Upload: ${safe}`, null, { owner, repo, branch, token }, true);
-        console.log('[upload] GitHub upload successful');
-        
-        // Update metadata file
-        const meta = { id: Date.now().toString(), filename: safe, originalname: req.file.originalname, description, targets, uploadedAt: new Date().toISOString() };
-        
-        try {
-          const existing = await getFile('data/files.json', { owner, repo, branch, token });
-          const arr = JSON.parse(existing.content || '[]');
-          arr.push(meta);
-          await putFile('data/files.json', JSON.stringify(arr, null, 2), 'Update files metadata', null, { owner, repo, branch, token });
-          console.log('[upload] Metadata updated');
-        } catch(e) {
-          console.warn('[upload] Metadata update failed, but file uploaded:', e.message);
-        }
-        
-        return res.json(meta);
-      } catch(ghErr) {
-        console.warn('[upload] GitHub upload failed, falling back:', ghErr.message);
-        // If GitHub fails, fall through to other methods
-      }
-    }
+    const owner = process.env.REPO_OWNER;
+    const repo = process.env.REPO_NAME;
+    const branch = process.env.REPO_BRANCH || 'main';
+    const token = process.env.GITHUB_TOKEN;
     
-    // Fallback to S3 if configured
-    if(S3_ENABLED && req.file.buffer){
-      const safe = Date.now() + '-' + (req.file.originalname || 'upload').replace(/[^a-zA-Z0-9._-]/g,'_');
-      const remote = await uploadToStore(req.file.buffer, safe, req.file.mimetype);
-      const meta = { id: Date.now().toString(), filename: remote, originalname: req.file.originalname, description, targets, uploadedAt: new Date().toISOString() };
-      return res.json(meta);
-    }
+    const safe = Date.now() + '-' + (req.file.originalname || 'upload').replace(/[^a-zA-Z0-9._-]/g,'_');
+    const base64 = req.file.buffer.toString('base64');
     
-    // Fallback: Store to /tmp on Vercel (not persistent across deployments but works immediately)
-    const tmpDir = os.tmpdir();
-    const uploadDir = path.join(tmpDir, 'uploads');
+    console.log('[upload] GitHub upload attempt:', { safe, size: base64.length, owner, repo, branch });
+    
+    // Upload to GitHub (pass isBase64=true since content is already base64-encoded)
+    await putFile(`public/uploads/${safe}`, base64, `Upload: ${safe}`, null, { owner, repo, branch, token }, true);
+    console.log('[upload] GitHub upload successful');
+    
+    // Update metadata file
+    const meta = { id: Date.now().toString(), filename: safe, originalname: req.file.originalname, description, targets, uploadedAt: new Date().toISOString() };
+    
     try {
-      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-      const safe = Date.now() + '-' + (req.file.originalname || 'upload').replace(/[^a-zA-Z0-9._-]/g,'_');
-      const filePath = path.join(uploadDir, safe);
-      fs.writeFileSync(filePath, req.file.buffer);
-      
-      console.log('[upload] Stored in /tmp:', safe);
-      
-      const meta = { id: Date.now().toString(), filename: safe, originalname: req.file.originalname, description, targets, uploadedAt: new Date().toISOString(), storage: 'tmpdir' };
-      return res.json(meta);
-    } catch (tmpErr) {
-      console.error('[upload] tmp fallback failed:', tmpErr.message);
-      return res.status(503).json({ error: 'Uploads unavailable', message: 'Configure GITHUB_TOKEN environment variable on Vercel for persistent file storage.' });
+      const existing = await getFile('data/files.json', { owner, repo, branch, token });
+      const arr = JSON.parse(existing.content || '[]');
+      arr.push(meta);
+      await putFile('data/files.json', JSON.stringify(arr, null, 2), 'Update files metadata', null, { owner, repo, branch, token });
+      console.log('[upload] Metadata updated');
+    } catch(e) {
+      console.warn('[upload] Metadata update failed, but file uploaded:', e.message);
     }
-  }catch(e){ console.error('[upload] Error', e); return res.status(500).json({ error: 'Upload failed', message: e.message, stack: e.stack }); }
+    
+    return res.json(meta);
+  }catch(e){ 
+    console.error('[upload] Error:', e.message, e.stack); 
+    return res.status(500).json({ 
+      error: 'Upload failed', 
+      message: e.message,
+      details: 'Check that GITHUB_TOKEN is valid and has write access to the repository'
+    }); 
+  }
 });
 
 app.get('/api/files', authRequired, (req,res)=>{
