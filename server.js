@@ -129,8 +129,8 @@ app.use((req, res, next) => {
 
 // Rate limiting
 const _rateMap = new Map();
-const RATE_WINDOW_MS = parseInt(process.env.RATE_WINDOW_MS || '60000', 10);
-const RATE_MAX = parseInt(process.env.RATE_MAX || '240', 10);
+const RATE_WINDOW_MS = parseInt(process.env.RATE_WINDOW_MS || '900000', 10); // 15 minutes
+const RATE_MAX = parseInt(process.env.RATE_MAX || '5000', 10); // 5000 requests per 15 min
 app.use((req, res, next) => {
   try{
     const ip = req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 'unknown';
