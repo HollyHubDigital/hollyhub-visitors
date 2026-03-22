@@ -67,7 +67,7 @@ const ADMIN_USER = process.env.ADMIN_USER || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASS || 'password';
 const JWT_SECRET = process.env.JWT_SECRET || 'devsecret';
 
-// ✅ CORS: Allow admin.hollyhubdigital.vercel.app and visitors on Render to access this API
+// âœ… CORS: Allow admin.hollyhubdigital.vercel.app and visitors on Render to access this API
 const ALLOWED_ORIGINS = [
   // Vercel admin site (production)
   'https://admin-hollyhub.vercel.app',
@@ -237,7 +237,7 @@ app.use((req, res, next) => {
         origin === host || 
         origin.includes('localhost') || 
         origin.includes('127.0.0.1') ||
-        origin.endsWith('.vercel.app')  // ✅ Allow Vercel origins
+        origin.endsWith('.vercel.app')  // âœ… Allow Vercel origins
       );
       if(origin && !isAllowedOrigin){
         return res.status(403).send('Forbidden (invalid origin)');
@@ -248,7 +248,7 @@ app.use((req, res, next) => {
         referer.startsWith(host) || 
         referer.includes('localhost') || 
         referer.includes('127.0.0.1') ||
-        referer.includes('.vercel.app')  // ✅ Allow Vercel referer
+        referer.includes('.vercel.app')  // âœ… Allow Vercel referer
       );
       if(!origin && referer && !isAllowedReferer){
         return res.status(403).send('Forbidden (invalid referer)');
@@ -515,7 +515,7 @@ Object.entries(imageConfig).forEach(([route, config]) => {
     try {
       if (fs.existsSync(p)) {
         cachedData = fs.readFileSync(p);
-        console.log(`[Init] ✓ Cached ${route} from ${p} (${cachedData.length} bytes)`);
+        console.log(`[Init] âœ“ Cached ${route} from ${p} (${cachedData.length} bytes)`);
         break;
       }
     } catch (e) {
@@ -525,7 +525,7 @@ Object.entries(imageConfig).forEach(([route, config]) => {
   if (cachedData) {
     imageCache[route] = { data: cachedData, mime: config.mime };
   } else {
-    console.error(`[Init] ✗ Failed to load ${route}`);
+    console.error(`[Init] âœ— Failed to load ${route}`);
   }
 });
 
@@ -537,7 +537,7 @@ Object.keys(imageConfig).forEach((route) => {
       console.error(`[Image] Request for ${route} but not in cache`);
       return res.status(404).json({ error: 'Image not found', route });
     }
-    console.log(`[Image] ✓ Serving ${route} from cache (${cached.data.length} bytes)`);
+    console.log(`[Image] âœ“ Serving ${route} from cache (${cached.data.length} bytes)`);
     res.setHeader('Content-Type', cached.mime);
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     res.setHeader('Content-Length', cached.data.length);
@@ -928,33 +928,63 @@ app.post('/api/upload', authRequired, upload.single('file'), async (req,res)=>{
   const description = req.body.description || '';
   const targets = (req.body.targets || '').split(',').map(s=>s.trim()).filter(Boolean);
 
-  // If running read-only and S3 is not enabled, fail clearly
-  if(READ_ONLY_FS && !S3_ENABLED){
-    return res.status(503).json({ error: 'Uploads disabled', message: 'Server filesystem is read-only; enable S3/R2 or deploy a writable server.' });
-  }
-
-  let filename;
   try{
+    // Use GitHub for uploads (more reliable than S3 for small files)
+    if(process.env.GITHUB_TOKEN && process.env.REPO_OWNER && process.env.REPO_NAME){
+      const { putFile, getFile } = require('./api/gh');
+      const owner = process.env.REPO_OWNER;
+      const repo = process.env.REPO_NAME;
+      const branch = process.env.REPO_BRANCH || 'main';
+      const token = process.env.GITHUB_TOKEN;
+      
+      const safe = Date.now() + '-' + (req.file.originalname || 'upload').replace(/[^a-zA-Z0-9._-]/g,'_');
+      const base64 = req.file.buffer.toString('base64');
+      
+      // Upload to GitHub
+      await putFile(`public/uploads/${safe}`, base64, `Upload: ${safe}`, null, { owner, repo, branch, token });
+      
+      // Update metadata file
+      const meta = { id: Date.now().toString(), filename: safe, originalname: req.file.originalname, description, targets, uploadedAt: new Date().toISOString() };
+      
+      try {
+        const existing = await getFile('data/files.json', { owner, repo, branch, token });
+        const arr = JSON.parse(existing.content || '[]');
+        arr.push(meta);
+        await putFile('data/files.json', JSON.stringify(arr, null, 2), 'Update files metadata', null, { owner, repo, branch, token });
+      } catch(e) {
+        console.warn('[upload] Metadata update failed, but file uploaded:', e.message);
+      }
+      
+      return res.json(meta);
+    }
+    
+    // Fallback to S3 if configured
     if(S3_ENABLED && req.file.buffer){
       const safe = Date.now() + '-' + (req.file.originalname || 'upload').replace(/[^a-zA-Z0-9._-]/g,'_');
       const remote = await uploadToStore(req.file.buffer, safe, req.file.mimetype);
-      filename = remote;
-    }else if(req.file.path){
-      // disk storage
-      filename = path.basename(req.file.path || req.file.filename || '');
-    }else{
-      return res.status(500).send('Upload handling not supported in this environment');
+      const meta = { id: Date.now().toString(), filename: remote, originalname: req.file.originalname, description, targets, uploadedAt: new Date().toISOString() };
+      return res.json(meta);
     }
-  }catch(e){ console.error('Upload store error', e); return res.status(500).send('Upload failed: '+e.message); }
-
-  const meta = { id: Date.now().toString(), filename, originalname: req.file.originalname, description, targets, uploadedAt: new Date().toISOString() };
-  try{
-    const arr = JSON.parse(fs.readFileSync(filesJson,'utf8')) || [];
-    arr.push(meta);
-    fs.writeFileSync(filesJson, JSON.stringify(arr, null, 2));
-  }catch(e){ console.error('Upload metadata write failed', e); }
-
-  return res.json(meta);
+    
+    // If read-only and no GitHub/S3, fail
+    if(READ_ONLY_FS){
+      return res.status(503).json({ error: 'Uploads disabled', message: 'Configure GITHUB_TOKEN or enable S3/R2.' });
+    }
+    
+    // Disk storage (local dev only)
+    if(req.file.path){
+      const filename = path.basename(req.file.path || req.file.filename || '');
+      const meta = { id: Date.now().toString(), filename, originalname: req.file.originalname, description, targets, uploadedAt: new Date().toISOString() };
+      try{
+        const arr = JSON.parse(fs.readFileSync(filesJson,'utf8')) || [];
+        arr.push(meta);
+        fs.writeFileSync(filesJson, JSON.stringify(arr, null, 2));
+      }catch(e){ console.error('Upload metadata write failed', e); }
+      return res.json(meta);
+    }
+    
+    return res.status(500).send('Upload handling not supported in this environment');
+  }catch(e){ console.error('[upload] Error', e); return res.status(500).send('Upload failed: '+e.message); }
 });
 
 app.get('/api/files', authRequired, (req,res)=>{
@@ -1868,7 +1898,7 @@ app.all('/api/*', async (req, res) => {
   }catch(e){ console.error('Dynamic API loader error', e); return res.status(500).send(e.message); }
 });
 
-app.listen(PORT, ()=>{ console.log('✅ Visitors Backend running on port', PORT); });
+app.listen(PORT, ()=>{ console.log('âœ… Visitors Backend running on port', PORT); });
 
 app.use((err, req, res, next) => {
   if (!err) return next();
