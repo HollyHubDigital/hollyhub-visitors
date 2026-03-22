@@ -1016,20 +1016,20 @@ app.post('/api/blog', authRequired, async (req,res)=>{
     
     const { getRepoConfig } = require('./api/utils');
     const { getFile, putFile } = require('./api/gh');
-    const repoOpts = await getRepoConfig(req) || {};
+    const repoOpts = await getRepoConfig(req);
     let posts = [];
     
-    // Read existing posts from GitHub
-    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+    // Try to read existing posts from GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo && repoOpts.token) {
       try { 
-        const f = await getFile('data/blog.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); 
+        const f = await getFile('data/blog.json', repoOpts); 
         posts = JSON.parse(f.content||'[]');
       } catch(e) {
-        console.error('[blog POST] GitHub read error:', e.message);
+        console.warn('[blog POST] GitHub read failed:', e.message);
         posts = [];
       }
     } else {
-      // Fallback to local fs
+      // Try local fs as fallback
       try { posts = JSON.parse(fs.readFileSync(blogJson,'utf8')) || []; } catch(e) { posts = []; }
     }
     
@@ -1037,17 +1037,28 @@ app.post('/api/blog', authRequired, async (req,res)=>{
     posts.unshift(post);
     const json = JSON.stringify(posts, null, 2);
     
-    // Save to GitHub
-    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+    // Try to save to GitHub first
+    if(repoOpts && repoOpts.owner && repoOpts.repo && repoOpts.token) {
       try {
-        await putFile('data/blog.json', json, 'Add blog post', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+        await putFile('data/blog.json', json, 'Add blog post', null, repoOpts);
         console.log('[blog POST] Saved to GitHub');
       } catch(e) {
-        console.error('[blog POST] GitHub write error:', e.message);
+        console.warn('[blog POST] GitHub write failed, using /tmp fallback:', e.message);
       }
-    } else {
-      // Fallback to local fs
-      fs.writeFileSync(blogJson, json);
+    }
+    
+    // Fallback to /tmp if GitHub unavailable
+    if(!process.env.GITHUB_TOKEN) {
+      try {
+        const tmpDir = os.tmpdir();
+        const blogDir = path.join(tmpDir, 'blog');
+        if (!fs.existsSync(blogDir)) fs.mkdirSync(blogDir, { recursive: true });
+        const postFile = path.join(blogDir, post.id + '.json');
+        fs.writeFileSync(postFile, JSON.stringify(post));
+        console.log('[blog POST] Saved to /tmp');
+      } catch(tmpErr) {
+        console.error('[blog POST] /tmp fallback failed:', tmpErr.message);
+      }
     }
     
     return res.json(post);
@@ -1065,16 +1076,16 @@ app.put('/api/blog', authRequired, async (req,res)=>{
     
     const { getRepoConfig } = require('./api/utils');
     const { getFile, putFile } = require('./api/gh');
-    const repoOpts = await getRepoConfig(req) || {};
+    const repoOpts = await getRepoConfig(req);
     let posts = [];
     
-    // Read from GitHub
-    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+    // Try to read from GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo && repoOpts.token) {
       try { 
-        const f = await getFile('data/blog.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); 
+        const f = await getFile('data/blog.json', repoOpts); 
         posts = JSON.parse(f.content||'[]');
       } catch(e) {
-        console.error('[blog PUT] GitHub read error:', e.message);
+        console.warn('[blog PUT] GitHub read failed:', e.message);
         posts = [];
       }
     } else {
@@ -1090,17 +1101,30 @@ app.put('/api/blog', authRequired, async (req,res)=>{
     post.updatedAt = new Date().toISOString();
     const json = JSON.stringify(posts, null, 2);
     
-    // Save to GitHub
-    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+    // Try to save to GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo && repoOpts.token) {
       try {
-        await putFile('data/blog.json', json, 'Update blog post', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+        await putFile('data/blog.json', json, 'Update blog post', null, repoOpts);
         console.log('[blog PUT] Saved to GitHub');
       } catch(e) {
-        console.error('[blog PUT] GitHub write error:', e.message);
+        console.warn('[blog PUT] GitHub write failed, using /tmp fallback:', e.message);
       }
-    } else {
-      fs.writeFileSync(blogJson, json);
     }
+    
+    // Fallback to /tmp if GitHub unavailable
+    if(!process.env.GITHUB_TOKEN) {
+      try {
+        const tmpDir = os.tmpdir();
+        const blogDir = path.join(tmpDir, 'blog');
+        if (!fs.existsSync(blogDir)) fs.mkdirSync(blogDir, { recursive: true });
+        const postFile = path.join(blogDir, post.id + '.json');
+        fs.writeFileSync(postFile, JSON.stringify(post));
+        console.log('[blog PUT] Saved to /tmp');
+      } catch(tmpErr) {
+        console.warn('[blog PUT] /tmp fallback failed:', tmpErr.message);
+      }
+    }
+    
     return res.json(post);
   } catch(e) {
     console.error('[blog PUT] Error:', e.message);
@@ -1528,16 +1552,16 @@ app.post('/api/portfolio', authRequired, async (req,res)=>{
     
     const { getRepoConfig } = require('./api/utils');
     const { getFile, putFile } = require('./api/gh');
-    const repoOpts = await getRepoConfig(req) || {};
+    const repoOpts = await getRepoConfig(req);
     let items = [];
     
-    // Read existing items from GitHub
-    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+    // Try to read from GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo && repoOpts.token) {
       try { 
-        const f = await getFile('data/portfolio.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); 
+        const f = await getFile('data/portfolio.json', repoOpts); 
         items = JSON.parse(f.content||'[]');
       } catch(e) {
-        console.error('[portfolio POST] GitHub read error:', e.message);
+        console.warn('[portfolio POST] GitHub read failed:', e.message);
         items = [];
       }
     } else {
@@ -1548,17 +1572,30 @@ app.post('/api/portfolio', authRequired, async (req,res)=>{
     items.push(item);
     const json = JSON.stringify(items, null, 2);
     
-    // Save to GitHub
-    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+    // Try to save to GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo && repoOpts.token) {
       try {
-        await putFile('data/portfolio.json', json, 'Add portfolio item', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+        await putFile('data/portfolio.json', json, 'Add portfolio item', null, repoOpts);
         console.log('[portfolio POST] Saved to GitHub');
       } catch(e) {
-        console.error('[portfolio POST] GitHub write error:', e.message);
+        console.warn('[portfolio POST] GitHub write failed, using /tmp fallback:', e.message);
       }
-    } else {
-      fs.writeFileSync(portfolioJson, json);
     }
+    
+    // Fallback to /tmp if GitHub unavailable
+    if(!process.env.GITHUB_TOKEN) {
+      try {
+        const tmpDir = os.tmpdir();
+        const portfolioDir = path.join(tmpDir, 'portfolio');
+        if (!fs.existsSync(portfolioDir)) fs.mkdirSync(portfolioDir, { recursive: true });
+        const itemFile = path.join(portfolioDir, item.id + '.json');
+        fs.writeFileSync(itemFile, JSON.stringify(item));
+        console.log('[portfolio POST] Saved to /tmp');
+      } catch(tmpErr) {
+        console.warn('[portfolio POST] /tmp fallback failed:', tmpErr.message);
+      }
+    }
+    
     return res.json(item);
   } catch(e) {
     console.error('[portfolio POST] Error:', e.message);
@@ -1616,16 +1653,16 @@ app.put('/api/portfolio', authRequired, async (req,res)=>{
     
     const { getRepoConfig } = require('./api/utils');
     const { getFile, putFile } = require('./api/gh');
-    const repoOpts = await getRepoConfig(req) || {};
+    const repoOpts = await getRepoConfig(req);
     let items = [];
     
-    // Read from GitHub
-    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+    // Try to read from GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo && repoOpts.token) {
       try { 
-        const f = await getFile('data/portfolio.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); 
+        const f = await getFile('data/portfolio.json', repoOpts); 
         items = JSON.parse(f.content||'[]');
       } catch(e) {
-        console.error('[portfolio PUT] GitHub read error:', e.message);
+        console.warn('[portfolio PUT] GitHub read failed:', e.message);
         items = [];
       }
     } else {
@@ -1642,17 +1679,30 @@ app.put('/api/portfolio', authRequired, async (req,res)=>{
     item.updatedAt = new Date().toISOString();
     const json = JSON.stringify(items, null, 2);
     
-    // Save to GitHub
-    if(repoOpts && repoOpts.owner && repoOpts.repo) {
+    // Try to save to GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo && repoOpts.token) {
       try {
-        await putFile('data/portfolio.json', json, 'Update portfolio item', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+        await putFile('data/portfolio.json', json, 'Update portfolio item', null, repoOpts);
         console.log('[portfolio PUT] Saved to GitHub');
       } catch(e) {
-        console.error('[portfolio PUT] GitHub write error:', e.message);
+        console.warn('[portfolio PUT] GitHub write failed, using /tmp fallback:', e.message);
       }
-    } else {
-      fs.writeFileSync(portfolioJson, json);
     }
+    
+    // Fallback to /tmp if GitHub unavailable
+    if(!process.env.GITHUB_TOKEN) {
+      try {
+        const tmpDir = os.tmpdir();
+        const portfolioDir = path.join(tmpDir, 'portfolio');
+        if (!fs.existsSync(portfolioDir)) fs.mkdirSync(portfolioDir, { recursive: true });
+        const itemFile = path.join(portfolioDir, item.id + '.json');
+        fs.writeFileSync(itemFile, JSON.stringify(item));
+        console.log('[portfolio PUT] Saved to /tmp');
+      } catch(tmpErr) {
+        console.warn('[portfolio PUT] /tmp fallback failed:', tmpErr.message);
+      }
+    }
+    
     return res.json(item);
   } catch(e) {
     console.error('[portfolio PUT] Error:', e.message);
