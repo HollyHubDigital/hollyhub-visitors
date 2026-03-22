@@ -114,12 +114,13 @@ app.use(express.urlencoded({ extended: true }));
 // === Security middleware (headers, rate limiting, input sanitization, CSRF origin checks) ===
 app.disable('x-powered-by');
 
-// CORS - Allow admin dashboards to call this API
+// CORS - Allow admin dashboards to call this API from separate Vercel accounts
 const allowedOrigins = [
   'https://admin-hollyhub.vercel.app',
   'https://admin-hollyhubdigital.vercel.app',
   'http://localhost:3000',
-  'http://localhost:8080'
+  'http://localhost:8080',
+  'http://localhost:5000'
 ];
 
 app.use((req, res, next) => {
