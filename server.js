@@ -960,11 +960,14 @@ app.post('/api/upload', authRequired, upload.single('file'), async (req,res)=>{
     const token = process.env.GITHUB_TOKEN;
     
     const safe = Date.now() + '-' + (req.file.originalname || 'upload').replace(/[^a-zA-Z0-9._-]/g,'_');
-    const base64 = req.file.buffer.toString('base64');
     
-    console.log('[upload] GitHub upload attempt:', { safe, size: base64.length, owner, repo, branch });
+    console.log('[upload] Starting upload:', { filename: req.file.originalname, size: req.file.size, safe, owner, repo, branch });
+    
+    const base64 = req.file.buffer.toString('base64');
+    console.log('[upload] Converted to base64, size:', base64.length);
     
     // Upload to GitHub (pass isBase64=true since content is already base64-encoded)
+    console.log('[upload] Calling putFile to GitHub...');
     await putFile(`public/uploads/${safe}`, base64, `Upload: ${safe}`, null, { owner, repo, branch, token }, true);
     console.log('[upload] GitHub upload successful');
     
@@ -972,22 +975,26 @@ app.post('/api/upload', authRequired, upload.single('file'), async (req,res)=>{
     const meta = { id: Date.now().toString(), filename: safe, originalname: req.file.originalname, description, targets, uploadedAt: new Date().toISOString() };
     
     try {
+      console.log('[upload] Reading existing files.json from GitHub...');
       const existing = await getFile('data/files.json', { owner, repo, branch, token });
       const arr = JSON.parse(existing.content || '[]');
       arr.push(meta);
+      console.log('[upload] Updating files.json metadata...');
       await putFile('data/files.json', JSON.stringify(arr, null, 2), 'Update files metadata', null, { owner, repo, branch, token });
-      console.log('[upload] Metadata updated');
-    } catch(e) {
-      console.warn('[upload] Metadata update failed, but file uploaded:', e.message);
+      console.log('[upload] Metadata updated successfully');
+    } catch(metaErr) {
+      console.warn('[upload] Metadata update failed, but file uploaded:', metaErr.message);
     }
     
+    console.log('[upload] Upload complete, returning metadata');
     return res.json(meta);
   }catch(e){ 
-    console.error('[upload] Error:', e.message, e.stack); 
+    console.error('[upload] CRITICAL ERROR:', e.message); 
+    console.error('[upload] Stack:', e.stack);
     return res.status(500).json({ 
       error: 'Upload failed', 
       message: e.message,
-      details: 'Check that GITHUB_TOKEN is valid and has write access to the repository'
+      details: 'Check Vercel logs for full error stack'
     }); 
   }
 });
