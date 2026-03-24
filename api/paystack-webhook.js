@@ -27,7 +27,13 @@ module.exports = async (req, res) => {
       const arr = JSON.parse(fs.readFileSync(eventsPath,'utf8') || '[]');
       arr.push({ receivedAt: new Date().toISOString(), event: payload.event || null, data: payload.data || payload });
       fs.writeFileSync(eventsPath, JSON.stringify(arr, null, 2), 'utf8');
-    }catch(e){ console.error('Failed to persist webhook event', e); }
+    }catch(e){ 
+      if(e && (e.code === 'EROFS' || e.code === 'EACCES')){
+        console.warn('[paystack-webhook] Read-only filesystem, event not persisted', e.code);
+      } else {
+        console.error('Failed to persist webhook event', e); 
+      }
+    }
 
     // Basic handling: respond 200 quickly. You can extend to update orders, send emails, etc.
     return res.json({ ok: true });

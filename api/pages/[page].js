@@ -32,8 +32,25 @@ module.exports = async (req, res) => {
     try{
       const { getRepoConfig } = require('../../api/utils');
       const repoOpts = await getRepoConfig(req) || {};
-      if(repoOpts && repoOpts.owner && repoOpts.repo){ await putFile(file, content, `Update ${file}`, null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); return res.json({ ok:true }); }
-      const fp = path.join(process.cwd(), file); fs.writeFileSync(fp, content, 'utf8'); return res.json({ ok:true });
+      if(repoOpts && repoOpts.owner && repoOpts.repo){ 
+        await putFile(file, content, `Update ${file}`, null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); 
+        return res.json({ ok:true }); 
+      }
+      // Fall back to local filesystem only if not on a serverless/read-only environment
+      const isServerless = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME;
+      if(isServerless){
+        return res.status(501).json({ error: 'Pages API requires GitHub configuration for serverless environments' });
+      }
+      const fp = path.join(process.cwd(), file);
+      try{
+        fs.writeFileSync(fp, content, 'utf8');
+      }catch(writeErr){
+        if(writeErr && (writeErr.code === 'EROFS' || writeErr.code === 'EACCES')){
+          return res.status(501).json({ error: 'Read-only filesystem - GitHub configuration required' });
+        }
+        throw writeErr;
+      }
+      return res.json({ ok:true });
     }catch(e){ console.error(e); return res.status(500).end(e.message); }
   }
 
