@@ -212,33 +212,56 @@ async function publishPortfolio(){
 
 async function uploadFile(file, targets){
   const token = API.token();
+  console.log('[uploadFile] Token status:', token ? 'Present' : 'Missing');
+  console.log('[uploadFile] API Base URL:', API.baseURL());
+  
   if(!token) {
     throw new Error('Authentication required. Please log in again.');
   }
+  
   const fd = new FormData();
   fd.append('file', file);
   if(targets && targets.length) fd.append('targets', targets.filter(Boolean).join(','));
+  
   const headers = { 'Authorization': 'Bearer ' + token };
-  const r = await fetch(API.buildURL('/api/upload'), { method: 'POST', headers, body: fd });
-  if(!r.ok) throw new Error(await r.text());
+  const uploadUrl = API.buildURL('/api/upload');
+  console.log('[uploadFile] Uploading to:', uploadUrl);
+  console.log('[uploadFile] Headers:', { Authorization: headers.Authorization ? 'SET' : 'MISSING' });
+  
+  const r = await fetch(uploadUrl, { method: 'POST', headers, body: fd });
+  
+  if(!r.ok) {
+    const errText = await r.text();
+    console.error('[uploadFile] Upload failed - Status:', r.status, 'Text:', errText);
+    throw new Error(`Upload failed (${r.status}): ${errText}`);
+  }
+  
   return await r.json();
 }
 
 async function refreshPortfolioList(){
   try {
-    const r = await fetch(API.buildURL('/api/portfolio'), { headers: API.headers() });
+    const url = API.buildURL('/api/portfolio');
+    console.log('[portfolio] Loading from:', url);
+    const r = await fetch(url, { headers: API.headers() });
+    
     if(!r.ok) {
-      console.error('Portfolio fetch failed:', r.status, r.statusText);
+      console.error('[portfolio] Fetch failed:', r.status, r.statusText);
       throw new Error(`Failed to load portfolio (${r.status})`);
     }
+    
     const items = await r.json();
+    console.log('[portfolio] Loaded items:', items ? items.length : 0);
+    
     const container = document.getElementById('portfolioList');
     if (!container) return;
+    
     container.innerHTML = '';
     if (!items || items.length === 0) {
       container.innerHTML = '<p style="opacity:0.6">No portfolio items yet. Create one above.</p>';
       return;
     }
+    
     items.forEach(item=>{
       const div = document.createElement('div');
       div.className = 'portfolio-item';
@@ -255,7 +278,7 @@ async function refreshPortfolioList(){
       container.appendChild(div);
     });
   } catch(e) {
-    console.error('refreshPortfolioList error:', e);
+    console.error('[portfolio] Error:', e);
     const container = document.getElementById('portfolioList');
     if (container) {
       container.innerHTML = `<p style="color:#ff6b6b">Error: ${e.message}</p>`;
@@ -347,19 +370,27 @@ async function editBlogPost(id){
 
 async function refreshBlogPosts(){
   try {
-    const r = await fetch(API.buildURL('/api/blog'), { headers: API.headers() });
+    const url = API.buildURL('/api/blog');
+    console.log('[blog] Loading from:', url);
+    const r = await fetch(url, { headers: API.headers() });
+    
     if(!r.ok) {
-      console.error('Blog fetch failed:', r.status, r.statusText);
+      console.error('[blog] Fetch failed:', r.status, r.statusText);
       throw new Error(`Failed to load blog posts (${r.status})`);
     }
+    
     const posts = await r.json();
+    console.log('[blog] Loaded posts:', posts ? posts.length : 0);
+    
     const container = document.getElementById('publishedPosts');
     if (!container) return;
+    
     container.innerHTML = '';
     if (!posts || posts.length === 0) {
       container.innerHTML = '<p style="opacity:0.6">No blog posts yet. Create one above.</p>';
       return;
     }
+    
     posts.forEach(post=>{
       const div = document.createElement('div');
       div.className = 'blog-item';
@@ -376,7 +407,7 @@ async function refreshBlogPosts(){
       container.appendChild(div);
     });
   } catch(e) {
-    console.error('refreshBlogPosts error:', e);
+    console.error('[blog] Error:', e);
     const container = document.getElementById('publishedPosts');
     if (container) {
       container.innerHTML = `<p style="color:#ff6b6b">Error: ${e.message}</p>`;
