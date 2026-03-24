@@ -11,7 +11,7 @@ const path = require('path');
 const { putFile, getFile } = require('./api/gh');
 const os = require('os');
 // Safe FS wrappers: if running in read-only serverless, fall back to in-memory store
-let READ_ONLY_FS = false;
+let READ_ONLY_FS = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production' && !process.env.LOCAL_UPLOAD || false;
 const _fs_readFileSync = fs.readFileSync.bind(fs);
 const _fs_writeFileSync = fs.writeFileSync.bind(fs);
 const _fs_mkdirSync = fs.mkdirSync && fs.mkdirSync.bind(fs);
@@ -820,8 +820,9 @@ if(!fs.existsSync(pagesIndexJson)) fs.writeFileSync(pagesIndexJson, '{}');
 
 // S3 was already configured at top of file; now set up upload storage & limits
 const MAX_UPLOAD_MB = parseInt(process.env.MAX_UPLOAD_MB || '200', 10);
-// Use memory storage when S3 is enabled or filesystem is read-only to avoid writing to disk
-const storage = (S3_ENABLED || READ_ONLY_FS) ? multer.memoryStorage() : multer.diskStorage({ destination: uploadDir, filename: (req,file,cb)=>{ const safe = Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g,'_'); cb(null, safe); } });
+// Always use memory storage for serverless/Vercel environments OR when S3/GitHub is configured
+// (we never write uploads to local disk - always to GitHub or S3)
+const storage = (S3_ENABLED || READ_ONLY_FS || process.env.GITHUB_TOKEN) ? multer.memoryStorage() : multer.diskStorage({ destination: uploadDir, filename: (req,file,cb)=>{ const safe = Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g,'_'); cb(null, safe); } });
 const upload = multer({ storage, limits: { fileSize: MAX_UPLOAD_MB * 1024 * 1024 } });
 
 // Helper to read/write JSON metadata either from local fs or S3
