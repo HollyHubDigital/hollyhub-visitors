@@ -861,6 +861,33 @@ function authRequired(req,res,next){
   try{ const p = jwt.verify(token, JWT_SECRET); req.user = p; next(); }catch(e){ return res.status(401).send('Invalid token'); }
 }
 
+// Accepts EITHER admin JWT OR GitHub token (for upload endpoint flexibility)
+function authRequiredOrGithub(req,res,next){
+  // Check for GitHub token first (header or env)
+  const githubTokenFromHeader = req.headers['x-github-token'];
+  const githubTokenFromEnv = process.env.GITHUB_TOKEN;
+  
+  if(githubTokenFromHeader || githubTokenFromEnv) {
+    console.log('[auth] Using GitHub token auth');
+    req.githubAuth = true;
+    return next();
+  }
+  
+  // Fall back to JWT admin auth
+  const h = req.headers.authorization;
+  if(!h) return res.status(401).send('Missing token');
+  const parts = h.split(' ');
+  if(parts.length!==2) return res.status(401).send('Invalid token');
+  const token = parts[1];
+  try{
+    const p = jwt.verify(token, JWT_SECRET);
+    req.user = p;
+    next();
+  }catch(e){
+    return res.status(401).send('Invalid token');
+  }
+}
+
 function getStoredAdmin(){
   try{
     const arr = JSON.parse(fs.readFileSync(usersJson,'utf8')) || [];
@@ -939,7 +966,7 @@ app.put('/api/pages/:page', authRequired, (req,res)=>{
 });
 
 // ===== FILE UPLOAD =====
-app.post('/api/upload', authRequired, upload.single('file'), async (req,res)=>{
+app.post('/api/upload', authRequiredOrGithub, upload.single('file'), async (req,res)=>{
   if(!req.file) return res.status(400).send('No file');
   
   // Uploads REQUIRE GitHub token (Vercel serverless can't persist to local filesystem)
