@@ -1784,7 +1784,7 @@ app.post('/api/admin/update-credentials', authRequired, validate(adminUpdateCred
 });
 
 // ===== SETTINGS =====
-app.get('/api/settings', authRequired, async (req,res)=>{
+app.get('/api/settings', async (req,res)=>{
   try {
     const { getRepoConfig } = require('./api/utils');
     const { getFile } = require('./api/gh');
