@@ -101,7 +101,15 @@ module.exports = async (req, res) => {
       if(!user){
         user = { id: Date.now().toString(), email: email.toLowerCase(), fullname: info.name || info.email.split('@')[0], passwordHash: bcrypt.hashSync(Math.random().toString(36), 10), createdAt: new Date().toISOString(), oauthProvider: 'google' };
         users.unshift(user);
-        fs.writeFileSync(usersJson, JSON.stringify(users, null, 2), 'utf8');
+        try{
+          fs.writeFileSync(usersJson, JSON.stringify(users, null, 2), 'utf8');
+        }catch(writeErr){
+          if(!(writeErr && (writeErr.code === 'EROFS' || writeErr.code === 'EACCES'))){
+            throw writeErr;
+          }
+          console.warn('[google] Read-only filesystem, user not persisted', writeErr.code);
+          // Continue anyway - user gets authenticated for this session
+        }
       }
       const token = makeToken(user);
       return res.redirect('/?token=' + encodeURIComponent(token));

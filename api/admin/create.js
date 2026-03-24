@@ -34,7 +34,15 @@ module.exports = async function (req, res) {
         try{ usersArr = JSON.parse(fs.readFileSync(usersFp,'utf8')) || []; }catch(_){ usersArr = []; }
       }
       usersArr.unshift(userObj);
-      fs.writeFileSync(usersFp, JSON.stringify(usersArr, null, 2), 'utf8');
+      try{
+        fs.writeFileSync(usersFp, JSON.stringify(usersArr, null, 2), 'utf8');
+      }catch(writeErr){
+        if(writeErr && (writeErr.code === 'EROFS' || writeErr.code === 'EACCES')){
+          console.warn('[admin/create] Read-only filesystem, admin not persisted', writeErr.code);
+          return res.status(501).json({ error: 'Admin creation temporarily unavailable (filesystem read-only)' });
+        }
+        throw writeErr;
+      }
       return res.json({ ok: true });
     }
   }catch(e){ console.error(e); res.status(500).end(e.message); }

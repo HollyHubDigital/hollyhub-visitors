@@ -23,8 +23,16 @@ module.exports = async (req, res) => {
     user.passwordHash = bcrypt.hashSync(newPassword, 10);
     // remove reset record
     resets.splice(recIdx,1);
-    fs.writeFileSync(resetsJson, JSON.stringify(resets, null, 2), 'utf8');
-    fs.writeFileSync(usersJson, JSON.stringify(users, null, 2), 'utf8');
+    try{
+      fs.writeFileSync(resetsJson, JSON.stringify(resets, null, 2), 'utf8');
+      fs.writeFileSync(usersJson, JSON.stringify(users, null, 2), 'utf8');
+    }catch(writeErr){
+      if(writeErr && (writeErr.code === 'EROFS' || writeErr.code === 'EACCES')){
+        console.warn('[reset] Read-only filesystem, reset not persisted', writeErr.code);
+        return res.status(501).json({ error: 'Password reset temporarily unavailable (filesystem read-only)' });
+      }
+      throw writeErr;
+    }
 
     return res.json({ ok:true });
   }catch(e){ console.error(e); return res.status(500).json({ error: e.message }); }

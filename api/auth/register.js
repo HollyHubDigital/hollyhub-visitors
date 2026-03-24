@@ -55,7 +55,19 @@ module.exports = async (req, res) => {
     users.unshift(user);
     const json = JSON.stringify(users, null, 2);
     if(repoOpts && repoOpts.owner && repoOpts.repo){ await putFile(dataPath, json, 'Add user', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token }); }
-    else { const dir = path.join(process.cwd(),'data'); if(!fs.existsSync(dir)) fs.mkdirSync(dir,{recursive:true}); fs.writeFileSync(path.join(dir,'users.json'), json, 'utf8'); }
+    else {
+      const dir = path.join(process.cwd(),'data');
+      try{
+        if(!fs.existsSync(dir)) fs.mkdirSync(dir,{recursive:true});
+        fs.writeFileSync(path.join(dir,'users.json'), json, 'utf8');
+      }catch(writeErr){
+        if(writeErr && (writeErr.code === 'EROFS' || writeErr.code === 'EACCES')){
+          console.warn('[register] Read-only filesystem, registration not persisted', writeErr.code);
+          return res.status(501).json({ error: 'Registration temporarily unavailable (filesystem read-only)' });
+        }
+        throw writeErr;
+      }
+    }
 
     const token = makeToken(user);
     return res.json({ token, user: { id: user.id, email: user.email, fullname: user.fullname } });

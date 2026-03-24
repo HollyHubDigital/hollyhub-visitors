@@ -106,7 +106,15 @@ module.exports = async (req, res) => {
         // create user
         user = { id: Date.now().toString(), email: email.toLowerCase(), fullname: profile.name || profile.login || '', passwordHash: bcrypt.hashSync(Math.random().toString(36), 10), createdAt: new Date().toISOString(), oauthProvider: 'github' };
         users.unshift(user);
-        fs.writeFileSync(usersJson, JSON.stringify(users, null, 2), 'utf8');
+        try{
+          fs.writeFileSync(usersJson, JSON.stringify(users, null, 2), 'utf8');
+        }catch(writeErr){
+          if(!(writeErr && (writeErr.code === 'EROFS' || writeErr.code === 'EACCES'))){
+            throw writeErr;
+          }
+          console.warn('[github] Read-only filesystem, user not persisted', writeErr.code);
+          // Continue anyway - user gets authenticated for this session
+        }
       }
       const token = makeToken(user);
       // redirect back to site with token
