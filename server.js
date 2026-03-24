@@ -942,11 +942,11 @@ app.put('/api/pages/:page', authRequired, (req,res)=>{
 app.post('/api/upload', authRequired, upload.single('file'), async (req,res)=>{
   if(!req.file) return res.status(400).send('No file');
   
-  // Uploads REQUIRE GitHub token on Vercel (serverless can't write to /tmp persistently)
+  // Uploads REQUIRE GitHub token (Vercel serverless can't persist to local filesystem)
   if(!process.env.GITHUB_TOKEN || !process.env.REPO_OWNER || !process.env.REPO_NAME){
     return res.status(501).json({ 
       error: 'Uploads not configured', 
-      message: 'GITHUB_TOKEN, REPO_OWNER, and REPO_NAME must be set in Vercel environment variables'
+      message: 'GITHUB_TOKEN, REPO_OWNER, and REPO_NAME must be set in environment variables'
     });
   }
 
