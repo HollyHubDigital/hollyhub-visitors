@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: #007bff;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #0056b3;
+    }
+    
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+    
+    .btn-logout {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .btn-logout:hover {
+      background: #5a6268;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      font-size: 18px;
+      opacity: 0.7;
+    }
+    
+    #adminToast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    // Set API_BASE_URL if accessing from separate domain
+    if (typeof window.API_BASE_URL === 'undefined') {
+      // Automatically detect API URL - adjust as needed
+      const apiBase = window.location.hostname.includes('admin') 
+        ? 'https://hollyhubdigitals.vercel.app'
+        : 'http://localhost:3000';
+      window.API_BASE_URL = apiBase;
+    }
+  </script>
+  
+  <div class="container">
+    <div class="header">
+      <h1>Admin Dashboard</h1>
+      <button class="btn btn-logout" id="logoutBtn" style="display:none;">Logout</button>
+    </div>
+    
+    <div id="content">
+      <div class="loading">Loading admin dashboard...</div>
+    </div>
+  </div>
+  
+  <script src="./admin.js"></script>
+  <script>
+    // Check authentication first
+    function checkAuth() {
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('authToken');
+      if (!token) {
+        window.location.href = 'adminlogin.html';
+        return false;
+      }
+      return true;
+    }
+    
+    // Verify auth before initializing
+    if (!checkAuth()) {
+      // Auth check will redirect, stop script execution
+      throw new Error('Not authenticated');
+    }
+    
+    // Initialize logout button
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('authToken');
+      window.location.href = 'adminlogin.html';
+    });
+    
+    // Show/hide logout button based on auth state
+    function updateLogoutBtn() {
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('authToken');
+      document.getElementById('logoutBtn').style.display = token ? 'inline-block' : 'none';
+    }
+    
+    updateLogoutBtn();
+    window.addEventListener('storage', updateLogoutBtn);
+  </script>
+</body>
+</html>
