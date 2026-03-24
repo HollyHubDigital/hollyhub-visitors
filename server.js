@@ -959,6 +959,9 @@ app.post('/api/upload', authRequired, upload.single('file'), async (req,res)=>{
     const branch = process.env.REPO_BRANCH || 'main';
     const token = process.env.GITHUB_TOKEN;
     
+    console.log('[upload] Token length:', token ? token.length : 0, '| Token starts with:', token ? token.substring(0, 10) + '...' : 'MISSING');
+    console.log('[upload] Repo:', owner, '/', repo, 'branch:', branch);
+    
     const safe = Date.now() + '-' + (req.file.originalname || 'upload').replace(/[^a-zA-Z0-9._-]/g,'_');
     
     console.log('[upload] Starting upload:', { filename: req.file.originalname, size: req.file.size, safe, owner, repo, branch });
@@ -991,6 +994,13 @@ app.post('/api/upload', authRequired, upload.single('file'), async (req,res)=>{
   }catch(e){ 
     console.error('[upload] CRITICAL ERROR:', e.message); 
     console.error('[upload] Stack:', e.stack);
+    if(e.message.includes('401') || e.message.includes('Unauthorized')) {
+      return res.status(401).json({ 
+        error: 'GitHub authentication failed',
+        message: 'The GITHUB_TOKEN appears to be invalid or expired. Please verify it on Vercel.',
+        details: e.message
+      });
+    }
     return res.status(500).json({ 
       error: 'Upload failed', 
       message: e.message,
@@ -1626,6 +1636,19 @@ app.get('/api/portfolio', async (req,res)=>{
       }
     } else {
       try { items = JSON.parse(fs.readFileSync(portfolioJson,'utf8')) || []; } catch(e) { items = []; }
+    }
+
+    // Default fallback items if empty (for Vercel serverless deployment)
+    if(!items || items.length === 0) {
+      items = [
+        { id: "1770909192560", title: "WEb3 Modal", category: "Web Design", description: "This is a web3 modal for reown, but just testing", image: "/uploads/Screenshot%202026-01-08%20142039.png", url: "https://support-portals-launchpad.vercel.app", createdAt: "2026-02-12T15:13:12.560Z" },
+        { id: "1770910024666", title: "Hollyhub", category: "Web Design", description: "This is not an app but this is a modal", image: "/uploads/Internet.jpg", url: "https://acurast.com", createdAt: "2026-02-12T15:27:04.666Z" },
+        { id: "1770912277558", title: "Hollywilly", category: "Email Marketing", description: "Digital marketing for your brand or for your needs", image: "/uploads/1770916659971-Internet4.jpg", url: "https://google.com", createdAt: "2026-02-12T16:04:37.558Z" },
+        { id: "1770916072149", title: "Demo Project - Website Redesign", category: "Web Design", description: "A modern redesign delivered with performance and SEO in mind.", image: "/hollyhub.jpg", url: "https://example.com/demo", createdAt: "2026-02-12T17:07:52.149Z" },
+        { id: "1770934775186", title: "HollyHub Modal", category: "Web3 Design", description: "This project is very amazing, i spent 4 months buiding this modal", image: "/uploads/1770934775171-Screenshot_2026-01-08_142039.png", url: "https://hollyhub-kran.vercel.app", createdAt: "2026-02-12T22:19:35.187Z" },
+        { id: "1770953555973", title: "The Reown Modal", category: "Web3 Design", description: "This is my first reown modal that i built 3 months ago.", image: "/uploads/1770953555966-Internet.webp", url: "https://google.com", createdAt: "2026-02-13T03:32:35.973Z" }
+      ];
+      console.log('[portfolio GET] Using default fallback items');
     }
     
     const normalize = (it)=>{
