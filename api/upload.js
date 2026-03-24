@@ -5,6 +5,11 @@ const os = require('os');
 const { putFile } = require('./gh');
 
 module.exports = async (req, res) => {
+  console.log('=== UPLOAD REQUEST START ===');
+  console.log('GITHUB_TOKEN exists?', !!process.env.GITHUB_TOKEN);
+  console.log('GITHUB_TOKEN length:', process.env.GITHUB_TOKEN ? process.env.GITHUB_TOKEN.length : 0);
+  console.log('GITHUB_TOKEN starts with:', process.env.GITHUB_TOKEN ? process.env.GITHUB_TOKEN.substring(0, 10) + '...' : 'MISSING');
+
   if(req.method !== 'POST') return res.status(405).json({error: 'Method not allowed'});
   
   try {
@@ -49,6 +54,17 @@ module.exports = async (req, res) => {
         // Get repository configuration
         const { getRepoConfig } = require('./utils');
         const repoOpts = await getRepoConfig(req);
+        
+        console.log('Repo config:', {
+          hasToken: !!repoOpts?.token,
+          tokenLength: repoOpts?.token ? repoOpts.token.length : 0,
+          owner: repoOpts?.owner,
+          repo: repoOpts?.repo
+        });
+
+        if (!repoOpts?.token) {
+          return res.status(401).json({ error: 'Token missing on server' });
+        }
         
         if(!repoOpts || !repoOpts.owner || !repoOpts.repo) {
           console.error('[upload] Missing repo config', {owner: repoOpts?.owner, repo: repoOpts?.repo});
