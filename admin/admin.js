@@ -194,7 +194,15 @@ async function publishPortfolio(){
     }
     // prefer uploaded filename if available
     if(uploadedMeta && uploadedMeta.filename){ payload.image = uploadedMeta.filename; }
-    const r = await fetch(endpoint, { method, headers: API.headers(), body: JSON.stringify(payload) });
+    
+    const token = API.token();
+    const headers = API.headers();
+    console.log('[publishPortfolio] Publishing item...');
+    console.log('[publishPortfolio] Token present:', !!token);
+    console.log('[publishPortfolio] Token length:', token ? token.length : 0);
+    console.log('[publishPortfolio] Authorization header:', headers.Authorization ? 'Bearer ' + headers.Authorization.substring(0, 20) + '...' : 'MISSING');
+    
+    const r = await fetch(endpoint, { method, headers, body: JSON.stringify(payload) });
     if(!r.ok) throw new Error(await r.text());
     const createdItem = await r.json();
     showToast(editingId ? 'Portfolio item updated' : 'Portfolio item published', 'Open', ()=>window.open('/portfolio.html','_blank'));
