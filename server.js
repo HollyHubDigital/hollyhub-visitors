@@ -856,10 +856,23 @@ async function uploadToStore(fileBuffer, filename, mime) {
 }
 
 function authRequired(req,res,next){
-  const h = req.headers.authorization; if(!h) return res.status(401).send('Missing token');
-  const parts = h.split(' '); if(parts.length!==2) return res.status(401).send('Invalid token');
+  const h = req.headers.authorization;
+  console.log('[authRequired] Authorization header:', h ? `Present (${h.substring(0, 20)}...)` : 'MISSING');
+  if(!h) return res.status(401).send('Missing token');
+  const parts = h.split(' ');
+  console.log('[authRequired] Header parts:', parts.length, '| Expected: 2');
+  if(parts.length!==2) return res.status(401).send('Invalid token format');
   const token = parts[1];
-  try{ const p = jwt.verify(token, JWT_SECRET); req.user = p; next(); }catch(e){ return res.status(401).send('Invalid token'); }
+  console.log('[authRequired] Token length:', token.length, '| Trying to verify...');
+  try{
+    const p = jwt.verify(token, JWT_SECRET);
+    console.log('[authRequired] JWT verified successfully for user:', p.user);
+    req.user = p;
+    next();
+  }catch(e){
+    console.error('[authRequired] JWT verification failed:', e.message);
+    return res.status(401).send('Invalid token: ' + e.message);
+  }
 }
 
 // Accepts EITHER admin JWT OR GitHub token (for upload endpoint flexibility)

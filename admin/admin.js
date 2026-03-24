@@ -15,7 +15,13 @@ const API = {
   headers(json=true){ 
     const headers = {};
     const token = API.token();
-    if(token) headers['Authorization'] = 'Bearer ' + token;
+    console.log('[API.headers] Building headers... token present:', !!token);
+    if(token) {
+      headers['Authorization'] = 'Bearer ' + token;
+      console.log('[API.headers] Authorization header set, length:', headers['Authorization'].length);
+    } else {
+      console.warn('[API.headers] No token available');
+    }
     if(json) headers['Content-Type'] = 'application/json';
     return headers;
   }
@@ -59,7 +65,16 @@ function showToast(message, actionLabel, actionFn, timeout=5000){
 }
 
 function requireAuth() {
-  if(!API.token()) { window.location.href = 'adminlogin.html'; }
+  const token = API.token();
+  console.log('[requireAuth] Checking authentication...');
+  console.log('[requireAuth] Token present:', !!token);
+  if(token) {
+    console.log('[requireAuth] Token length:', token.length);
+    console.log('[requireAuth] Token preview:', token.substring(0, 30) + '...');
+  } else {
+    console.warn('[requireAuth] No token found, redirecting to login');
+  }
+  if(!token) { window.location.href = 'adminlogin.html'; }
 }
 
 // ===== TAB SWITCHING =====
@@ -213,6 +228,8 @@ async function publishPortfolio(){
 async function uploadFile(file, targets){
   const token = API.token();
   console.log('[uploadFile] Token status:', token ? 'Present' : 'Missing');
+  console.log('[uploadFile] Token length:', token ? token.length : 0);
+  console.log('[uploadFile] Token preview:', token ? token.substring(0, 20) + '...' : 'NONE');
   console.log('[uploadFile] API Base URL:', API.baseURL());
   
   if(!token) {
@@ -337,7 +354,15 @@ async function publishBlog(){
     let endpoint = '/api/blog';
     let method = 'POST';
     if(editingId){ endpoint += '?id='+encodeURIComponent(editingId); method = 'PUT'; }
-    const r = await fetch(API.buildURL(endpoint), { method, headers: API.headers(), body: JSON.stringify(payload) });
+    
+    const token = API.token();
+    const headers = API.headers();
+    console.log('[publishBlog] Publishing post...');
+    console.log('[publishBlog] Token present:', !!token);
+    console.log('[publishBlog] Token length:', token ? token.length : 0);
+    console.log('[publishBlog] Authorization header:', headers.Authorization ? 'Bearer ' + headers.Authorization.substring(0, 20) + '...' : 'MISSING');
+    
+    const r = await fetch(API.buildURL(endpoint), { method, headers, body: JSON.stringify(payload) });
     if(!r.ok) throw new Error(await r.text());
     const post = await r.json();
     showToast(editingId? 'Blog post updated' : 'Blog post published', 'Open', ()=>window.open('/blog.html','_blank'));
@@ -354,7 +379,7 @@ async function publishBlog(){
 
 async function editBlogPost(id){
   try{
-    const r = await fetch(API.buildURL('/api/blog'));
+    const r = await fetch(API.buildURL('/api/blog'), { headers: API.headers() });
     if(!r.ok) throw new Error('Failed to load posts');
     const posts = await r.json();
     const post = posts.find(p=>p.id===id);
