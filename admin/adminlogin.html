@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .login-container {
+      width: 100%;
+      max-width: 400px;
+      padding: 20px;
+    }
+    
+    .login-box {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 40px 30px;
+      backdrop-filter: blur(10px);
+    }
+    
+    .login-box h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    
+    .login-box p {
+      text-align: center;
+      opacity: 0.7;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    
+    .form-group input:focus {
+      outline: none;
+      border-color: #007bff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    
+    .form-group input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      background: #007bff;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn:hover {
+      background: #0056b3;
+    }
+    
+    .btn:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    .error {
+      color: #ff6b6b;
+      margin: 20px 0;
+      padding: 12px;
+      background: rgba(255, 107, 107, 0.1);
+      border-radius: 6px;
+      text-align: center;
+      display: none;
+    }
+    
+    .success {
+      color: #51cf66;
+      margin: 20px 0;
+      padding: 12px;
+      background: rgba(81, 207, 102, 0.1);
+      border-radius: 6px;
+      text-align: center;
+      display: none;
+    }
+  </style>
+  <script>
+    // Configure API base URL based on current hostname
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      window.API_BASE_URL = 'http://localhost:3000';
+    } else if (window.location.hostname.includes('admin-hollyhub')) {
+      window.API_BASE_URL = 'https://hollyhubdigitals.vercel.app';
+    } else {
+      window.API_BASE_URL = 'https://hollyhubdigitals.vercel.app';
+    }
+    console.log('[Admin Login] API Base URL configured:', window.API_BASE_URL);
+  </script>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-box">
+      <h1>Admin Login</h1>
+      <p>Enter your credentials to continue</p>
+      
+      <div id="errorMsg" class="error"></div>
+      <div id="successMsg" class="success"></div>
+      
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input 
+            type="text" 
+            id="username" 
+            name="username" 
+            placeholder="Enter username" 
+            required
+            autocomplete="username"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            placeholder="Enter password" 
+            required
+            autocomplete="current-password"
+          />
+        </div>
+        
+        <button type="submit" class="btn" id="submitBtn">Login</button>
+      </form>
+    </div>
+  </div>
+  
+  <script>
+    // Set API_BASE_URL if needed
+    if (typeof window.API_BASE_URL === 'undefined') {
+      const apiBase = window.location.hostname.includes('admin') 
+        ? 'https://hollyhubdigitals.vercel.app'
+        : 'http://localhost:3000';
+      window.API_BASE_URL = apiBase;
+    }
+    
+    const form = document.getElementById('loginForm');
+    const errorMsg = document.getElementById('errorMsg');
+    const successMsg = document.getElementById('successMsg');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      errorMsg.style.display = 'none';
+      successMsg.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Logging in...';
+      
+      try {
+        const apiUrl = window.API_BASE_URL || '';
+        const response = await fetch((apiUrl ? apiUrl : '') + '/api/admin/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, password })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Invalid username or password');
+        }
+        
+        const data = await response.json();
+        
+        if (data.token) {
+          localStorage.setItem('adminToken', data.token);
+          localStorage.setItem('authToken', data.token);
+          successMsg.textContent = 'Login successful! Redirecting...';
+          successMsg.style.display = 'block';
+          
+          setTimeout(() => {
+            window.location.href = 'admin.html';
+          }, 1000);
+        } else {
+          throw new Error('No token received');
+        }
+      } catch (error) {
+        errorMsg.textContent = error.message || 'Login failed. Please try again.';
+        errorMsg.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Login';
+      }
+    });
+    
+    // Check if already logged in
+    window.addEventListener('load', () => {
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('authToken');
+      if (token) {
+        window.location.href = 'admin.html';
+      }
+    });
+  </script>
+</body>
+</html>

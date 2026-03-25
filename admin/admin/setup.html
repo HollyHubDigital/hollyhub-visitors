@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Setup - Holly</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .wrap { max-width:480px; margin:6vh auto; padding:2rem; background: rgba(255,255,255,0.02); border:1px solid var(--border-color); border-radius:10px; }
+    .input { width:100%; padding:0.8rem; margin-bottom:1rem; border-radius:6px; border:1px solid var(--border-color); background: rgba(255,255,255,0.03); color:var(--text-light); }
+    .btn { padding:0.8rem 1.2rem; background:var(--primary-accent); color:#000; border:none; border-radius:6px; font-weight:700; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h2 style="color:var(--primary-accent)">Initial Admin Setup</h2>
+    <p style="opacity:0.8">Create the first admin user. Provide the setup token (if configured) to authorize this request.</p>
+    <label>Setup Token (if set)</label>
+    <input id="setupToken" class="input" placeholder="Optional setup token" />
+    <label>Username</label>
+    <input id="setupUser" class="input" value="admin" />
+    <label>Password</label>
+    <input id="setupPass" class="input" type="password" />
+    <button id="createBtn" class="btn">Create Admin</button>
+    <p id="msg" style="margin-top:1rem; opacity:0.8"></p>
+  </div>
+
+  <script>
+    // Redirect if admin already exists
+    (async function(){
+      try{
+        const r = await fetch('/api/admin/check');
+        if(r.ok){ const j = await r.json(); if(j.exists){ window.location.href = 'adminlogin.html'; } }
+      }catch(_){ }
+    })();
+
+    document.getElementById('createBtn').addEventListener('click', async ()=>{
+      const user = document.getElementById('setupUser').value;
+      const pass = document.getElementById('setupPass').value;
+      const setupToken = document.getElementById('setupToken').value;
+      if(!user || !pass) return document.getElementById('msg').textContent = 'Username and password required';
+      const res = await fetch('/api/admin/create', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ username: user, password: pass, setupToken }) });
+      if(res.ok){ document.getElementById('msg').textContent = 'Admin created. Redirecting to login...'; setTimeout(()=>window.location.href='adminlogin.html',1500); }
+      else { const t = await res.text(); document.getElementById('msg').textContent = 'Error: '+t; }
+    });
+  </script>
+</body>
+</html>
