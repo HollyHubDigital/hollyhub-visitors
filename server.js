@@ -383,7 +383,7 @@ app.get('/robots.txt', (req, res) => {
 });
 
 // Explicit handlers for root-level image assets
-const imageAssets = ['hollyhub.jpg', 'hollyhubhero.jpg', 'google.png', 'github.png', 'whatsapp.png'];
+const imageAssets = ['hollyhub.jpg', 'hollyhubhero.jpg', 'google.png', 'github.png', 'whatsapp.png', 'holly-favicon.png', 'Holly-og.png'];
 imageAssets.forEach(filename => {
   app.get(`/${filename}`, (req, res) => {
     try {
