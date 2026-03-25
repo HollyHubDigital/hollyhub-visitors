@@ -197,13 +197,23 @@ async function publishPortfolio(){
     
     const token = API.token();
     const headers = API.headers();
-    console.log('[publishPortfolio] Publishing item...');
+    const fullUrl = API.buildURL(endpoint);
+    console.log('[publishPortfolio] ===== PORTFOLIO PUBLISH START =====');
+    console.log('[publishPortfolio] Endpoint:', endpoint);
+    console.log('[publishPortfolio] Full URL:', fullUrl);
+    console.log('[publishPortfolio] Method:', method);
     console.log('[publishPortfolio] Token present:', !!token);
     console.log('[publishPortfolio] Token length:', token ? token.length : 0);
-    console.log('[publishPortfolio] Authorization header:', headers.Authorization ? 'Bearer ' + headers.Authorization.substring(0, 20) + '...' : 'MISSING');
+    console.log('[publishPortfolio] Token starts with:', token ? token.substring(0, 30) + '...' : 'EMPTY');
+    console.log('[publishPortfolio] Headers object:', headers);
+    console.log('[publishPortfolio] Authorization header value:', headers.Authorization);
     
-    const r = await fetch(endpoint, { method, headers, body: JSON.stringify(payload) });
-    if(!r.ok) throw new Error(await r.text());
+    const r = await fetch(fullUrl, { method, headers, body: JSON.stringify(payload) });
+    if(!r.ok) {
+      const errText = await r.text();
+      console.error('[publishPortfolio] Request failed - Status:', r.status, '| Response:', errText);
+      throw new Error(`Server error (${r.status}): ${errText}`);
+    }
     const createdItem = await r.json();
     showToast(editingId ? 'Portfolio item updated' : 'Portfolio item published', 'Open', ()=>window.open('/portfolio.html','_blank'));
     // Optionally add to recentProjects on home page
@@ -251,7 +261,8 @@ async function uploadFile(file, targets){
   const headers = { 'Authorization': 'Bearer ' + token };
   const uploadUrl = API.buildURL('/api/upload');
   console.log('[uploadFile] Uploading to:', uploadUrl);
-  console.log('[uploadFile] Headers:', { Authorization: headers.Authorization ? 'SET' : 'MISSING' });
+  console.log('[uploadFile] Authorization header:', headers.Authorization);
+  console.log('[uploadFile] Full header object:', headers);
   
   const r = await fetch(uploadUrl, { method: 'POST', headers, body: fd });
   
@@ -365,13 +376,23 @@ async function publishBlog(){
     
     const token = API.token();
     const headers = API.headers();
-    console.log('[publishBlog] Publishing post...');
+    const fullUrl = API.buildURL(endpoint);
+    console.log('[publishBlog] ===== BLOG PUBLISH START =====');
+    console.log('[publishBlog] Endpoint:', endpoint);
+    console.log('[publishBlog] Full URL:', fullUrl);
+    console.log('[publishBlog] Method:', method);
     console.log('[publishBlog] Token present:', !!token);
     console.log('[publishBlog] Token length:', token ? token.length : 0);
-    console.log('[publishBlog] Authorization header:', headers.Authorization ? 'Bearer ' + headers.Authorization.substring(0, 20) + '...' : 'MISSING');
+    console.log('[publishBlog] Token starts with:', token ? token.substring(0, 30) + '...' : 'EMPTY');
+    console.log('[publishBlog] Headers object:', headers);
+    console.log('[publishBlog] Authorization header value:', headers.Authorization);
     
-    const r = await fetch(API.buildURL(endpoint), { method, headers, body: JSON.stringify(payload) });
-    if(!r.ok) throw new Error(await r.text());
+    const r = await fetch(fullUrl, { method, headers, body: JSON.stringify(payload) });
+    if(!r.ok) {
+      const errText = await r.text();
+      console.error('[publishBlog] Request failed - Status:', r.status, '| Response:', errText);
+      throw new Error(`Server error (${r.status}): ${errText}`);
+    }
     const post = await r.json();
     showToast(editingId? 'Blog post updated' : 'Blog post published', 'Open', ()=>window.open('/blog.html','_blank'));
     document.getElementById('blogTitle').value = '';
@@ -880,6 +901,23 @@ function attachEvents(){
     });
   }
 }
+
+// Expose functions globally for onclick handlers
+window.editPortfolioItem = editPortfolioItem;
+window.deletePortfolioItem = deletePortfolioItem;
+window.editBlogPost = editBlogPost;
+window.deleteBlogPost = deleteBlogPost;
+window.publishPortfolio = publishPortfolio;
+window.publishBlog = publishBlog;
+window.uploadFile = uploadFile;
+window.loadPageSections = loadPageSections;
+window.savePageSections = savePageSections;
+window.updateAdminCredentials = updateAdminCredentials;
+window.saveSiteSettings = saveSiteSettings;
+window.openAppConfigModal = openAppConfigModal;
+window.closeAppModal = closeAppModal;
+window.saveAppConfig = saveAppConfig;
+window.disableApp = disableApp;
 
 window.addEventListener('load', async ()=>{
   try{
