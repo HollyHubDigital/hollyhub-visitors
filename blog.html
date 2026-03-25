@@ -357,7 +357,7 @@
 		async function loadAllPosts(){
 			const r = await fetch('/api/blog?t=' + Date.now());
 			if(!r.ok) return console.error('Failed to load posts');
-			allPosts = (await r.json()).reverse();
+			allPosts = await r.json();
 			const list = document.getElementById('blogList');
 			list.innerHTML = '';
 			
