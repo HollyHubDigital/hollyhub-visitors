@@ -236,9 +236,16 @@ module.exports = async (req, res) => {
           try{ fs.appendFileSync(urlsLog, `[${new Date().toISOString()}] resend-sent to ${user.email}: ${resetUrl} -- response: ${text}\n`, 'utf8'); }catch(e){ console.error('Failed to write reset-urls.log', e); }
           return res.json(devResp);
         }
+        
+        // Handle Resend API errors
         console.error('[reset-request] FAILED: Resend API failed with status:', r.status, 'response:', text);
-        const entry = `[${new Date().toISOString()}] resend-failed for ${user.email}: ${resetUrl} -- response (${r.status}): ${text}\n`;
+        const resendError = text.includes('not verified') || text.includes('403') ? 'Email not verified in Resend (test mode limit)' : 'Resend API error';
+        const entry = `[${new Date().toISOString()}] resend-failed for ${user.email}: ${resetUrl} -- response (${r.status}): ${text} -- reason: ${resendError}\n`;
         try{ fs.appendFileSync(urlsLog, entry, 'utf8'); }catch(e){ console.error('Failed to write reset-urls.log', e); }
+        
+        console.log('[reset-request] IMPORTANT: Email not sent because:', resendError);
+        console.log('[reset-request] DEBUG INFO: Reset URL generated anyway:', resetUrl);
+        
         return res.json(devResp);
       }catch(e){
         console.error('[reset-request] Resend send exception:', e && e.message ? e.message : e);
