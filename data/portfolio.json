@@ -53,5 +53,14 @@
     "image": "1770953555966-Internet.webp",
     "url": "https://google.com",
     "createdAt": "2026-02-13T03:32:35.973Z"
+  },
+  {
+    "id": "1774397977626",
+    "title": "NFTs Gallery",
+    "category": "Graphics Design",
+    "description": "This is the Opensea Fableborne art in Nfts gallery",
+    "image": "1774397975729-fableborne.png",
+    "url": "https://opensea.io",
+    "createdAt": "2026-03-25T00:19:37.626Z"
   }
 ]
