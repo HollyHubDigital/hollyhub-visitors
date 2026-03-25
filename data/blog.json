@@ -3,9 +3,10 @@
     "id": "1774396900976",
     "title": "NFTs Gallery",
     "category": "Graphics Design",
-    "image": "1774396899164-fableborne.png",
-    "content": "Testing",
-    "createdAt": "2026-03-25T00:01:40.976Z"
+    "image": "/uploads/1774396899164-fableborne.png",
+    "content": "You're interacting with the fableborne Nft from Opensea",
+    "createdAt": "2026-03-25T00:01:40.976Z",
+    "updatedAt": "2026-03-25T02:35:37.075Z"
   },
   {
     "id": "1770954509001",
@@ -20,10 +21,10 @@
     "id": "1770912975457",
     "title": "Hollywilly",
     "category": "Tech world",
-    "image": "",
+    "image": "1774407332289-Veluria.png",
     "content": "I don't know you might not really know about tech but let me tell you something today, tech is a new idea solution for life. You can change the word with your thinking, what you think about one idea, that idea you can use it to change tomorrow world.",
     "createdAt": "2026-02-12T16:16:15.457Z",
-    "updatedAt": "2026-02-12T22:15:35.706Z"
+    "updatedAt": "2026-03-25T02:55:34.938Z"
   },
   {
     "id": "1770911795399",
