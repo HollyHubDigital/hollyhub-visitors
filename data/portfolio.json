@@ -29,12 +29,13 @@
   },
   {
     "id": "1770916072149",
-    "title": "Demo Project - Website Redesign",
+    "title": "MERIDIAN - Real Estate Properties",
     "category": "Web Design",
-    "description": "A modern redesign delivered with performance and SEO in mind.",
-    "image": "/hollyhub.jpg",
-    "url": "https://example.com/demo",
-    "createdAt": "2026-02-12T17:07:52.149Z"
+    "description": "Find Your Dream\nHome Today\nDiscover exceptional properties in the most sought-after neighborhoods. Our curated collection features the finest residences for discerning buyers.",
+    "image": "1774454958763-Meridian.png",
+    "url": "https://house-story-forge.lovable.app",
+    "createdAt": "2026-02-12T17:07:52.149Z",
+    "updatedAt": "2026-03-25T16:09:21.259Z"
   },
   {
     "id": "1770934775186",
