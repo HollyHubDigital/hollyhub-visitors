@@ -12,6 +12,7 @@ const API = {
     return base + path;
   },
   token() { return localStorage.getItem('adminToken') || ''; },
+  visitorsURL() { return (typeof window.VISITORS_BASE_URL === 'string' && window.VISITORS_BASE_URL) ? window.VISITORS_BASE_URL : 'https://hollyhub-visitors.vercel.app'; },
   headers(json=true){ 
     const headers = {};
     const token = API.token();
@@ -121,7 +122,8 @@ async function loadPageSections(){
       setTimeout(()=>{
         const preview = document.getElementById('pagePreviewArea');
         if(preview){
-          preview.innerHTML = '<iframe id="pagePreviewFrame" src="/" style="width:100%;height:420px;border:1px solid rgba(255,255,255,0.06);border-radius:8px"></iframe>';
+          const visitorsUrl = API.visitorsURL();
+          preview.innerHTML = `<iframe id="pagePreviewFrame" src="${visitorsUrl}/" style="width:100%;height:420px;border:1px solid rgba(255,255,255,0.06);border-radius:8px"></iframe>`;
         }
       }, 50);
     } else if(page === 'portfolio'){
@@ -307,11 +309,19 @@ async function refreshPortfolioList(){
           <div style="opacity:0.8;font-size:0.9rem">${item.category} • ${new Date(item.createdAt).toLocaleDateString()}</div>
         </div>
         <div style="display:flex;gap:6px">
-          <button class="btn-secondary" onclick="editPortfolioItem('${item.id}')">Edit</button>
-          <button class="btn-danger" onclick="deletePortfolioItem('${item.id}')">Delete</button>
+          <button class="btn-secondary" data-action="edit-portfolio" data-id="${item.id}">Edit</button>
+          <button class="btn-danger" data-action="delete-portfolio" data-id="${item.id}">Delete</button>
         </div>
       `;
       container.appendChild(div);
+    });
+    
+    // Attach event listeners for edit/delete buttons
+    container.querySelectorAll('[data-action="edit-portfolio"]').forEach(btn => {
+      btn.addEventListener('click', (e) => editPortfolioItem(e.target.dataset.id));
+    });
+    container.querySelectorAll('[data-action="delete-portfolio"]').forEach(btn => {
+      btn.addEventListener('click', (e) => deletePortfolioItem(e.target.dataset.id));
     });
   } catch(e) {
     console.error('[portfolio] Error:', e);
@@ -454,11 +464,19 @@ async function refreshBlogPosts(){
           <div style="opacity:0.8">${post.category} • ${new Date(post.createdAt).toLocaleDateString()}</div>
         </div>
         <div style="display:flex;gap:6px">
-          <button class="btn-secondary" onclick="editBlogPost('${post.id}')">Edit</button>
-          <button class="btn-danger" onclick="deleteBlogPost('${post.id}')">Delete</button>
+          <button class="btn-secondary" data-action="edit-blog" data-id="${post.id}">Edit</button>
+          <button class="btn-danger" data-action="delete-blog" data-id="${post.id}">Delete</button>
         </div>
       `;
       container.appendChild(div);
+    });
+    
+    // Attach event listeners for edit/delete buttons
+    container.querySelectorAll('[data-action="edit-blog"]').forEach(btn => {
+      btn.addEventListener('click', (e) => editBlogPost(e.target.dataset.id));
+    });
+    container.querySelectorAll('[data-action="delete-blog"]').forEach(btn => {
+      btn.addEventListener('click', (e) => deleteBlogPost(e.target.dataset.id));
     });
   } catch(e) {
     console.error('[blog] Error:', e);
