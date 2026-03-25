@@ -172,22 +172,22 @@
             
             <div class="form-group">
               <label class="form-label">Your Name</label>
-              <input type="text" class="form-input" placeholder="John Doe" required />
+              <input type="text" name="name" class="form-input" placeholder="John Doe" required />
             </div>
 
             <div class="form-group">
               <label class="form-label">Email Address</label>
-              <input type="email" class="form-input" placeholder="you@example.com" required />
+              <input type="email" name="email" class="form-input" placeholder="you@example.com" required />
             </div>
 
             <div class="form-group">
               <label class="form-label">Phone Number</label>
-              <input type="tel" class="form-input" placeholder="+1 (555) 000-0000" />
+              <input type="tel" name="phone" class="form-input" placeholder="+1 (555) 000-0000" />
             </div>
 
             <div class="form-group">
               <label class="form-label">Service Type</label>
-              <select class="form-select" required>
+              <select name="service" class="form-select" required>
                 <option value="">Select a service...</option>
                 <option value="web-dev">Web Development</option>
                 <option value="web-app">Web Application</option>
@@ -202,7 +202,7 @@
 
             <div class="form-group">
               <label class="form-label">Project Description</label>
-              <textarea class="form-textarea" placeholder="Tell me about your project and goals..." required></textarea>
+              <textarea name="message" class="form-textarea" placeholder="Tell me about your project and goals..." required></textarea>
             </div>
 
             <div class="form-group">
@@ -212,7 +212,13 @@
               </label>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+            <div style="display:none;">
+              <input type="hidden" name="access_key" value="4eab8d69-b661-4f80-92b2-a99786eddbf9" />
+              <input type="hidden" name="subject" value="New Contact Form Submission" />
+              <input type="hidden" name="redirect" value="" />
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;" id="contact-submit-btn">Send Message</button>
           </form>
         </div>
       </div>
@@ -277,32 +283,46 @@
     document.querySelector('.contact-form').addEventListener('submit', async function(e) {
       e.preventDefault();
       
-      const nameInput = this.querySelector('input[name="name"]');
-      const emailInput = this.querySelector('input[name="email"]');
-      const messageInput = this.querySelector('textarea[name="message"]');
+      const submitBtn = document.getElementById('contact-submit-btn');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sending...';
       
-      const name = nameInput ? nameInput.value : 'Visitor';
-      const email = emailInput ? emailInput.value : 'visitor@example.com';
-      const message = messageInput ? messageInput.value : '';
-      
-      // Send to Tawk.to
-      pageUtils.showNotification('Sending message to support...', 'success');
-      
-      const sent = await pageUtils.sendToTawk(
-        `Name: ${name}\nEmail: ${email}\n\nMessage: ${message}`,
-        email,
-        name
-      );
-      
-      if (sent) {
-        pageUtils.showNotification('Message sent! Redirecting to checkout...', 'success');
-        this.reset();
-        // Redirect to checkout after 2 seconds
-        setTimeout(() => {
-          window.location.href = 'checkout.html';
-        }, 2000);
-      } else {
-        pageUtils.showNotification('Failed to send message. Please try again.', 'error');
+      try {
+        // Collect form data
+        const formData = new FormData(this);
+        
+        // Send to web3forms API
+        const response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (response.ok) {
+          // Show success message
+          if (typeof pageUtils !== 'undefined' && pageUtils.showNotification) {
+            pageUtils.showNotification('Message sent successfully! Thank you for reaching out.', 'success');
+          } else {
+            alert('Message sent successfully! Thank you for reaching out.');
+          }
+          this.reset();
+          submitBtn.textContent = 'Message Sent ✓';
+          setTimeout(() => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+          }, 3000);
+        } else {
+          throw new Error('Failed to send message');
+        }
+      } catch (error) {
+        console.error('Form submission error:', error);
+        if (typeof pageUtils !== 'undefined' && pageUtils.showNotification) {
+          pageUtils.showNotification('Failed to send message. Please try again.', 'error');
+        } else {
+          alert('Failed to send message. Please try again.');
+        }
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
       }
     });
   </script>
