@@ -877,28 +877,50 @@ function authRequired(req,res,next){
 
 // Accepts EITHER admin JWT OR GitHub token (for upload endpoint flexibility)
 function authRequiredOrGithub(req,res,next){
+  console.log('[authRequiredOrGithub] ===== AUTH CHECK START =====');
+  console.log('[authRequiredOrGithub] Method:', req.method, '| Path:', req.path);
+  
   // Check for GitHub token first (header or env)
   const githubTokenFromHeader = req.headers['x-github-token'];
   const githubTokenFromEnv = process.env.GITHUB_TOKEN;
   
+  console.log('[authRequiredOrGithub] GitHub token from header:', !!githubTokenFromHeader);
+  console.log('[authRequiredOrGithub] GitHub token from env:', !!githubTokenFromEnv);
+  
   if(githubTokenFromHeader || githubTokenFromEnv) {
-    console.log('[auth] Using GitHub token auth');
+    console.log('[authRequiredOrGithub] ✓ Using GitHub token auth - allowing request');
     req.githubAuth = true;
     return next();
   }
   
   // Fall back to JWT admin auth
   const h = req.headers.authorization;
-  if(!h) return res.status(401).send('Missing token');
+  console.log('[authRequiredOrGithub] Authorization header present:', !!h);
+  if(!h) {
+    console.error('[authRequiredOrGithub] ✗ FAILED: Missing authorization header');
+    return res.status(401).send('Missing token');
+  }
+  
   const parts = h.split(' ');
-  if(parts.length!==2) return res.status(401).send('Invalid token');
+  console.log('[authRequiredOrGithub] Header format - parts count:', parts.length, '| Part[0]:', parts[0]);
+  
+  if(parts.length!==2) {
+    console.error('[authRequiredOrGithub] ✗ FAILED: Invalid header format (expected "Bearer <token>", got', parts.length, 'parts)');
+    return res.status(401).send('Invalid token format');
+  }
+  
   const token = parts[1];
+  console.log('[authRequiredOrGithub] Token length:', token.length, '| First 20 chars:', token.substring(0, 20) + '...');
+  
   try{
     const p = jwt.verify(token, JWT_SECRET);
+    console.log('[authRequiredOrGithub] ✓ JWT verified successfully for user:', p.user);
     req.user = p;
     next();
   }catch(e){
-    return res.status(401).send('Invalid token');
+    console.error('[authRequiredOrGithub] ✗ FAILED: JWT verification error:', e.message);
+    console.error('[authRequiredOrGithub] JWT_SECRET length:', JWT_SECRET ? JWT_SECRET.length : 'undefined');
+    return res.status(401).send('Invalid token: ' + e.message);
   }
 }
 
@@ -981,10 +1003,20 @@ app.put('/api/pages/:page', authRequired, (req,res)=>{
 
 // ===== FILE UPLOAD =====
 app.post('/api/upload', authRequiredOrGithub, upload.single('file'), async (req,res)=>{
-  if(!req.file) return res.status(400).send('No file');
+  console.log('[/api/upload] ===== UPLOAD REQUEST RECEIVED =====');
+  console.log('[/api/upload] User auth:', req.user ? '✓ JWT verified (' + req.user.user + ')' : 'None');
+  console.log('[/api/upload] GitHub auth:', req.githubAuth ? '✓ Using GitHub token' : 'Not using GitHub auth');
+  
+  if(!req.file) {
+    console.error('[/api/upload] No file in request');
+    return res.status(400).send('No file');
+  }
+  
+  console.log('[/api/upload] File received:', req.file.originalname, '| Size:', req.file.size, 'bytes');
   
   // Uploads REQUIRE GitHub token (Vercel serverless can't persist to local filesystem)
   if(!process.env.GITHUB_TOKEN || !process.env.REPO_OWNER || !process.env.REPO_NAME){
+    console.error('[/api/upload] Missing GitHub config');
     return res.status(501).json({ 
       error: 'Uploads not configured', 
       message: 'GITHUB_TOKEN, REPO_OWNER, and REPO_NAME must be set in environment variables'
@@ -1458,15 +1490,68 @@ app.post('/api/blog/comment/mute', authRequired, (req,res)=>{
   }
 });
 
-app.delete('/api/blog/comment', authRequired, (req,res)=>{
-  const id = req.query.id;
-  if(!id) return res.status(400).send('Missing id');
-  const comments = JSON.parse(fs.readFileSync(commentsJson,'utf8')) || [];
-  const idx = comments.findIndex(c=>c.id===id);
-  if(idx===-1) return res.status(404).send('Not found');
-  comments.splice(idx,1);
-  fs.writeFileSync(commentsJson, JSON.stringify(comments, null, 2));
-  return res.json({ ok:true });
+app.delete('/api/blog/comment', authRequired, async (req,res)=>{
+  try{
+    const id = req.query.id;
+    if(!id) return res.status(400).send('Missing id');
+    
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+    
+    // Read current comments from GitHub
+    let comments = [];
+    if(repoOpts && repoOpts.owner && repoOpts.repo){
+      try{
+        const f = await getFile('data/blog_comments.json', { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+        comments = JSON.parse(f.content || '[]');
+        console.log('[blog comment DELETE] Read ' + comments.length + ' comments from GitHub');
+      }catch(e){
+        console.error('[blog comment DELETE] GitHub read error:', e.message);
+        comments = [];
+      }
+    } else {
+      // Fallback to local fs
+      try{
+        if(fs.existsSync(commentsJson)){
+          const content = fs.readFileSync(commentsJson, 'utf8');
+          comments = JSON.parse(content || '[]');
+        }
+      }catch(e){
+        console.error('[blog comment DELETE] Error reading local comments.json:', e.message);
+        comments = [];
+      }
+    }
+    
+    // Find and delete the comment
+    const idx = comments.findIndex(c=>c.id===id);
+    if(idx===-1) return res.status(404).send('Comment not found');
+    comments.splice(idx,1);
+    const json = JSON.stringify(comments, null, 2);
+    
+    // Save to GitHub
+    if(repoOpts && repoOpts.owner && repoOpts.repo){
+      try{
+        await putFile('data/blog_comments.json', json, 'Delete comment', null, { owner: repoOpts.owner, repo: repoOpts.repo, branch: repoOpts.branch, token: repoOpts.token });
+        console.log('[blog comment DELETE] Saved to GitHub');
+      }catch(e){
+        console.error('[blog comment DELETE] GitHub write error:', e.message);
+      }
+    } else {
+      // Fallback to local fs
+      try{
+        fs.writeFileSync(commentsJson, json, 'utf8');
+        console.log('[blog comment DELETE] Saved to local fs');
+      }catch(writeErr){
+        console.error('[blog comment DELETE] Error writing local comments.json:', writeErr.message);
+      }
+    }
+    
+    return res.json({ ok:true });
+  }catch(e){
+    console.error('[blog comment DELETE] Error:', e);
+    return res.status(500).json({ error: 'Server error', details: e.message });
+  }
 });
 
 app.post('/api/blog/like', async (req,res)=>{
