@@ -160,8 +160,64 @@ module.exports = async (req, res) => {
         const payload = {
           from: resendFrom,
           to: [user.email],
-          subject: 'Password reset',
-          html: `<p>Click to reset your password: <a href="${resetUrl}">${resetUrl}</a></p>`
+          subject: 'Reset Your Password - HollyHub',
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
+              <div style="background: linear-gradient(135deg, #FF0000 0%, #437AEE 100%); padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 28px;">HollyHub</h1>
+              </div>
+              
+              <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; border: 1px solid #e0e0e0;">
+                <h2 style="color: #333; margin-top: 0;">Password Reset Request</h2>
+                
+                <p style="color: #555; margin-bottom: 20px;">
+                  Hi there! You requested to reset your password for your HollyHub account.
+                </p>
+                
+                <p style="color: #555; margin-bottom: 20px;">
+                  Click the button below to set a new password:
+                </p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${resetUrl}" 
+                     style="
+                       display: inline-block;
+                       padding: 12px 30px;
+                       background: linear-gradient(135deg, #FF0000 0%, #437AEE 100%);
+                       color: #ffffff;
+                       text-decoration: none;
+                       border-radius: 6px;
+                       font-weight: 600;
+                       font-size: 16px;
+                       transition: opacity 0.3s;
+                     ">
+                     Reset Password
+                  </a>
+                </div>
+                
+                <p style="color: #777; font-size: 13px; margin-bottom: 15px;">
+                  Or copy and paste this link: <a href="${resetUrl}" style="color: #437AEE; text-decoration: none;">${resetUrl}</a>
+                </p>
+                
+                <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 25px 0;">
+                
+                <p style="color: #888; font-size: 13px; margin-bottom: 10px;">
+                  <strong>⏱️ Link Expiration:</strong> This reset link will expire in 24 hours.
+                </p>
+                
+                <p style="color: #888; font-size: 13px; margin-bottom: 15px;">
+                  <strong>🔒 Didn't request this?</strong> If you didn't request this password reset, you can safely ignore this email. Your account is secure.
+                </p>
+                
+                <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 25px 0;">
+                
+                <p style="color: #aaa; font-size: 12px; text-align: center;">
+                  HollyHub Digital | Password Reset Email<br>
+                  If you have any questions, contact us at <a href="mailto:hello@hollydev.com" style="color: #437AEE; text-decoration: none;">hello@hollydev.com</a>
+                </p>
+              </div>
+            </div>
+          `
         };
         console.log('[reset-request] Sending via Resend API');
         console.log('[reset-request]   - From:', resendFrom);
