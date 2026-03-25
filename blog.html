@@ -265,6 +265,7 @@
 				const viewBtn = el.querySelector('.btn-view-comments');
 				viewBtn.addEventListener('click', async ()=>{
 					const cs = await loadComments({ forModal: true });
+					cs.reverse();
 					const modal = ensureCommentModal();
 					const body = modal.querySelector('.modal-body');
 					body.innerHTML = `<h2 style="margin-top:0">Comments for: ${p.title}</h2><div style="margin-top:0.5rem;opacity:0.8">${cs.length} comment(s)</div><button class="btn-primary" id="toggleModalCommentForm" style="margin-top:0.5rem;padding:6px 12px">Add Comment</button><div style="margin-top:1rem" id="modalComments"></div>`;
@@ -356,7 +357,7 @@
 		async function loadAllPosts(){
 			const r = await fetch('/api/blog?t=' + Date.now());
 			if(!r.ok) return console.error('Failed to load posts');
-			allPosts = await r.json();
+			allPosts = (await r.json()).reverse();
 			const list = document.getElementById('blogList');
 			list.innerHTML = '';
 			

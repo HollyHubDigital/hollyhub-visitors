@@ -274,7 +274,7 @@
       try{
         const r = await fetch('/api/portfolio?t=' + Date.now());
         if(!r.ok) return;
-        allItems = await r.json();
+        allItems = (await r.json()).reverse();
         const grid = document.getElementById('portfolioGrid');
         grid.innerHTML = '';
         
