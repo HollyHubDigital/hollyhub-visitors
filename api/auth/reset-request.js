@@ -92,7 +92,13 @@ module.exports = async (req, res) => {
       fs.writeFileSync(resetsJson, JSON.stringify(arr, null, 2), 'utf8');
     } catch(e) { console.warn('[reset-request] Failed to write resets.json:', e.message); }
 
-    const origin = (req.protocol || 'https') + '://' + (req.get('host') || 'hollyhubdigitals.vercel.app');
+    const origin = (() => {
+      // On Vercel, extract from X-Forwarded-Host header or use env variable
+      const host = req.get('x-forwarded-host') || req.get('host') || process.env.VERCEL_URL || 'hollyhubdigitals.vercel.app';
+      const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
+      return protocol + '://' + host;
+    })();
+    console.log('[reset-request] Origin calculation:', { 'x-forwarded-host': req.get('x-forwarded-host'), 'x-forwarded-proto': req.get('x-forwarded-proto'), 'req.host': req.get('host'), 'VERCEL_URL': process.env.VERCEL_URL, final_origin: origin });
     const resetUrl = origin + '/reset.html?token=' + token;
     const isLocalHost = (req.get('host') && (req.get('host').includes('localhost') || req.get('host').includes('127.0.0.1')));
     const devResp = ((process.env.NODE_ENV !== 'production') || isLocalHost) ? { ok: true, resetUrl } : { ok: true };
@@ -138,7 +144,15 @@ module.exports = async (req, res) => {
 
     // If RESEND API key is provided, try sending via Resend HTTP API
     const resendApiKey = process.env.RESEND_API_KEY || (process.env.SMTP_PASS && process.env.SMTP_PASS.startsWith('re_') ? process.env.SMTP_PASS : null);
-    console.log('[reset-request] Checking email sending options:',  { hasResendKey: !!resendApiKey, hasSmtpHost: !!process.env.SMTP_HOST, hasNodemailer: !!nodemailer, hasFetchFn: !!fetchFn });
+    console.log('[reset-request] Checking email sending options:',  { 
+      hasResendKey: !!resendApiKey, 
+      resendKeyPrefix: resendApiKey ? resendApiKey.substring(0, 10) : 'none',
+      hasSmtpHost: !!process.env.SMTP_HOST, 
+      hasNodemailer: !!nodemailer, 
+      hasFetchFn: !!fetchFn,
+      NODE_ENV: process.env.NODE_ENV,
+      VERCEL: !!process.env.VERCEL
+    });
     
     if(resendApiKey && fetchFn){
       try{
@@ -153,6 +167,7 @@ module.exports = async (req, res) => {
         console.log('[reset-request]   - From:', resendFrom);
         console.log('[reset-request]   - To:', user.email);
         console.log('[reset-request]   - URL:', resetUrl);
+        console.log('[reset-request]   - Full HTML:', payload.html);
         console.log('[reset-request]   - API Key:', resendApiKey.substring(0, 10) + '...');
         
         const r = await fetchFn('https://api.resend.com/emails', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${resendApiKey}` }, body: JSON.stringify(payload) });
