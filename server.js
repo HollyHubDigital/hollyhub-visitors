@@ -342,7 +342,7 @@ if (S3_ENABLED) {
         const file = req.params.file;
         const pub = process.env.S3_PUBLIC_URL || '';
         if(pub){
-          return res.redirect(302, `${pub.replace(/\/$/, '')}/uploads/${encodeURIComponent(file)}`);
+          return res.redirect(302, `${pub.replace(/\/$/, '')}/uploads/${encodeURIComponent(file)}?t=${Date.now()}`);
         }
         // lazy init S3 client
         const AWS_local = require('aws-sdk');
@@ -1217,6 +1217,10 @@ app.put('/api/blog', authRequired, async (req,res)=>{
       try {
         await putFile('data/blog.json', json, 'Update blog post', null, repoOpts);
         console.log('[blog PUT] Saved to GitHub');
+        
+        // Regenerate blog.html
+        const listing = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Blog - Holly</title><link rel="stylesheet" href="styles.css"></head><body><header class="sticky-header"><div class="header-container"><a href="index.html" class="logo-link">HOLLYDEV</a></div></header><main class="container" style="padding:2rem"><h1>Blog</h1><div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem">${posts.map(p=>`<article style="background:#111;padding:1rem;border-radius:8px"><div style="height:160px;background:#222;border-radius:6px;margin-bottom:8px;background-image:url('${p.image && !p.image.startsWith('http') && !p.image.startsWith('/') ? '/uploads/' + p.image : p.image}');background-size:cover;background-position:center"></div><h3>${p.title}</h3><p style="opacity:0.8">${p.category} • ${new Date(p.createdAt).toLocaleString()}</p><p style="opacity:0.85">${(p.content||'').slice(0,180)}...</p></article>`).join('')}</div></main></body></html>`;
+        await putFile('blog.html', listing, 'Regenerate blog listing', null, repoOpts);
       } catch(e) {
         console.warn('[blog PUT] GitHub write failed, using /tmp fallback:', e.message);
       }
