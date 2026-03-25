@@ -1,0 +1,22 @@
+# Sitemap Location
+Sitemap: https://hollyhubdigitals.vercel.app/sitemap.xml
+
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Disallow private/admin pages if needed
+Disallow: /admin/
+Disallow: /api/
+Disallow: /data/
+Disallow: /node_modules/
+
+# Disallow temporary test files
+Disallow: /tmp_*.html
+Disallow: /*.txt
+
+# Crawl delay (optional - be gentle with resources)
+Crawl-delay: 1
+
+# Request rate limitation (per 10 seconds)
+Request-rate: 1/10
