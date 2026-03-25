@@ -185,7 +185,7 @@
 		// Pagination state
 		let allPosts = [];
 		let displayedCount = 0;
-		const postsPerPage = 5;
+		const postsPerPage = 6;
 
 		function displayPosts(startIdx, endIdx){
 			const list = document.getElementById('blogList');
@@ -373,6 +373,7 @@
 				loadMoreBtn.style.marginTop = '2rem';
 				loadMoreBtn.style.display = 'block';
 				loadMoreBtn.style.margin = '2rem auto 0';
+				loadMoreBtn.style.gridColumn = '1 / -1';
 				loadMoreBtn.addEventListener('click', ()=>{
 					const newCount = Math.min(displayedCount + postsPerPage, allPosts.length);
 					displayPosts(displayedCount, newCount);
