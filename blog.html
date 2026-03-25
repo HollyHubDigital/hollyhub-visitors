@@ -147,47 +147,37 @@
 	</template>
 
 	<script>
-		function ensureCommentModal(){
-			let m = document.getElementById('commentModal');
-			if(m) return m;
-			m = document.createElement('div');
-			m.id = 'commentModal';
-			m.style.position = 'fixed'; m.style.left = 0; m.style.top = 0; m.style.right = 0; m.style.bottom = 0;
-			m.style.background = 'rgba(0,0,0,0.7)'; m.style.display = 'none'; m.style.zIndex = 4000;
-			m.innerHTML = `<div class="modal-inner" style="max-width:900px;margin:6vh auto;background:#0b0b0b;border-radius:10px;padding:1rem;position:relative;max-height:85vh;overflow:auto;">
-				<button class="modal-close" style="position:absolute;right:12px;top:8px;font-size:20px;background:transparent;border:none;color:#fff;cursor:pointer;z-index:5000">×</button>
-				<div class="modal-body" style="padding-top:1.5rem"></div>
-				<div class="modal-comment-form" style="margin-top:1.5rem;border-top:1px solid rgba(255,255,255,0.1);padding-top:1rem;display:none">
-					<h4 style="margin-top:0;color:var(--primary-accent)">Post a Comment</h4>
-					<input class="modal-comment-author form-input" placeholder="Your name" style="width:100%;padding:8px;margin-bottom:0.5rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;border-radius:4px;box-sizing:border-box"/>
-					<textarea class="modal-comment-content form-input" placeholder="Your comment" style="width:100%;padding:8px;margin-bottom:0.5rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;border-radius:4px;box-sizing:border-box;min-height:80px"></textarea>
-					<div style="display:flex;gap:8px">
-						<button class="modal-submit-comment btn-primary" style="padding:8px 14px">Post Comment</button>
-						<button class="modal-cancel-comment btn-secondary" style="padding:8px 14px">Cancel</button>
-					</div>
-				</div>
-			</div>`;
-			document.body.appendChild(m);
-			m.querySelector('.modal-close').addEventListener('click', ()=>{ m.style.display='none'; });
-			m.addEventListener('click', (e)=>{ if(e.target===m) m.style.display='none'; });
-			const cancelBtn = m.querySelector('.modal-cancel-comment');
-			cancelBtn.addEventListener('click', ()=>{ m.querySelector('.modal-comment-form').style.display='none'; });
-			return m;
-		}
+		// Lazy loading observer for background images
+		const lazyLoadObserver = new IntersectionObserver((entries) => {
+			entries.forEach(entry => {
+				if(entry.isIntersecting){
+					const img = entry.target;
+					const src = img.dataset.src;
+					if(src){
+						img.style.backgroundImage = `url('${src}')`;
+						img.removeAttribute('data-src');
+						lazyLoadObserver.unobserve(img);
+					}
+				}
+			});
+		}, { rootMargin: '50px' });
 
-		async function fetchPosts(){
-			const r = await fetch('/api/blog?t=' + Date.now());
-			if(!r.ok) return console.error('Failed to load posts');
-			const posts = await r.json();
+		// Pagination state
+		let allPosts = [];
+		let displayedCount = 0;
+		const postsPerPage = 5;
+
+		function displayPosts(startIdx, endIdx){
 			const list = document.getElementById('blogList');
-			list.innerHTML = '';
-			for(const p of posts){
+			const postsToShow = allPosts.slice(startIdx, endIdx);
+			
+			for(const p of postsToShow){
 				const tpl = document.getElementById('postTemplate');
-					const node = tpl.content.cloneNode(true);
-					const el = node.querySelector('.blog-post');
-					el.querySelector('.post-title').textContent = p.title;
-					el.querySelector('.blog-meta').textContent = (p.category||'') + ' • ' + new Date(p.createdAt).toLocaleDateString();
-					const excerptEl = el.querySelector('.blog-excerpt');
+				const node = tpl.content.cloneNode(true);
+				const el = node.querySelector('.blog-post');
+				el.querySelector('.post-title').textContent = p.title;
+				el.querySelector('.blog-meta').textContent = (p.category||'') + ' • ' + new Date(p.createdAt).toLocaleDateString();
+				const excerptEl = el.querySelector('.blog-excerpt');
 				const full = (p.content||'').trim();
 				if(full.length > 300){
 					excerptEl.textContent = full.slice(0,300) + '...';
@@ -198,7 +188,7 @@
 					excerptEl.appendChild(more);
 				} else { excerptEl.textContent = full; }
 
-				// Render media (image or video) if provided
+				// Render media with lazy loading
 				if(p.image){
 					let imageVal = (p.image||'').trim();
 					let imageUrl = imageVal;
@@ -211,10 +201,12 @@
 						if(lower.match(/\.(mp4|webm|ogg)$/)){
 							mediaHTML = `<div style="margin-bottom:0.6rem;"><video controls style="width:100%; height:220px; object-fit:cover; border-radius:8px;"><source src="${imageUrl}"></video></div>`;
 						} else {
-							mediaHTML = `<div style="margin-bottom:0.6rem; height:220px; background-image:url('${imageUrl}'); background-size:cover; background-position:center; border-radius:8px;"></div>`;
+							mediaHTML = `<div class="lazy-image" data-src="${imageUrl}" style="margin-bottom:0.6rem; height:220px; background-size:cover; background-position:center; border-radius:8px; background-color:rgba(255,255,255,0.05);"></div>`;
 						}
 						// insert media above the excerpt
 						const wrapper = document.createElement('div'); wrapper.innerHTML = mediaHTML;
+						const lazyImg = wrapper.querySelector('.lazy-image');
+						if(lazyImg) lazyLoadObserver.observe(lazyImg);
 						excerptEl.parentNode.insertBefore(wrapper, excerptEl);
 					}
 				}
@@ -227,7 +219,6 @@
 				likeBtn.addEventListener('click', async ()=>{ const r = await fetch('/api/blog/like',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ postId: p.id })}); if(r.ok){ const d = await r.json(); likeCountEl.textContent = d.count; } });
 
 				// comments - load for modal only
-
 				async function loadComments(opts){
 					opts = opts || {};
 					const forModal = !!opts.forModal;
@@ -340,6 +331,71 @@
 
 				list.appendChild(node);
 			}
+		}
+
+		async function loadAllPosts(){
+			const r = await fetch('/api/blog?t=' + Date.now());
+			if(!r.ok) return console.error('Failed to load posts');
+			allPosts = await r.json();
+			const list = document.getElementById('blogList');
+			list.innerHTML = '';
+			
+			// Display first batch
+			displayedCount = Math.min(postsPerPage, allPosts.length);
+			displayPosts(0, displayedCount);
+			
+			// Add "load more" button if there are more posts
+			if(displayedCount < allPosts.length){
+				const loadMoreBtn = document.createElement('button');
+				loadMoreBtn.textContent = 'Load More Posts';
+				loadMoreBtn.className = 'btn btn-primary';
+				loadMoreBtn.style.marginTop = '2rem';
+				loadMoreBtn.style.display = 'block';
+				loadMoreBtn.style.margin = '2rem auto 0';
+				loadMoreBtn.addEventListener('click', ()=>{
+					const newCount = Math.min(displayedCount + postsPerPage, allPosts.length);
+					displayPosts(displayedCount, newCount);
+					displayedCount = newCount;
+					
+					// Hide button if all posts loaded
+					if(displayedCount >= allPosts.length){
+						loadMoreBtn.style.display = 'none';
+					}
+				});
+				list.appendChild(loadMoreBtn);
+			}
+		}
+
+		function ensureCommentModal(){
+			let m = document.getElementById('commentModal');
+			if(m) return m;
+			m = document.createElement('div');
+			m.id = 'commentModal';
+			m.style.position = 'fixed'; m.style.left = 0; m.style.top = 0; m.style.right = 0; m.style.bottom = 0;
+			m.style.background = 'rgba(0,0,0,0.7)'; m.style.display = 'none'; m.style.zIndex = 4000;
+			m.innerHTML = `<div class="modal-inner" style="max-width:900px;margin:6vh auto;background:#0b0b0b;border-radius:10px;padding:1rem;position:relative;max-height:85vh;overflow:auto;">
+				<button class="modal-close" style="position:absolute;right:12px;top:8px;font-size:20px;background:transparent;border:none;color:#fff;cursor:pointer;z-index:5000">×</button>
+				<div class="modal-body" style="padding-top:1.5rem"></div>
+				<div class="modal-comment-form" style="margin-top:1.5rem;border-top:1px solid rgba(255,255,255,0.1);padding-top:1rem;display:none">
+					<h4 style="margin-top:0;color:var(--primary-accent)">Post a Comment</h4>
+					<input class="modal-comment-author form-input" placeholder="Your name" style="width:100%;padding:8px;margin-bottom:0.5rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;border-radius:4px;box-sizing:border-box"/>
+					<textarea class="modal-comment-content form-input" placeholder="Your comment" style="width:100%;padding:8px;margin-bottom:0.5rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;border-radius:4px;box-sizing:border-box;min-height:80px"></textarea>
+					<div style="display:flex;gap:8px">
+						<button class="modal-submit-comment btn-primary" style="padding:8px 14px">Post Comment</button>
+						<button class="modal-cancel-comment btn-secondary" style="padding:8px 14px">Cancel</button>
+					</div>
+				</div>
+			</div>`;
+			document.body.appendChild(m);
+			m.querySelector('.modal-close').addEventListener('click', ()=>{ m.style.display='none'; });
+			m.addEventListener('click', (e)=>{ if(e.target===m) m.style.display='none'; });
+			const cancelBtn = m.querySelector('.modal-cancel-comment');
+			cancelBtn.addEventListener('click', ()=>{ m.querySelector('.modal-comment-form').style.display='none'; });
+			return m;
+		}
+
+		async function fetchPosts(){
+			await loadAllPosts();
 		}
 
 		document.addEventListener('DOMContentLoaded', fetchPosts);

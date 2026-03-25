@@ -203,33 +203,88 @@
 
   <script src="script.js"></script>
   <script>
+    // Lazy loading observer for background images
+    const lazyLoadObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting){
+          const img = entry.target;
+          const src = img.dataset.src;
+          if(src){
+            img.style.backgroundImage = `url('${src}')`;
+            img.removeAttribute('data-src');
+            lazyLoadObserver.unobserve(img);
+          }
+        }
+      });
+    }, { rootMargin: '50px' });
+
+    // Pagination state
+    let allItems = [];
+    let displayedCount = 0;
+    const itemsPerPage = 6;
+
+    function displayPortfolioItems(startIdx, endIdx){
+      const grid = document.getElementById('portfolioGrid');
+      const itemsToShow = allItems.slice(startIdx, endIdx);
+      
+      itemsToShow.forEach(it=>{
+        const el = document.createElement('div'); el.className='case-study';
+        let media = '';
+        // Normalize image URL
+        let imageVal = (it.image || '').trim();
+        let imageUrl = imageVal;
+        if(imageVal && !imageVal.startsWith('http') && !imageVal.startsWith('/')){
+          imageUrl = '/uploads/' + encodeURIComponent(imageVal);
+        }
+        const lower = (imageUrl||'').toLowerCase();
+        if(lower.match(/\.(mp4|webm|ogg)$/)){
+          media = `<video controls style="width:100%; height:250px; object-fit:cover; border-radius:10px 10px 0 0;"><source src="${imageUrl}" type="video/mp4">Your browser does not support the video tag.</video>`;
+        } else {
+          media = `<div class="case-header lazy-image" data-src="${imageUrl}" style="height:250px; border-radius:10px 10px 0 0; background-size:cover; background-position:center; background-color:rgba(255,255,255,0.05);"></div>`;
+        }
+        el.innerHTML = `${media}<div class="case-body"><h3>${it.title}</h3><p class="case-meta">${it.category || ''} • ${new Date(it.createdAt).getFullYear()}</p><p class="case-description">${it.description || ''}</p><div style="margin-top:12px"><a href="${it.url||'#'}" class="btn btn-primary btn-small" style="padding:0.5rem 1rem; font-size:0.9rem;">View Project</a></div></div>`;
+        grid.appendChild(el);
+        
+        // Observe lazy image if exists
+        const lazyImg = el.querySelector('.lazy-image');
+        if(lazyImg) lazyLoadObserver.observe(lazyImg);
+      });
+    }
+
     // dynamic portfolio rendering
     async function loadPortfolioItems(){
       try{
         const r = await fetch('/api/portfolio?t=' + Date.now());
         if(!r.ok) return;
-        const items = await r.json();
+        allItems = await r.json();
         const grid = document.getElementById('portfolioGrid');
         grid.innerHTML = '';
-        items.forEach(it=>{
-          const el = document.createElement('div'); el.className='case-study';
-          let media = '';
-          // Normalize image URL: if it's already absolute or starts with /, use it. Otherwise, assume it's an uploaded filename and prefix /uploads/
-          let imageVal = (it.image || '').trim();
-          let imageUrl = imageVal;
-          if(imageVal && !imageVal.startsWith('http') && !imageVal.startsWith('/')){
-            // encode spaces and special chars
-            imageUrl = '/uploads/' + encodeURIComponent(imageVal);
-          }
-          const lower = (imageUrl||'').toLowerCase();
-          if(lower.match(/\.(mp4|webm|ogg)$/)){
-            media = `<video controls style="width:100%; height:250px; object-fit:cover; border-radius:10px 10px 0 0;"><source src="${imageUrl}" type="video/mp4">Your browser does not support the video tag.</video>`;
-          } else {
-            media = `<div class="case-header" style="background-image:url('${imageUrl}'); background-size:cover; background-position:center; height:250px; border-radius:10px 10px 0 0;"></div>`;
-          }
-          el.innerHTML = `${media}<div class="case-body"><h3>${it.title}</h3><p class="case-meta">${it.category || ''} • ${new Date(it.createdAt).getFullYear()}</p><p class="case-description">${it.description || ''}</p><div style="margin-top:12px"><a href="${it.url||'#'}" class="btn btn-primary btn-small" style="padding:0.5rem 1rem; font-size:0.9rem;">View Project</a></div></div>`;
-          grid.appendChild(el);
-        });
+        
+        // Display first batch
+        displayedCount = Math.min(itemsPerPage, allItems.length);
+        displayPortfolioItems(0, displayedCount);
+        
+        // Add "load more" button if there are more items
+        if(displayedCount < allItems.length){
+          const loadMoreBtn = document.createElement('button');
+          loadMoreBtn.textContent = 'Load More Projects';
+          loadMoreBtn.className = 'btn btn-primary';
+          loadMoreBtn.style.marginTop = '2rem';
+          loadMoreBtn.style.display = 'block';
+          loadMoreBtn.style.margin = '2rem auto 0';
+          loadMoreBtn.style.gridColumn = '1 / -1';
+          loadMoreBtn.addEventListener('click', ()=>{
+            const newCount = Math.min(displayedCount + itemsPerPage, allItems.length);
+            displayPortfolioItems(displayedCount, newCount);
+            displayedCount = newCount;
+            
+            // Hide button if all items loaded
+            if(displayedCount >= allItems.length){
+              loadMoreBtn.style.display = 'none';
+            }
+          });
+          grid.appendChild(loadMoreBtn);
+        }
       }catch(e){ console.error('Could not load portfolio', e); }
     }
     document.addEventListener('DOMContentLoaded', loadPortfolioItems);
