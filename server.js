@@ -357,6 +357,31 @@ if (S3_ENABLED) {
   }
 }
 
+// ✅ Explicit routes for sitemap and robots.txt (SEO)
+app.get('/sitemap.xml', (req, res) => {
+  try {
+    const fp = path.join(__dirname, 'sitemap.xml');
+    if(!fs.existsSync(fp)) return res.status(404).send('Not found');
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    return res.sendFile(fp);
+  } catch(e) {
+    console.error('sitemap.xml error:', e);
+    return res.status(500).send('Error');
+  }
+});
+
+app.get('/robots.txt', (req, res) => {
+  try {
+    const fp = path.join(__dirname, 'robots.txt');
+    if(!fs.existsSync(fp)) return res.status(404).send('Not found');
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    return res.sendFile(fp);
+  } catch(e) {
+    console.error('robots.txt error:', e);
+    return res.status(500).send('Error');
+  }
+});
+
 // Explicit handlers for root-level image assets
 const imageAssets = ['hollyhub.jpg', 'hollyhubhero.jpg', 'google.png', 'github.png', 'whatsapp.png'];
 imageAssets.forEach(filename => {
