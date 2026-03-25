@@ -1,5 +1,13 @@
 [
   {
+    "id": "1774443839769",
+    "email": "areeks2024@gmail.com",
+    "fullname": "Myrick mall",
+    "password": "45674567",
+    "passwordHash": "$2a$10$JK8VVYttXvA1KUZaCc4ELOEUlYYvnSNSvkjIGzHWbOOJqIF746Y9.",
+    "createdAt": "2026-03-25T13:03:59.769Z"
+  },
+  {
     "id": "1773977235559",
     "email": "hollywilly418@gmail.com",
     "fullname": "hellion basas",
