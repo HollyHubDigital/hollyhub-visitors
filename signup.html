@@ -3,10 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Sign up for Holly's professional web development and digital marketing services. Create your account to book services and manage your projects." />
-  <meta name="keywords" content="sign up, register, account, freelancer services" />
+  <meta name="description" content="Sign up for Holly's professional web development and digital marketing services. Create your account to book services and manage your projects efficiently." />
+  <meta name="keywords" content="sign up, register, account, freelancer services, web development" />
+  <meta name="author" content="Holly" />
+  <meta name="robots" content="index, follow" />
+  <!-- Open Graph Tags -->
+  <meta property="og:title" content="Sign Up - Holly Web Developer & Marketer" />
+  <meta property="og:description" content="Create your account with Holly to book professional web development and digital marketing services." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://hollyhubdigitals.vercel.app/signup.html" />
+  <meta property="og:image" content="https://hollyhubdigitals.vercel.app/Holly-og.png" />
+  <!-- Google Site Verification -->
+  <meta name="google-site-verification" content="0LDzeqwgmpJTvSnLyssRWXgg8xx0NcX_5t3MFgc8SBQ" />
+  <!-- Canonical URL -->
+  <meta property="canonical" content="https://hollyhubdigitals.vercel.app/signup.html" />
   <title>Sign Up - Holly Web Developer & Marketer</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="holly-favicon.png" type="image/png" />
+  <link rel="apple-touch-icon" href="holly-favicon.png" />
 </head>
 <body>
   <!-- HEADER -->
@@ -202,6 +216,7 @@
       max-width: 1200px;
       width: 100%;
       align-items: center;
+      justify-items: center;
     }
 
     .auth-card {
@@ -209,17 +224,21 @@
       border: 1px solid var(--border-color);
       border-radius: 15px;
       padding: 3rem;
+      width: 100%;
+      max-width: 450px;
     }
 
     .auth-card h1 {
       color: var(--primary-accent);
       margin-bottom: 0.5rem;
       font-size: 2rem;
+      text-align: center;
     }
 
     .auth-subtitle {
       opacity: 0.8;
       margin-bottom: 2rem;
+      text-align: center;
     }
 
     .auth-form {
@@ -249,6 +268,7 @@
       display: flex;
       gap: 1rem;
       flex-direction: column;
+      width: 100%;
     }
 
     .social-btn {
@@ -260,6 +280,8 @@
       cursor: pointer;
       transition: var(--transition);
       font-weight: 600;
+      width: 100%;
+      text-align: center;
     }
 
     .social-btn:hover {
@@ -278,11 +300,14 @@
       border-left: 4px solid var(--primary-accent);
       padding: 2rem;
       border-radius: 10px;
+      width: 100%;
+      max-width: 450px;
     }
 
     .auth-benefits h3 {
       color: var(--primary-accent);
       margin-bottom: 1.5rem;
+      text-align: center;
     }
 
     .benefits-list {
@@ -295,26 +320,110 @@
     .benefits-list li {
       opacity: 0.9;
       font-weight: 500;
+      text-align: center;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
       .auth-container {
         grid-template-columns: 1fr;
         gap: 2rem;
+        justify-items: center;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .auth-section {
+        padding: 2rem 1rem;
+        min-height: auto;
+      }
+
+      .auth-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        justify-items: center;
+        width: 100%;
       }
 
       .auth-card {
         padding: 2rem;
+        width: 100%;
+        max-width: 100%;
       }
 
       .auth-card h1 {
         font-size: 1.5rem;
+        text-align: center;
+      }
+
+      .auth-subtitle {
+        text-align: center;
+      }
+
+      .auth-benefits {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .benefits-list li {
+        text-align: center;
+      }
+
+      .auth-social {
+        width: 100%;
+      }
+
+      .social-btn {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .auth-section {
+        padding: 1rem 0.5rem;
+        min-height: auto;
+      }
+
+      .auth-card {
+        padding: 1.5rem;
+      }
+
+      .auth-card h1 {
+        font-size: 1.25rem;
+        text-align: center;
+      }
+
+      .form-group {
+        margin: 0;
+      }
+
+      .auth-benefits {
+        padding: 1.5rem;
+      }
+
+      .benefits-list li {
+        font-size: 0.9rem;
+        text-align: center;
       }
     }
   </style>
 
   <script src="script.js"></script>
   <script>
+    // OAuth button handlers
+    document.querySelectorAll('.social-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const text = this.textContent.toLowerCase();
+        if (text.includes('google')) {
+          // Redirect to Google OAuth
+          window.location.href = '/api/auth/oauth/google';
+        } else if (text.includes('github')) {
+          // Redirect to GitHub OAuth
+          window.location.href = '/api/auth/oauth/github';
+        }
+      });
+    });
+
     document.getElementById('signupForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const formData = new FormData(this);
