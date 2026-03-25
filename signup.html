@@ -140,12 +140,12 @@
         <div class="auth-divider">OR</div>
 
         <div class="auth-social">
-          <button class="social-btn">
+          <a class="social-btn" href="/api/auth/google?action=start"><img src="https://cdn.jsdelivr.net/gh/HollyHubDigital/hollyhub-visitors@main/public/assets/google.png" alt="google" class="social" />
             <span>Sign up with Google</span>
-          </button>
-          <button class="social-btn">
+          </a>
+          <a class="social-btn" href="/api/auth/github?action=start"><img src="https://cdn.jsdelivr.net/gh/HollyHubDigital/hollyhub-visitors@main/public/assets/github.png" alt="github" class="social" />
             <span>Sign up with GitHub</span>
-          </button>
+          </a>
         </div>
 
         <p class="auth-footer">
@@ -282,6 +282,17 @@
       font-weight: 600;
       width: 100%;
       text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      text-decoration: none;
+    }
+
+    .social-btn .social {
+      height: 20px;
+      width: 20px;
+      object-fit: contain;
     }
 
     .social-btn:hover {
@@ -409,21 +420,6 @@
 
   <script src="script.js"></script>
   <script>
-    // OAuth button handlers
-    document.querySelectorAll('.social-btn').forEach(btn => {
-      btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        const text = this.textContent.toLowerCase();
-        if (text.includes('google')) {
-          // Redirect to Google OAuth
-          window.location.href = '/api/auth/oauth/google';
-        } else if (text.includes('github')) {
-          // Redirect to GitHub OAuth
-          window.location.href = '/api/auth/oauth/github';
-        }
-      });
-    });
-
     document.getElementById('signupForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const formData = new FormData(this);
