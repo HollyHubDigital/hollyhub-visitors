@@ -5,7 +5,7 @@
       "src": "server.js",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": "public/**"
+        "includeFiles": ["public/**", "Holly-og.png", "holly-favicon.png", "sitemap.xml", "robots.txt", "*.html"]
       }
     }
   ],
