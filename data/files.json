@@ -271,5 +271,25 @@
       "portfolio"
     ],
     "uploadedAt": "2026-03-25T17:55:48.435Z"
+  },
+  {
+    "id": "1774529174912",
+    "filename": "1774529174373-Atelier-1.png",
+    "originalname": "Atelier-1.png",
+    "description": "",
+    "targets": [
+      "portfolio"
+    ],
+    "uploadedAt": "2026-03-26T12:46:14.912Z"
+  },
+  {
+    "id": "1774529260675",
+    "filename": "1774529259845-Atelier.png",
+    "originalname": "Atelier.png",
+    "description": "",
+    "targets": [
+      "blog"
+    ],
+    "uploadedAt": "2026-03-26T12:47:40.675Z"
   }
 ]
