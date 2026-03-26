@@ -202,6 +202,11 @@ a:hover {
   gap: 1.5rem;
 }
 
+/* Logout button - shown/hidden by JavaScript based on auth state */
+.header-actions .btn-logout {
+  display: inline-block;
+}
+
 /* Hide the old language select dropdown - use Google Translate overlay instead */
 .language-select {
   display: none !important;
@@ -228,12 +233,25 @@ a:hover {
   border: 2px solid rgba(255, 255, 255, 0.2);
   background: linear-gradient(145deg, #1a1a1a, #282828);
   color: white;
-  text-align: center;
-  font-size: 21px;
-  line-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
   cursor: pointer;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
   transition: transform 0.2s ease, background 0.25s ease;
+}
+
+.gt-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
+.gt-widget-toggle:hover .gt-icon {
+  opacity: 1;
 }
 
 .gt-widget-toggle:hover {
@@ -347,6 +365,21 @@ body .goog-te-gadget-simple {
 .goog-te-combo option {
   background: #000 !important;
   color: var(--secondary-accent) !important;
+}
+
+.btn-logout {
+  color: var(--primary-accent);
+  border: 1px solid var(--primary-accent);
+  padding: 0.5rem 1.5rem;
+  border-radius: 5px;
+  font-weight: 600;
+  background: transparent;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-logout:hover {
+  background: rgba(255, 0, 0, 0.1);
 }
 
 .btn-login {
@@ -466,11 +499,9 @@ body .goog-te-gadget-simple {
   .header-actions { gap: 0.5rem; }
   .header-actions .btn-login, .header-actions .btn-signup { padding: 0.35rem 0.8rem; font-size: 0.85rem; display: none !important; }
   /* logout placed in header on desktop only; hide on mobile */
-  .header-actions .btn-logout { display: inline-block; }
+  .header-actions .btn-logout { display: none !important; }
   .header-logo, .search-container, .header-actions, .hamburger-btn { flex-shrink: 1; }
   .brand { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  /* hide logout button in header on small screens */
-  .header-actions .btn-logout { display: none !important; }
 }
 
 /* Ensure logout in mobile menu is visible and styled like other mobile auth buttons */

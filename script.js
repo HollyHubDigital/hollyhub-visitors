@@ -253,7 +253,7 @@ function setupStickyTranslateWidget(){
   const widget = document.createElement('div');
   widget.id = 'googleTranslateWidget';
   widget.innerHTML = `
-    <button id="gtToggle" class="gt-widget-toggle" aria-label="Translate page">🌐</button>
+    <button id="gtToggle" class="gt-widget-toggle" aria-label="Translate page"><img src="https://cdn.jsdelivr.net/gh/HollyHubDigital/hollyhub-visitors@main/public/assets/google-translate.png" alt="Translate" class="gt-icon" /></button>
     <div id="gtPanel" class="gt-widget-panel"></div>
   `;
   document.body.appendChild(widget);
@@ -274,12 +274,6 @@ function setupStickyTranslateWidget(){
     translateContainer.id = 'google_translate_element';
     panel.appendChild(translateContainer);
   }
-
-  // Add an explanatory hint below translate widget
-  const hint = document.createElement('div');
-  hint.className = 'gt-widget-hint';
-  hint.textContent = 'Click globe icon to open, then select language';
-  panel.appendChild(hint);
 
 
   toggle.addEventListener('click', (e) => {
