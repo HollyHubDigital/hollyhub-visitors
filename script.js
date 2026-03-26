@@ -138,7 +138,15 @@ if (searchModal) {
 }
 
 // ===== LANGUAGE TRANSLATOR =====
+// Hide the old header selector to avoid toggle in header; we display a sticky translator widget instead.
 const languageSelect = document.getElementById('languageSelect');
+if (languageSelect) {
+  languageSelect.style.display = 'none';
+  if (languageSelect.parentElement) {
+    languageSelect.parentElement.style.display = 'none';
+  }
+}
+
 const translations = {
   en: {
     'nav-home': 'HOME',
@@ -237,6 +245,69 @@ if (languageSelect) {
 function googleTranslateElementInit(){
   try{ new google.translate.TranslateElement({pageLanguage: 'en', autoDisplay: false}, 'google_translate_element'); }catch(e){ /* ignore */ }
 }
+
+// Create sticky Google Translate icon + panel at bottom-left of the page
+function setupStickyTranslateWidget(){
+  if(document.getElementById('googleTranslateWidget')) return;
+
+  const widget = document.createElement('div');
+  widget.id = 'googleTranslateWidget';
+  widget.innerHTML = `
+    <button id="gtToggle" class="gt-widget-toggle" aria-label="Translate page">🌐</button>
+    <div id="gtPanel" class="gt-widget-panel"></div>
+  `;
+  document.body.appendChild(widget);
+
+  const panel = widget.querySelector('#gtPanel');
+  const toggle = widget.querySelector('#gtToggle');
+
+  // Place existing translator container inside our panel, if available
+  let translateContainer = document.getElementById('google_translate_element');
+  if (translateContainer) {
+    translateContainer.style.display = 'block';
+    translateContainer.style.width = '100%';
+    translateContainer.style.maxWidth = '260px';
+    translateContainer.style.margin = '0';
+    panel.appendChild(translateContainer);
+  } else {
+    translateContainer = document.createElement('div');
+    translateContainer.id = 'google_translate_element';
+    panel.appendChild(translateContainer);
+  }
+
+  // Add an explanatory hint below translate widget
+  const hint = document.createElement('div');
+  hint.className = 'gt-widget-hint';
+  hint.textContent = 'Click globe icon to open, then select language';
+  panel.appendChild(hint);
+
+
+  toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    panel.classList.toggle('open');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!widget.contains(e.target)) {
+      panel.classList.remove('open');
+    }
+  });
+
+  // Ensure Google Translate script is loaded and initialized
+  if (window.google && window.google.translate) {
+    googleTranslateElementInit();
+  } else if (!document.querySelector('script[src*="translate_a/element.js"]')) {
+    const s = document.createElement('script');
+    s.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    s.async = true;
+    document.head.appendChild(s);
+  }
+}
+
+// Setup translator widget after page is ready
+window.addEventListener('DOMContentLoaded', () => {
+  setupStickyTranslateWidget();
+});
 
 // ===== FAQ ACCORDION =====
 const faqItems = document.querySelectorAll('.faq-item');
