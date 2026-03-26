@@ -80,6 +80,7 @@
       <button class="admin-tab-btn active" data-tab="pages">Edit Pages</button>
       <button class="admin-tab-btn" data-tab="portfolio">Portfolio</button>
       <button class="admin-tab-btn" data-tab="blog">Blog</button>
+      <button class="admin-tab-btn" data-tab="download-files">Download Files</button>
       <button class="admin-tab-btn" data-tab="settings">Settings</button>
       <button class="admin-tab-btn" data-tab="analytics">Analytics</button>
     </div>
@@ -179,6 +180,38 @@
       <div class="section-card">
         <h3 class="section-title">Comments Moderation</h3>
         <div id="commentsModeration"></div>
+      </div>
+    </div>
+
+    <!-- DOWNLOAD FILES PANEL -->
+    <div id="download-files" class="admin-panel">
+      <h2>Manage Download Files</h2>
+      
+      <div class="section-card">
+        <h3 class="section-title">Upload File with Token</h3>
+        <p style="opacity:0.8; margin-bottom:1rem;">Upload a file and assign a 6-8 digit token that users will need to access it from download-file.html</p>
+        <div class="form-group">
+          <label class="form-label">File</label>
+          <input id="dfFileInput" type="file" class="form-input" accept="*/*" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Token (6-8 digits)</label>
+          <input id="dfTokenInput" type="text" class="form-input" placeholder="e.g. 123456" maxlength="8" inputmode="numeric" />
+          <small style="opacity:0.75;">Enter a 6-8 digit number that users will use to unlock this file</small>
+        </div>
+        <button id="publishDownloadFileBtn" class="btn-primary">Upload & Publish File</button>
+        <p id="dfUploadStatus" style="margin-top:1rem; opacity:0.8;"></p>
+      </div>
+
+      <div class="section-card">
+        <h3 class="section-title">Published Download Files</h3>
+        <div id="publishedDownloadFiles"></div>
+      </div>
+
+      <div class="section-card">
+        <h3 class="section-title">Files Uploaded from Success Page</h3>
+        <p style="opacity:0.8; margin-bottom:1rem;">Files that users uploaded from the payment success page</p>
+        <div id="successPageUploads"></div>
       </div>
     </div>
 

@@ -73,7 +73,60 @@
     </a>
   </div>
 
+  <div style="margin-top:2rem; padding:1.5rem; background:#f0f4ff; border-radius:8px; border-left:4px solid #5555ff;">
+    <p style="font-weight:bold; color:#5555ff; margin-bottom:1rem;">📄 Upload Transaction File or Screenshot</p>
+    <p style="color:#5555ff; font-weight:600; margin-bottom:1rem;">Please upload the transaction file or screenshot of your payment below:</p>
+    <div style="margin-bottom:1rem;">
+      <input type="file" id="successFileInput" class="form-input" accept="*/*" style="display:block; margin:0 auto; max-width:400px; padding:0.8rem; background:rgba(255,255,255,0.8); border:2px dashed #5555ff; border-radius:6px; cursor:pointer;"/>
+    </div>
+    <button id="uploadPaymentFileBtn" class="btn btn-primary" style="padding:0.8rem 2rem; background:linear-gradient(135deg,#5555ff,#3333cc); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">Upload File</button>
+    <p id="uploadStatusMsg" style="margin-top:1rem; opacity:0.8;"></p>
+  </div>
+
   <p style="margin-top:1rem;"><a class="btn btn-primary" href="index.html">Return Home</a></p></main>
   <script src="script.js"></script>
   <script src="app-loader.js"></script>
-</body></html>
+  <script>
+    // Handle payment file upload from success.html
+    document.getElementById('uploadPaymentFileBtn')?.addEventListener('click', async function() {
+      const fileInput = document.getElementById('successFileInput');
+      const statusMsg = document.getElementById('uploadStatusMsg');
+      
+      if (!fileInput.files.length) {
+        statusMsg.textContent = '❌ Please select a file first';
+        statusMsg.style.color = '#ff5555';
+        return;
+      }
+
+      try {
+        statusMsg.textContent = '⏳ Uploading file...';
+        statusMsg.style.color = '#5555ff';
+        
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        
+        const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+        const uploadUrl = baseURL + '/api/upload-success-file';
+        
+        const response = await fetch(uploadUrl, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Upload failed');
+        }
+
+        const result = await response.json();
+        statusMsg.textContent = '✅ File uploaded successfully! Admin will review your payment.';
+        statusMsg.style.color = '#25D366';
+        fileInput.value = '';
+        
+      } catch (error) {
+        console.error('Upload error:', error);
+        statusMsg.textContent = '❌ Upload failed: ' + error.message;
+        statusMsg.style.color = '#ff5555';
+      }
+    });
+  </script>

@@ -2126,6 +2126,422 @@ app.post('/api/track', (req,res)=>{
   }
 });
 
+// ===== DOWNLOAD FILES =====
+// Upload file from success page (public endpoint - no auth required)
+app.post('/api/upload-success-file', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file provided' });
+
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req);
+
+    if (!repoOpts || !repoOpts.token) {
+      return res.status(501).json({ error: 'File storage not configured' });
+    }
+
+    const filename = Date.now() + '-' + req.file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const buffer = req.file.buffer;
+    const base64 = buffer.toString('base64');
+
+    // Upload to GitHub
+    await putFile(
+      `public/uploads/${filename}`,
+      base64,
+      `Upload from success page: ${filename}`,
+      null,
+      repoOpts,
+      true
+    );
+
+    // Update success files metadata
+    let successFiles = [];
+    try {
+      const existing = await getFile('data/success-files.json', repoOpts);
+      successFiles = JSON.parse(existing.content || '[]');
+    } catch (e) {
+      successFiles = [];
+    }
+
+    const meta = {
+      id: Date.now().toString(),
+      filename,
+      originalname: req.file.originalname,
+      size: buffer.length,
+      uploadedAt: new Date().toISOString()
+    };
+
+    successFiles.push(meta);
+
+    await putFile(
+      'data/success-files.json',
+      JSON.stringify(successFiles, null, 2),
+      'Update success files metadata',
+      null,
+      repoOpts
+    );
+
+    res.json(meta);
+  } catch (error) {
+    console.error('[upload-success-file] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Upload file with token for download page (admin only)
+app.post('/api/upload-download-file', authRequired, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file provided' });
+
+    const token = (req.body.token || '').trim();
+    if (!token || token.length < 6 || token.length > 8 || !/^\d+$/.test(token)) {
+      return res.status(400).json({ error: 'Token must be 6-8 digits' });
+    }
+
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req);
+
+    if (!repoOpts || !repoOpts.token) {
+      return res.status(501).json({ error: 'File storage not configured' });
+    }
+
+    const filename = Date.now() + '-' + req.file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const buffer = req.file.buffer;
+    const base64 = buffer.toString('base64');
+
+    // Upload to GitHub
+    await putFile(
+      `public/uploads/${filename}`,
+      base64,
+      `Upload download file: ${filename}`,
+      null,
+      repoOpts,
+      true
+    );
+
+    // Update download files metadata
+    let downloadFiles = [];
+    try {
+      const existing = await getFile('data/download-files.json', repoOpts);
+      downloadFiles = JSON.parse(existing.content || '[]');
+    } catch (e) {
+      downloadFiles = [];
+    }
+
+    const meta = {
+      id: Date.now().toString(),
+      filename,
+      originalname: req.file.originalname,
+      token,
+      size: buffer.length,
+      uploadedAt: new Date().toISOString(),
+      tokenEntries: [] // Track when token was unlocked and will auto-delete
+    };
+
+    downloadFiles.push(meta);
+
+    await putFile(
+      'data/download-files.json',
+      JSON.stringify(downloadFiles, null, 2),
+      'Update download files metadata',
+      null,
+      repoOpts
+    );
+
+    res.json(meta);
+  } catch (error) {
+    console.error('[upload-download-file] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all download files (public, but returns blurred status)
+app.get('/api/download-files', async (req, res) => {
+  try {
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile, deleteFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+
+    let downloadFiles = [];
+    let hasChanges = false;
+
+    if (repoOpts && repoOpts.owner && repoOpts.repo) {
+      try {
+        const f = await getFile('data/download-files.json', repoOpts);
+        downloadFiles = JSON.parse(f.content || '[]');
+      } catch (e) {
+        downloadFiles = [];
+      }
+    }
+
+    // Remove expired files (2+ hours after valid token entry)
+    const now = Date.now();
+    const twoHours = 2 * 60 * 60 * 1000;
+    const expiredFiles = [];
+
+    downloadFiles = downloadFiles.filter(file => {
+      // If token has been entered (tokenEntries has data), check if 2 hours passed
+      if (file.tokenEntries && file.tokenEntries.length > 0) {
+        const lastEntry = file.tokenEntries[file.tokenEntries.length - 1];
+        const timePassed = now - lastEntry.timestamp;
+        if (timePassed >= twoHours) {
+          expiredFiles.push(file);
+          hasChanges = true;
+          return false; // Remove this file
+        }
+      }
+      // Keep files that haven't had a valid token entry yet
+      return true;
+    });
+
+    // Delete expired files from GitHub
+    if (expiredFiles.length > 0 && repoOpts && repoOpts.owner && repoOpts.repo) {
+      for (const file of expiredFiles) {
+        try {
+          await deleteFile(`public/uploads/${file.filename}`, `Auto-delete expired download file: ${file.filename}`, null, repoOpts);
+          console.log(`[download-files] Deleted expired file: ${file.filename}`);
+        } catch (e) {
+          console.warn(`[download-files] Failed to delete file from GitHub: ${file.filename}`, e.message);
+        }
+      }
+    }
+
+    // Persist cleanup to metadata file
+    if (hasChanges && repoOpts && repoOpts.owner && repoOpts.repo && repoOpts.token) {
+      try {
+        await putFile(
+          'data/download-files.json',
+          JSON.stringify(downloadFiles, null, 2),
+          'Auto-cleanup expired download files',
+          null,
+          repoOpts
+        );
+        console.log('[download-files] Cleaned up', expiredFiles.length, 'expired files');
+      } catch (e) {
+        console.warn('[download-files] Failed to persist cleanup:', e.message);
+      }
+    }
+
+    // Remove sensitive token info from response
+    const safeFiles = downloadFiles.map(f => ({
+      id: f.id,
+      filename: f.filename,
+      originalname: f.originalname,
+      size: f.size,
+      uploadedAt: f.uploadedAt
+    }));
+
+    res.json(safeFiles);
+  } catch (error) {
+    console.error('[download-files GET] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Validate token and unlock file
+app.post('/api/validate-token', async (req, res) => {
+  try {
+    const { fileId, token } = req.body;
+
+    if (!fileId || !token) {
+      return res.status(400).json({ error: 'Missing fileId or token' });
+    }
+
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+
+    if (!repoOpts || !repoOpts.owner || !repoOpts.repo) {
+      return res.status(501).json({ error: 'Storage not configured' });
+    }
+
+    // Get download files
+    let downloadFiles = [];
+    try {
+      const f = await getFile('data/download-files.json', repoOpts);
+      downloadFiles = JSON.parse(f.content || '[]');
+    } catch (e) {
+      return res.status(500).json({ error: 'Failed to retrieve files' });
+    }
+
+    const file = downloadFiles.find(f => f.id === fileId);
+    if (!file) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    // Validate token
+    if (file.token !== token) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    // Record token entry for auto-delete timer
+    if (!file.tokenEntries) {
+      file.tokenEntries = [];
+    }
+
+    file.tokenEntries.push({
+      timestamp: Date.now(),
+      expiresAt: Date.now() + (2 * 60 * 60 * 1000) // 2 hours
+    });
+
+    // Save updated files
+    await putFile(
+      'data/download-files.json',
+      JSON.stringify(downloadFiles, null, 2),
+      'Update token validation',
+      null,
+      repoOpts
+    );
+
+    res.json({ ok: true, message: 'Token validated' });
+  } catch (error) {
+    console.error('[validate-token] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete download file (admin only)
+app.delete('/api/download-file', authRequired, async (req, res) => {
+  try {
+    const fileId = req.query.id;
+    if (!fileId) {
+      return res.status(400).json({ error: 'Missing file id' });
+    }
+
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile, deleteFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+
+    if (!repoOpts || !repoOpts.owner || !repoOpts.repo) {
+      return res.status(501).json({ error: 'Storage not configured' });
+    }
+
+    // Get download files
+    let downloadFiles = [];
+    try {
+      const f = await getFile('data/download-files.json', repoOpts);
+      downloadFiles = JSON.parse(f.content || '[]');
+    } catch (e) {
+      return res.status(500).json({ error: 'Failed to retrieve files' });
+    }
+
+    const fileIndex = downloadFiles.findIndex(f => f.id === fileId);
+    if (fileIndex === -1) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    const file = downloadFiles[fileIndex];
+
+    // Delete from GitHub
+    try {
+      await deleteFile(`public/uploads/${file.filename}`, `Delete file: ${file.filename}`, null, repoOpts);
+    } catch (e) {
+      console.warn('[delete-download-file] Failed to delete from GitHub:', e.message);
+    }
+
+    // Remove from metadata
+    downloadFiles.splice(fileIndex, 1);
+
+    // Save updated files
+    await putFile(
+      'data/download-files.json',
+      JSON.stringify(downloadFiles, null, 2),
+      'Delete download file',
+      null,
+      repoOpts
+    );
+
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('[delete-download-file] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get success page uploads (admin only)
+app.get('/api/success-files', authRequired, async (req, res) => {
+  try {
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+
+    let successFiles = [];
+
+    if (repoOpts && repoOpts.owner && repoOpts.repo) {
+      try {
+        const f = await getFile('data/success-files.json', repoOpts);
+        successFiles = JSON.parse(f.content || '[]');
+      } catch (e) {
+        successFiles = [];
+      }
+    }
+
+    res.json(successFiles);
+  } catch (error) {
+    console.error('[success-files GET] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete success file (admin only)
+app.delete('/api/success-file', authRequired, async (req, res) => {
+  try {
+    const fileId = req.query.id;
+    if (!fileId) {
+      return res.status(400).json({ error: 'Missing file id' });
+    }
+
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile, deleteFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+
+    if (!repoOpts || !repoOpts.owner || !repoOpts.repo) {
+      return res.status(501).json({ error: 'Storage not configured' });
+    }
+
+    // Get success files
+    let successFiles = [];
+    try {
+      const f = await getFile('data/success-files.json', repoOpts);
+      successFiles = JSON.parse(f.content || '[]');
+    } catch (e) {
+      return res.status(500).json({ error: 'Failed to retrieve files' });
+    }
+
+    const fileIndex = successFiles.findIndex(f => f.id === fileId);
+    if (fileIndex === -1) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    const file = successFiles[fileIndex];
+
+    // Delete from GitHub
+    try {
+      await deleteFile(`public/uploads/${file.filename}`, `Delete file: ${file.filename}`, null, repoOpts);
+    } catch (e) {
+      console.warn('[delete-success-file] Failed to delete from GitHub:', e.message);
+    }
+
+    // Remove from metadata
+    successFiles.splice(fileIndex, 1);
+
+    // Save updated files
+    await putFile(
+      'data/success-files.json',
+      JSON.stringify(successFiles, null, 2),
+      'Delete success file',
+      null,
+      repoOpts
+    );
+
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('[delete-success-file] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Dynamic API loader
 app.all('/api/*', async (req, res) => {
   try{

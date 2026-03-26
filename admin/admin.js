@@ -910,6 +910,11 @@ function attachEvents(){
   if(blogTabBtn){
     blogTabBtn.addEventListener('click', ()=>{ refreshBlogPosts(); refreshCommentsModeration(); });
   }
+  // reload download files when tab activated
+  const downloadFilesTabBtn = document.querySelector('[data-tab="download-files"]');
+  if(downloadFilesTabBtn){
+    downloadFilesTabBtn.addEventListener('click', loadDownloadFilesUI);
+  }
   
   // Close modal when clicking outside
   const modal = document.getElementById('appConfigModal');
@@ -949,5 +954,153 @@ window.addEventListener('load', async ()=>{
   refreshBlogPosts();
   await loadSiteSettings();
   loadAppsRegistry();
+  loadDownloadFilesUI();
 });
+  
+  // ===== DOWNLOAD FILES SECTION =====
+  async function loadDownloadFilesUI() {
+    const container = document.getElementById('publishedDownloadFiles');
+    const successContainer = document.getElementById('successPageUploads');
+    
+    try {
+      // Load download files
+      const dfResponse = await fetch(API.buildURL('/api/download-files'));
+      const downloadFiles = await dfResponse.json() || [];
+      
+      // Load success files
+      const sfResponse = await fetch(API.buildURL('/api/success-files'), {
+        headers: API.headers()
+      });
+      const successFiles = await sfResponse.json() || [];
+      
+      // Render download files
+      if (downloadFiles.length === 0) {
+        container.innerHTML = '<p style="opacity:0.8;">No download files published yet.</p>';
+      } else {
+        container.innerHTML = downloadFiles.map(file => `
+          <div class="section-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <p style="font-weight:600; margin:0;">📄 ${file.originalname}</p>
+                <p style="opacity:0.7; margin:0.5rem 0 0 0; font-size:0.9rem;">${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+              </div>
+              <button class="btn-danger" onclick="deleteDownloadFile('${file.id}')">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      }
+      
+      // Render success files
+      if (successFiles.length === 0) {
+        successContainer.innerHTML = '<p style="opacity:0.8;">No files uploaded from success page yet.</p>';
+      } else {
+        successContainer.innerHTML = successFiles.map(file => `
+          <div class="section-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <p style="font-weight:600; margin:0;">📄 ${file.originalname}</p>
+                <p style="opacity:0.7; margin:0.5rem 0 0 0; font-size:0.9rem;">${(file.size / 1024 / 1024).toFixed(2)} MB • ${new Date(file.uploadedAt).toLocaleString()}</p>
+              </div>
+              <button class="btn-danger" onclick="deleteSuccessFile('${file.id}')">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      }
+    } catch (error) {
+      console.error('Error loading files:', error);
+      container.innerHTML = '<p style="color:#FF5555;">Error loading files: ' + error.message + '</p>';
+      successContainer.innerHTML = '<p style="color:#FF5555;">Error loading files: ' + error.message + '</p>';
+    }
+  }
+  
+  window.deleteDownloadFile = async function(fileId) {
+    if (!confirm('Delete this file?')) return;
+    
+    try {
+      const r = await fetch(API.buildURL('/api/download-file?id=' + fileId), {
+        method: 'DELETE',
+        headers: API.headers()
+      });
+      
+      if (!r.ok) throw new Error(await r.text());
+      
+      showToast('✅ File deleted successfully', null, null, 3000);
+      loadDownloadFilesUI();
+    } catch (error) {
+      alert('Error deleting file: ' + error.message);
+    }
+  };
+  
+  window.deleteSuccessFile = async function(fileId) {
+    if (!confirm('Delete this file?')) return;
+    
+    try {
+      const r = await fetch(API.buildURL('/api/success-file?id=' + fileId), {
+        method: 'DELETE',
+        headers: API.headers()
+      });
+      
+      if (!r.ok) throw new Error(await r.text());
+      
+      showToast('✅ File deleted successfully', null, null, 3000);
+      loadDownloadFilesUI();
+    } catch (error) {
+      alert('Error deleting file: ' + error.message);
+    }
+  };
+  
+  // Attach upload handler
+  document.getElementById('publishDownloadFileBtn')?.addEventListener('click', async function() {
+    const fileInput = document.getElementById('dfFileInput');
+    const tokenInput = document.getElementById('dfTokenInput');
+    const statusMsg = document.getElementById('dfUploadStatus');
+    
+    if (!fileInput.files.length) {
+      statusMsg.textContent = '❌ Please select a file';
+      statusMsg.style.color = '#FF5555';
+      return;
+    }
+    
+    if (!tokenInput.value) {
+      statusMsg.textContent = '❌ Please enter a token';
+      statusMsg.style.color = '#FF5555';
+      return;
+    }
+    
+    try {
+      statusMsg.textContent = '⏳ Uploading file...';
+      statusMsg.style.color = '#5555ff';
+      
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      formData.append('token', tokenInput.value);
+      
+      const r = await fetch(API.buildURL('/api/upload-download-file'), {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + API.token() },
+        body: formData
+      });
+      
+      if (!r.ok) {
+        const error = await r.json();
+        throw new Error(error.error || 'Upload failed');
+      }
+      
+      const result = await r.json();
+      statusMsg.textContent = '✅ File published successfully!';
+      statusMsg.style.color = '#25D366';
+      fileInput.value = '';
+      tokenInput.value = '';
+      
+      setTimeout(() => {
+        loadDownloadFilesUI();
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Upload error:', error);
+      statusMsg.textContent = '❌ Upload failed: ' + error.message;
+      statusMsg.style.color = '#FF5555';
+    }
+  });
+
 } // End of ADMIN_INITIALIZED guard

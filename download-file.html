@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Download files shared by Holly. Secure token-based file access." />
+  <meta name="keywords" content="download, files, secure" />
+  <meta name="author" content="Holly" />
+  <meta name="robots" content="index, follow" />
+  <title>Download Files - Holly</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="holly-favicon.png" type="image/png" />
+  <link rel="apple-touch-icon" href="holly-favicon.png" />
+  <style>
+    .download-file-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .file-preview {
+      width: 100%;
+      max-height: 300px;
+      border-radius: 8px;
+      object-fit: cover;
+      margin-bottom: 1rem;
+      transition: filter 0.3s ease;
+    }
+
+    .file-preview.blurred {
+      filter: blur(20px);
+    }
+
+    .token-input-section {
+      background: rgba(255,255,255,0.05);
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+
+    .token-input-section.active {
+      display: block;
+    }
+
+    .token-input-wrapper {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .token-input-wrapper input {
+      flex: 1;
+      padding: 0.8rem;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-light);
+      font-size: 1rem;
+      letter-spacing: 2px;
+    }
+
+    .token-input-wrapper input:focus {
+      outline: none;
+      border-color: var(--primary-accent);
+      background: rgba(255,255,255,0.12);
+    }
+
+    .token-submit-btn {
+      padding: 0.8rem 1.5rem;
+      background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .token-submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(255,0,0,0.3);
+    }
+
+    .file-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn-download, .btn-view {
+      flex: 1;
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+      font-size: 0.95rem;
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+      color: #000;
+    }
+
+    .btn-download:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(255,0,0,0.3);
+    }
+
+    .btn-view {
+      background: transparent;
+      border: 2px solid var(--primary-accent);
+      color: var(--primary-accent);
+    }
+
+    .btn-view:hover {
+      background: rgba(255,0,0,0.1);
+      transform: translateY(-2px);
+    }
+
+    .btn-download:disabled, .btn-view:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .file-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .file-name {
+      font-weight: 600;
+      color: var(--primary-accent);
+      font-size: 1.1rem;
+    }
+
+    .file-size {
+      opacity: 0.7;
+      font-size: 0.9rem;
+    }
+
+    .token-status-msg {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      padding: 0.5rem;
+      border-radius: 4px;
+    }
+
+    .token-status-msg.success {
+      background: rgba(37, 211, 102, 0.2);
+      color: #25D366;
+    }
+
+    .token-status-msg.error {
+      background: rgba(255, 85, 85, 0.2);
+      color: #FF5555;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+      .file-actions {
+        flex-direction: column;
+      }
+
+      .token-input-wrapper {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="sticky-header" id="header">
+    <div class="header-container">
+      <div class="header-logo">
+        <a href="index.html" class="logo-link"><img src="https://cdn.jsdelivr.net/gh/HollyHubDigital/hollyhub-visitors@main/public/assets/hollyhub.jpg" class="logo-img" alt="HollyHub" /><h1 class="brand">HOLLY<span class="brandkit">DEV</span></h1></a>
+      </div>
+      <nav class="desktop-nav">
+        <a href="index.html" class="nav-link">HOME</a>
+        <a href="services.html" class="nav-link">SERVICES</a>
+        <a href="contact.html" class="nav-link">CONTACT</a>
+        <a href="about.html" class="nav-link">ABOUT</a>
+      </nav>
+      <div class="header-actions">
+        <select id="languageSelect" class="language-select" aria-label="Select language">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+        </select>
+        <div id="google_translate_element" style="display:none"></div>
+        <a href="login.html" class="btn-login">LOGIN</a>
+        <a href="signup.html" class="btn-signup">SIGN UP</a>
+      </div>
+      <button class="hamburger-btn" id="hamburger"><span></span><span></span><span></span></button>
+    </div>
+    <nav class="mobile-menu" id="mobile-menu">
+      <a href="index.html" class="mobile-nav-link">HOME</a>
+      <a href="services.html" class="mobile-nav-link">SERVICES</a>
+      <a href="contact.html" class="mobile-nav-link">CONTACT</a>
+      <a href="about.html" class="mobile-nav-link">ABOUT</a>
+      <div class="mobile-auth">
+        <a href="login.html" class="btn-login">LOGIN</a>
+        <a href="signup.html" class="btn-signup">SIGN UP</a>
+      </div>
+    </nav>
+  </header>
+
+  <section class="hero" style="min-height: 40vh;">
+    <div class="hero-content">
+      <h1>Secure File Download</h1>
+      <p class="hero-subtitle">Access your files securely with token-based verification</p>
+    </div>
+  </section>
+
+  <section style="padding: 3rem 2rem;">
+    <div class="container" style="max-width: 900px;">
+      <div id="downloadFilesContainer"></div>
+      <div id="emptyState" class="empty-state">
+        <p>No files available for download at this time.</p>
+      </div>
+    </div>
+  </section>
+
+  <script src="script.js"></script>
+  <script src="app-loader.js"></script>
+  <script>
+    // Download File Page - Token-based access
+    const API_BASE = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+    
+    const FileManager = {
+      files: [],
+      unlocked: new Map(), // fileId -> {token, unlockTime}
+
+      async init() {
+        await this.loadFiles();
+        this.render();
+      },
+
+      async loadFiles() {
+        try {
+          const url = API_BASE + '/api/download-files';
+          const response = await fetch(url);
+          if (!response.ok) throw new Error('Failed to load files');
+          this.files = await response.json();
+        } catch (error) {
+          console.error('Error loading files:', error);
+          this.files = [];
+        }
+      },
+
+      isFileUnlocked(fileId) {
+        return this.unlocked.has(fileId);
+      },
+
+      getUnlockTimeRemaining(fileId) {
+        if (!this.unlocked.has(fileId)) return 0;
+        const { unlockTime } = this.unlocked.get(fileId);
+        const remaining = unlockTime + (2 * 60 * 60 * 1000) - Date.now();
+        return Math.max(0, remaining);
+      },
+
+      formatTime(ms) {
+        const hours = Math.floor(ms / (1000 * 60 * 60));
+        const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((ms % (1000 * 60)) / 1000);
+        return `${hours}h ${minutes}m ${seconds}s`;
+      },
+
+      async validateToken(fileId, token) {
+        try {
+          const url = API_BASE + '/api/validate-token';
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileId, token })
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Token validation failed');
+          }
+
+          return await response.json();
+        } catch (error) {
+          console.error('Token validation error:', error);
+          throw error;
+        }
+      },
+
+      getFilePreviewUrl(filename) {
+        // Return GitHub raw URL for preview
+        return `https://raw.githubusercontent.com/HollyHubDigital/hollyhub-visitors/main/public/uploads/${filename}`;
+      },
+
+      async downloadFile(fileId) {
+        try {
+          const file = this.files.find(f => f.id === fileId);
+          if (!file) throw new Error('File not found');
+
+          const previewUrl = this.getFilePreviewUrl(file.filename);
+          const link = document.createElement('a');
+          link.href = previewUrl;
+          link.download = file.originalname || file.filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } catch (error) {
+          console.error('Download error:', error);
+          alert('Download failed: ' + error.message);
+        }
+      },
+
+      viewFile(fileId) {
+        try {
+          const file = this.files.find(f => f.id === fileId);
+          if (!file) throw new Error('File not found');
+
+          const previewUrl = this.getFilePreviewUrl(file.filename);
+          window.open(previewUrl, '_blank');
+        } catch (error) {
+          console.error('View error:', error);
+          alert('View failed: ' + error.message);
+        }
+      },
+
+      render() {
+        const container = document.getElementById('downloadFilesContainer');
+        const emptyState = document.getElementById('emptyState');
+
+        if (!this.files || this.files.length === 0) {
+          container.innerHTML = '';
+          emptyState.style.display = 'block';
+          return;
+        }
+
+        emptyState.style.display = 'none';
+        container.innerHTML = this.files.map(file => {
+          const isUnlocked = this.isFileUnlocked(file.id);
+          const timeRemaining = this.getUnlockTimeRemaining(file.id);
+          const isImage = file.originalname?.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+
+          return `
+            <div class="download-file-card">
+              ${isImage ? `<img src="${this.getFilePreviewUrl(file.filename)}" class="file-preview ${isUnlocked ? '' : 'blurred'}" alt="${file.originalname}" />` : ''}
+              
+              <div class="file-info">
+                <div class="file-name">📄 ${file.originalname || file.filename}</div>
+                <div class="file-size">${this.formatFileSize(file.size)}</div>
+              </div>
+
+              ${!isUnlocked ? `
+                <div class="token-input-section active">
+                  <p style="opacity: 0.9; margin-bottom: 1rem;">⚠️ This file requires a token to access. Please enter the token provided by admin.</p>
+                  <div class="token-input-wrapper">
+                    <input type="text" class="token-input" placeholder="Enter 6-8 digit token" data-file-id="${file.id}" maxlength="8" inputmode="numeric" />
+                    <button class="token-submit-btn" onclick="FileManager.submitToken('${file.id}')">Verify</button>
+                  </div>
+                  <div class="token-status-msg" id="msg-${file.id}" style="display: none;"></div>
+                </div>
+              ` : `
+                <div style="background: rgba(37, 211, 102, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                  <p style="color: #25D366; margin: 0;">✅ File unlocked</p>
+                  <p style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Expires in: ${this.formatTime(timeRemaining)}</p>
+                </div>
+              `}
+
+              <div class="file-actions">
+                <button class="btn-download" ${!isUnlocked ? 'disabled' : ''} onclick="FileManager.downloadFile('${file.id}')">
+                  ⬇️ Download
+                </button>
+                <button class="btn-view" ${!isUnlocked ? 'disabled' : ''} onclick="FileManager.viewFile('${file.id}')">
+                  👁️ View File
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Re-attach event listeners to token inputs
+        document.querySelectorAll('.token-input').forEach(input => {
+          input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+              const fileId = input.getAttribute('data-file-id');
+              this.submitToken(fileId);
+            }
+          });
+        });
+
+        // Update timer display
+        this.startTimerUpdate();
+      },
+
+      startTimerUpdate() {
+        setInterval(() => {
+          this.unlocked.forEach((value, fileId) => {
+            const timeRemaining = this.getUnlockTimeRemaining(fileId);
+            if (timeRemaining <= 0) {
+              this.unlocked.delete(fileId);
+              this.render();
+            }
+          });
+        }, 1000);
+      },
+
+      async submitToken(fileId) {
+        const input = document.querySelector(`[data-file-id="${fileId}"]`);
+        const token = input.value.trim();
+        const msgEl = document.getElementById(`msg-${fileId}`);
+
+        if (!token) {
+          msgEl.textContent = '⚠️ Please enter a token';
+          msgEl.className = 'token-status-msg error';
+          msgEl.style.display = 'block';
+          return;
+        }
+
+        try {
+          msgEl.textContent = '⏳ Verifying token...';
+          msgEl.className = 'token-status-msg';
+          msgEl.style.display = 'block';
+
+          await this.validateToken(fileId, token);
+
+          this.unlocked.set(fileId, { token, unlockTime: Date.now() });
+
+          msgEl.textContent = '✅ Token verified! File is now available.';
+          msgEl.className = 'token-status-msg success';
+          msgEl.style.display = 'block';
+
+          setTimeout(() => {
+            this.render();
+          }, 500);
+
+        } catch (error) {
+          msgEl.textContent = `❌ ${error.message}`;
+          msgEl.className = 'token-status-msg error';
+          msgEl.style.display = 'block';
+          input.value = '';
+        }
+      },
+
+      formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+      }
+    };
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      FileManager.init();
+    });
+  </script>
+</body>
+</html>
