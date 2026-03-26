@@ -3,29 +3,11 @@ if (typeof ADMIN_INITIALIZED !== 'undefined') {
   console.log('[Admin] Script already loaded, skipping re-initialization');
 } else {
   window.ADMIN_INITIALIZED = true;
+const API_BASE_URL = (typeof window !== 'undefined' && window.API_BASE_URL) ? window.API_BASE_URL : 'https://hollyhubdigitals.vercel.app';
   
 const API = {
-  baseURL() { return (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : ''; },
-  buildURL(path) { 
-    const base = API.baseURL();
-    if (!base) return path; // Use relative path if no base URL is set
-    return base + path;
-  },
   token() { return localStorage.getItem('adminToken') || ''; },
-  visitorsURL() { return (typeof window.VISITORS_BASE_URL === 'string' && window.VISITORS_BASE_URL) ? window.VISITORS_BASE_URL : 'https://hollyhubdigitals.vercel.app'; },
-  headers(json=true){ 
-    const headers = {};
-    const token = API.token();
-    console.log('[API.headers] Building headers... token present:', !!token);
-    if(token) {
-      headers['Authorization'] = 'Bearer ' + token;
-      console.log('[API.headers] Authorization header set, length:', headers['Authorization'].length);
-    } else {
-      console.warn('[API.headers] No token available');
-    }
-    if(json) headers['Content-Type'] = 'application/json';
-    return headers;
-  }
+  headers(json=true){ return { 'Authorization': 'Bearer ' + API.token(), ...(json? {'Content-Type':'application/json'}:{}) }; }
 };
 
 // Small toast helper
@@ -66,16 +48,10 @@ function showToast(message, actionLabel, actionFn, timeout=5000){
 }
 
 function requireAuth() {
-  const token = API.token();
-  console.log('[requireAuth] Checking authentication...');
-  console.log('[requireAuth] Token present:', !!token);
-  if(token) {
-    console.log('[requireAuth] Token length:', token.length);
-    console.log('[requireAuth] Token preview:', token.substring(0, 30) + '...');
-  } else {
-    console.warn('[requireAuth] No token found, redirecting to login');
+  if(!API.token()) { 
+    window.location.href = 'adminlogin.html';
+    throw new Error('Redirecting to login');
   }
-  if(!token) { window.location.href = 'adminlogin.html'; }
 }
 
 // ===== TAB SWITCHING =====
@@ -100,7 +76,7 @@ async function loadPageSections(){
   container.innerHTML = '<p style="opacity:0.8">Loading...</p>';
 
   try {
-    const r = await fetch(API.buildURL(`/api/pages/sections/${page}`), { headers: API.headers() });
+    const r = await fetch(`${API_BASE_URL}/api/pages/sections/${page}`, { headers: API.headers() });
     if(!r.ok) throw new Error('Failed to load sections');
     const sections = await r.json();
 
@@ -118,12 +94,11 @@ async function loadPageSections(){
           <textarea id="recentProjects" class="form-input" placeholder="JSON array of project cards">${JSON.stringify(sections.recentProjects || [], null, 2)}</textarea>
         </div>
       `;
-      // inject preview iframe area
+      // inject preview iframe area pointing to visitors site
       setTimeout(()=>{
         const preview = document.getElementById('pagePreviewArea');
         if(preview){
-          const visitorsUrl = API.visitorsURL();
-          preview.innerHTML = `<iframe id="pagePreviewFrame" src="${visitorsUrl}/" style="width:100%;height:420px;border:1px solid rgba(255,255,255,0.06);border-radius:8px"></iframe>`;
+          preview.innerHTML = `<iframe id="pagePreviewFrame" src="${API_BASE_URL}/" style="width:100%;height:420px;border:1px solid rgba(255,255,255,0.06);border-radius:8px"></iframe>`;
         }
       }, 50);
     } else if(page === 'portfolio'){
@@ -154,12 +129,12 @@ async function loadPageSections(){
 
 async function savePageSections(payload){
   try {
-    const r = await fetch(API.buildURL('/api/pages/sections/save'), { method:'PUT', headers: API.headers(), body: JSON.stringify(payload) });
+    const r = await fetch(API_BASE_URL + '/api/pages/sections/save', { method:'PUT', headers: API.headers(), body: JSON.stringify(payload) });
     if(!r.ok) throw new Error(await r.text());
-    showToast('Page sections saved', 'View', ()=>window.open('/', '_blank'));
+    showToast('Page sections saved', 'View', ()=>window.open(API_BASE_URL + '/', '_blank'));
     document.getElementById('pageEditContainer').innerHTML = '<p style="color:var(--primary-accent)">✓ Changes saved!</p>';
     // refresh preview iframe if present
-    try{ const f = document.getElementById('pagePreviewFrame'); if(f && f.contentWindow) f.contentWindow.location.reload(); }catch(e){}
+    try{ const f = document.getElementById('pagePreviewFrame'); if(f && f.contentWindow && f.contentWindow.location) f.contentWindow.location.reload(); }catch(e){}
   } catch(e) {
     showToast('Save failed: '+e.message, null, null, 6000);
   }
@@ -196,33 +171,15 @@ async function publishPortfolio(){
     }
     // prefer uploaded filename if available
     if(uploadedMeta && uploadedMeta.filename){ payload.image = uploadedMeta.filename; }
-    
-    const token = API.token();
-    const headers = API.headers();
-    const fullUrl = API.buildURL(endpoint);
-    console.log('[publishPortfolio] ===== PORTFOLIO PUBLISH START =====');
-    console.log('[publishPortfolio] Endpoint:', endpoint);
-    console.log('[publishPortfolio] Full URL:', fullUrl);
-    console.log('[publishPortfolio] Method:', method);
-    console.log('[publishPortfolio] Token present:', !!token);
-    console.log('[publishPortfolio] Token length:', token ? token.length : 0);
-    console.log('[publishPortfolio] Token starts with:', token ? token.substring(0, 30) + '...' : 'EMPTY');
-    console.log('[publishPortfolio] Headers object:', headers);
-    console.log('[publishPortfolio] Authorization header value:', headers.Authorization);
-    
-    const r = await fetch(fullUrl, { method, headers, body: JSON.stringify(payload) });
-    if(!r.ok) {
-      const errText = await r.text();
-      console.error('[publishPortfolio] Request failed - Status:', r.status, '| Response:', errText);
-      throw new Error(`Server error (${r.status}): ${errText}`);
-    }
+    const r = await fetch(API_BASE_URL + endpoint, { method, headers: API.headers(), body: JSON.stringify(payload) });
+    if(!r.ok) throw new Error(await r.text());
     const createdItem = await r.json();
     showToast(editingId ? 'Portfolio item updated' : 'Portfolio item published', 'Open', ()=>window.open('/portfolio.html','_blank'));
     // Optionally add to recentProjects on home page
     if(addToRecent){
       try{
         // fetch current sections
-        const sres = await fetch(API.buildURL('/api/pages/sections/index'), { headers: API.headers() });
+        const sres = await fetch(API_BASE_URL + '/api/pages/sections/index', { headers: API.headers() });
         const sections = sres.ok ? await sres.json() : {};
         sections.recentProjects = sections.recentProjects || [];
         // create project entry
@@ -246,60 +203,22 @@ async function publishPortfolio(){
 }
 
 async function uploadFile(file, targets){
-  const token = API.token();
-  console.log('[uploadFile] Token status:', token ? 'Present' : 'Missing');
-  console.log('[uploadFile] Token length:', token ? token.length : 0);
-  console.log('[uploadFile] Token preview:', token ? token.substring(0, 20) + '...' : 'NONE');
-  console.log('[uploadFile] API Base URL:', API.baseURL());
-  
-  if(!token) {
-    throw new Error('Authentication required. Please log in again.');
-  }
-  
   const fd = new FormData();
   fd.append('file', file);
   if(targets && targets.length) fd.append('targets', targets.filter(Boolean).join(','));
-  
-  const headers = { 'Authorization': 'Bearer ' + token };
-  const uploadUrl = API.buildURL('/api/upload');
-  console.log('[uploadFile] Uploading to:', uploadUrl);
-  console.log('[uploadFile] Authorization header:', headers.Authorization);
-  console.log('[uploadFile] Full header object:', headers);
-  
-  const r = await fetch(uploadUrl, { method: 'POST', headers, body: fd });
-  
-  if(!r.ok) {
-    const errText = await r.text();
-    console.error('[uploadFile] Upload failed - Status:', r.status, 'Text:', errText);
-    throw new Error(`Upload failed (${r.status}): ${errText}`);
-  }
-  
+  const headers = { 'Authorization': 'Bearer ' + API.token() };
+  const r = await fetch(API_BASE_URL + '/api/upload', { method: 'POST', headers, body: fd });
+  if(!r.ok) throw new Error(await r.text());
   return await r.json();
 }
 
 async function refreshPortfolioList(){
   try {
-    const url = API.buildURL('/api/portfolio');
-    console.log('[portfolio] Loading from:', url);
-    const r = await fetch(url, { headers: API.headers() });
-    
-    if(!r.ok) {
-      console.error('[portfolio] Fetch failed:', r.status, r.statusText);
-      throw new Error(`Failed to load portfolio (${r.status})`);
-    }
-    
+    const r = await fetch(API_BASE_URL + '/api/portfolio', { headers: API.headers() });
+    if(!r.ok) throw new Error('Failed');
     const items = await r.json();
-    console.log('[portfolio] Loaded items:', items ? items.length : 0);
-    
     const container = document.getElementById('portfolioList');
-    if (!container) return;
-    
     container.innerHTML = '';
-    if (!items || items.length === 0) {
-      container.innerHTML = '<p style="opacity:0.6">No portfolio items yet. Create one above.</p>';
-      return;
-    }
-    
     items.forEach(item=>{
       const div = document.createElement('div');
       div.className = 'portfolio-item';
@@ -309,32 +228,20 @@ async function refreshPortfolioList(){
           <div style="opacity:0.8;font-size:0.9rem">${item.category} • ${new Date(item.createdAt).toLocaleDateString()}</div>
         </div>
         <div style="display:flex;gap:6px">
-          <button class="btn-secondary" data-action="edit-portfolio" data-id="${item.id}">Edit</button>
-          <button class="btn-danger" data-action="delete-portfolio" data-id="${item.id}">Delete</button>
+          <button class="btn-secondary" onclick="editPortfolioItem('${item.id}')">Edit</button>
+          <button class="btn-danger" onclick="deletePortfolioItem('${item.id}')">Delete</button>
         </div>
       `;
       container.appendChild(div);
     });
-    
-    // Attach event listeners for edit/delete buttons
-    container.querySelectorAll('[data-action="edit-portfolio"]').forEach(btn => {
-      btn.addEventListener('click', (e) => editPortfolioItem(e.target.dataset.id));
-    });
-    container.querySelectorAll('[data-action="delete-portfolio"]').forEach(btn => {
-      btn.addEventListener('click', (e) => deletePortfolioItem(e.target.dataset.id));
-    });
   } catch(e) {
-    console.error('[portfolio] Error:', e);
-    const container = document.getElementById('portfolioList');
-    if (container) {
-      container.innerHTML = `<p style="color:#ff6b6b">Error: ${e.message}</p>`;
-    }
+    console.error(e);
   }
 }
 
 async function editPortfolioItem(id){
   try {
-    const r = await fetch(API.buildURL('/api/portfolio?id='+encodeURIComponent(id)), { headers: API.headers() });
+    const r = await fetch(API_BASE_URL + '/api/portfolio?id='+encodeURIComponent(id), { headers: API.headers() });
     if(!r.ok) throw new Error('Not found');
     const item = await r.json();
     document.getElementById('pfTitle').value = item.title;
@@ -352,7 +259,7 @@ async function editPortfolioItem(id){
 async function deletePortfolioItem(id){
   if(!confirm('Delete this portfolio item?')) return;
   try {
-    const r = await fetch(API.buildURL('/api/portfolio?id='+encodeURIComponent(id)), { method:'DELETE', headers: API.headers() });
+    const r = await fetch(API_BASE_URL + '/api/portfolio?id='+encodeURIComponent(id), { method:'DELETE', headers: API.headers() });
     if(!r.ok) throw new Error(await r.text());
     alert('Item deleted');
     await refreshPortfolioList();
@@ -383,26 +290,8 @@ async function publishBlog(){
     let endpoint = '/api/blog';
     let method = 'POST';
     if(editingId){ endpoint += '?id='+encodeURIComponent(editingId); method = 'PUT'; }
-    
-    const token = API.token();
-    const headers = API.headers();
-    const fullUrl = API.buildURL(endpoint);
-    console.log('[publishBlog] ===== BLOG PUBLISH START =====');
-    console.log('[publishBlog] Endpoint:', endpoint);
-    console.log('[publishBlog] Full URL:', fullUrl);
-    console.log('[publishBlog] Method:', method);
-    console.log('[publishBlog] Token present:', !!token);
-    console.log('[publishBlog] Token length:', token ? token.length : 0);
-    console.log('[publishBlog] Token starts with:', token ? token.substring(0, 30) + '...' : 'EMPTY');
-    console.log('[publishBlog] Headers object:', headers);
-    console.log('[publishBlog] Authorization header value:', headers.Authorization);
-    
-    const r = await fetch(fullUrl, { method, headers, body: JSON.stringify(payload) });
-    if(!r.ok) {
-      const errText = await r.text();
-      console.error('[publishBlog] Request failed - Status:', r.status, '| Response:', errText);
-      throw new Error(`Server error (${r.status}): ${errText}`);
-    }
+    const r = await fetch(API_BASE_URL + endpoint, { method, headers: API.headers(), body: JSON.stringify(payload) });
+    if(!r.ok) throw new Error(await r.text());
     const post = await r.json();
     showToast(editingId? 'Blog post updated' : 'Blog post published', 'Open', ()=>window.open('/blog.html','_blank'));
     document.getElementById('blogTitle').value = '';
@@ -418,7 +307,7 @@ async function publishBlog(){
 
 async function editBlogPost(id){
   try{
-    const r = await fetch(API.buildURL('/api/blog'), { headers: API.headers() });
+    const r = await fetch(API_BASE_URL + '/api/blog');
     if(!r.ok) throw new Error('Failed to load posts');
     const posts = await r.json();
     const post = posts.find(p=>p.id===id);
@@ -434,27 +323,11 @@ async function editBlogPost(id){
 
 async function refreshBlogPosts(){
   try {
-    const url = API.buildURL('/api/blog');
-    console.log('[blog] Loading from:', url);
-    const r = await fetch(url, { headers: API.headers() });
-    
-    if(!r.ok) {
-      console.error('[blog] Fetch failed:', r.status, r.statusText);
-      throw new Error(`Failed to load blog posts (${r.status})`);
-    }
-    
+    const r = await fetch(API_BASE_URL + '/api/blog', { headers: API.headers() });
+    if(!r.ok) return;
     const posts = await r.json();
-    console.log('[blog] Loaded posts:', posts ? posts.length : 0);
-    
     const container = document.getElementById('publishedPosts');
-    if (!container) return;
-    
     container.innerHTML = '';
-    if (!posts || posts.length === 0) {
-      container.innerHTML = '<p style="opacity:0.6">No blog posts yet. Create one above.</p>';
-      return;
-    }
-    
     posts.forEach(post=>{
       const div = document.createElement('div');
       div.className = 'blog-item';
@@ -464,39 +337,26 @@ async function refreshBlogPosts(){
           <div style="opacity:0.8">${post.category} • ${new Date(post.createdAt).toLocaleDateString()}</div>
         </div>
         <div style="display:flex;gap:6px">
-          <button class="btn-secondary" data-action="edit-blog" data-id="${post.id}">Edit</button>
-          <button class="btn-danger" data-action="delete-blog" data-id="${post.id}">Delete</button>
+          <button class="btn-secondary" onclick="editBlogPost('${post.id}')">Edit</button>
+          <button class="btn-danger" onclick="deleteBlogPost('${post.id}')">Delete</button>
         </div>
       `;
       container.appendChild(div);
     });
-    
-    // Attach event listeners for edit/delete buttons
-    container.querySelectorAll('[data-action="edit-blog"]').forEach(btn => {
-      btn.addEventListener('click', (e) => editBlogPost(e.target.dataset.id));
-    });
-    container.querySelectorAll('[data-action="delete-blog"]').forEach(btn => {
-      btn.addEventListener('click', (e) => deleteBlogPost(e.target.dataset.id));
-    });
   } catch(e) {
-    console.error('[blog] Error:', e);
-    const container = document.getElementById('publishedPosts');
-    if (container) {
-      container.innerHTML = `<p style="color:#ff6b6b">Error: ${e.message}</p>`;
-    }
+    console.error(e);
   }
 }
 
 // ===== COMMENTS MODERATION =====
 async function refreshCommentsModeration(){
   try{
-    const r = await fetch(API.buildURL('/api/blog/comments'), { headers: API.headers() });
-    if(!r.ok) throw new Error(`Failed to load comments (${r.status})`);
+    const r = await fetch(API_BASE_URL + '/api/blog/comments', { headers: API.headers() });
+    if(!r.ok) throw new Error('Failed to load comments');
     const comments = await r.json();
     const container = document.getElementById('commentsModeration');
-    if (!container) return;
     container.innerHTML = '';
-    if(!comments || comments.length===0){ container.innerHTML = '<p style="opacity:0.8">No comments yet</p>'; return; }
+    if(comments.length===0){ container.innerHTML = '<p style="opacity:0.8">No comments yet</p>'; return; }
     comments.slice().reverse().forEach(c=>{
       const div = document.createElement('div');
       div.style.display = 'flex'; div.style.justifyContent = 'space-between'; div.style.alignItems = 'center';
@@ -506,25 +366,19 @@ async function refreshCommentsModeration(){
       const del = document.createElement('button'); del.className='btn-danger'; del.textContent='Delete';
       del.addEventListener('click', async ()=>{
         if(!confirm('Delete this comment?')) return;
-        try{ const dr = await fetch(API.buildURL('/api/blog/comment?id='+encodeURIComponent(c.id)), { method:'DELETE', headers: API.headers() }); if(!dr.ok) throw new Error(await dr.text()); showToast('Comment deleted'); await refreshCommentsModeration(); }catch(e){ alert('Delete failed: '+e.message); }
+        try{ const dr = await fetch(API_BASE_URL + '/api/blog/comment?id='+encodeURIComponent(c.id), { method:'DELETE', headers: API.headers() }); if(!dr.ok) throw new Error(await dr.text()); showToast('Comment deleted'); await refreshCommentsModeration(); }catch(e){ alert('Delete failed: '+e.message); }
       });
       btns.appendChild(del);
       div.appendChild(btns);
       container.appendChild(div);
     });
-  }catch(e){ 
-    console.error('refreshCommentsModeration error:', e);
-    const container = document.getElementById('commentsModeration');
-    if (container) {
-      container.innerHTML = `<p style="color:#ff6b6b">Error: ${e.message}</p>`;
-    }
-  }
+  }catch(e){ console.error(e); }
 }
 
 async function deleteBlogPost(id){
   if(!confirm('Delete this blog post?')) return;
   try {
-    const r = await fetch(API.buildURL('/api/blog?id='+encodeURIComponent(id)), { method:'DELETE', headers: API.headers() });
+    const r = await fetch(API_BASE_URL + '/api/blog?id='+encodeURIComponent(id), { method:'DELETE', headers: API.headers() });
     if(!r.ok) throw new Error(await r.text());
     alert('Post deleted');
     await refreshBlogPosts();
@@ -546,7 +400,7 @@ async function updateAdminCredentials(){
 
   const payload = { currentPassword: currentPass, newUsername, newPassword };
   try {
-    const r = await fetch(API.buildURL('/api/admin/update-credentials'), { method:'POST', headers: API.headers(), body: JSON.stringify(payload) });
+    const r = await fetch(API_BASE_URL + '/api/admin/update-credentials', { method:'POST', headers: API.headers(), body: JSON.stringify(payload) });
     if(!r.ok) throw new Error(await r.text());
     alert('Admin credentials updated. Please log in again.');
     localStorage.removeItem('adminToken');
@@ -572,7 +426,7 @@ async function saveSiteSettings(){
 
   const payload = { gaId, customScripts: scripts, whatsappNumber };
   try {
-    const r = await fetch(API.buildURL('/api/settings'), { method:'POST', headers: API.headers(), body: JSON.stringify(payload) });
+    const r = await fetch(API_BASE_URL + '/api/settings', { method:'POST', headers: API.headers(), body: JSON.stringify(payload) });
     if(!r.ok) throw new Error(await r.text());
     alert('Settings saved');
   } catch(e) {
@@ -582,15 +436,13 @@ async function saveSiteSettings(){
 
 async function loadSiteSettings(){
   try{
-    const r = await fetch(API.buildURL('/api/settings'), { headers: API.headers() });
-    if(!r.ok) {
-      if(r.status === 401) {
-        console.warn('Settings require authentication - user may not be logged in yet');
-      } else {
-        throw new Error('Failed to load settings');
-      }
+    const token = API.token();
+    if(!token){
+      console.warn('loadSiteSettings: No token available, skipping');
       return;
     }
+    const r = await fetch(API_BASE_URL + '/api/settings', { headers: API.headers() });
+    if(!r.ok) throw new Error('Failed to load settings');
     const s = await r.json();
     if(document.getElementById('gaId')) document.getElementById('gaId').value = s.gaId || '';
     if(document.getElementById('customScripts')) document.getElementById('customScripts').value = JSON.stringify(s.customScripts || [], null, 2);
@@ -605,8 +457,11 @@ let currentFilterCategory = 'all';
 
 async function loadAppsRegistry() {
   try {
-    const r = await fetch(API.buildURL('/api/apps?registry=true'));
-    if (!r.ok) throw new Error('Failed to load apps');
+    const r = await fetch(API_BASE_URL + '/api/apps?registry=true');
+    if (!r.ok) {
+      console.warn('Load apps registry: HTTP ' + r.status);
+      return;
+    }
     const data = await r.json();
     allAppsRegistry = data.apps || {};
     await loadAppsConfiguration();
@@ -614,16 +469,16 @@ async function loadAppsRegistry() {
     updateActiveAppsList();
   } catch(e) {
     console.error('Load apps error:', e);
-    showToast('Failed to load apps: ' + e.message, null, null, 6000);
+    // Silently fail - apps management is optional
   }
 }
 
 async function loadAppsConfiguration() {
   try {
-    const r = await fetch(API.buildURL('/api/apps?config=true'), { headers: API.headers() });
+    const r = await fetch(API_BASE_URL + '/api/apps?config=true', { headers: API.headers() });
     if (!r.ok) {
       // if auth failed or token invalid, try unauthenticated public config as a fallback
-      const publicRes = await fetch(API.buildURL('/api/apps?config=true'));
+      const publicRes = await fetch(API_BASE_URL + '/api/apps?config=true');
       if (!publicRes.ok) throw new Error('Failed to load config');
       currentAppsConfig = await publicRes.json();
       return;
@@ -633,7 +488,7 @@ async function loadAppsConfiguration() {
     console.error('Load config error:', e);
     // attempt public fallback so admin UI still shows active apps even when token is invalid
     try{
-      const r2 = await fetch(API.buildURL('/api/apps?config=true'));
+      const r2 = await fetch(API_BASE_URL + '/api/apps?config=true');
       if (r2.ok) currentAppsConfig = await r2.json();
     }catch(e2){ console.error('Public config fallback failed', e2); }
   }
@@ -774,7 +629,7 @@ async function saveAppConfig(appId) {
   });
   
   try {
-    const r = await fetch(API.buildURL('/api/apps'), {
+    const r = await fetch(API_BASE_URL + '/api/apps', {
       method: 'PUT',
       headers: API.headers(),
       body: JSON.stringify({
@@ -800,7 +655,7 @@ async function disableApp(appId) {
   if (!confirm('Disable this app?')) return;
   
   try {
-    const r = await fetch(API.buildURL('/api/apps'), {
+    const r = await fetch(API_BASE_URL + '/api/apps', {
       method: 'PUT',
       headers: API.headers(),
       body: JSON.stringify({
@@ -834,7 +689,7 @@ function attachAppFilterEvents() {
 // ===== ANALYTICS =====
 async function loadAnalytics(){
   try {
-    const r = await fetch(API.buildURL('/api/analytics'), { headers: API.headers() });
+    const r = await fetch(API_BASE_URL + '/api/analytics', { headers: API.headers() });
     if(!r.ok) throw new Error('Failed');
     const data = await r.json();
 
@@ -920,23 +775,6 @@ function attachEvents(){
   }
 }
 
-// Expose functions globally for onclick handlers
-window.editPortfolioItem = editPortfolioItem;
-window.deletePortfolioItem = deletePortfolioItem;
-window.editBlogPost = editBlogPost;
-window.deleteBlogPost = deleteBlogPost;
-window.publishPortfolio = publishPortfolio;
-window.publishBlog = publishBlog;
-window.uploadFile = uploadFile;
-window.loadPageSections = loadPageSections;
-window.savePageSections = savePageSections;
-window.updateAdminCredentials = updateAdminCredentials;
-window.saveSiteSettings = saveSiteSettings;
-window.openAppConfigModal = openAppConfigModal;
-window.closeAppModal = closeAppModal;
-window.saveAppConfig = saveAppConfig;
-window.disableApp = disableApp;
-
 window.addEventListener('load', async ()=>{
   try{
     requireAuth();
@@ -948,6 +786,16 @@ window.addEventListener('load', async ()=>{
   refreshPortfolioList();
   refreshBlogPosts();
   await loadSiteSettings();
-  loadAppsRegistry();
+  await loadAppsRegistry();
 });
+// Expose functions used by inline onclick handlers in admin HTML
+try{
+  window.editBlogPost = editBlogPost;
+  window.deleteBlogPost = deleteBlogPost;
+  window.editPortfolioItem = editPortfolioItem;
+  window.deletePortfolioItem = deletePortfolioItem;
+  window.openAppConfigModal = openAppConfigModal;
+  window.closeAppModal = closeAppModal;
+}catch(e){}
+
 } // End of ADMIN_INITIALIZED guard

@@ -353,12 +353,16 @@
         gap: 2rem;
         justify-items: center;
         width: 100%;
+        margin: 0 auto;
+        box-sizing: border-box;
       }
 
       .auth-card {
         padding: 2rem;
         width: 100%;
         max-width: 100%;
+        margin: 0;
+        box-sizing: border-box;
       }
 
       .auth-card h1 {
@@ -390,29 +394,211 @@
 
     @media (max-width: 480px) {
       .auth-section {
-        padding: 1rem 0.5rem;
-        min-height: auto;
+        min-height: 100vh;
+        padding: 2rem 1rem;
+      }
+
+      .auth-container {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        max-width: 100%;
+        width: 100%;
+        margin: 0 auto;
+        justify-items: center;
+        box-sizing: border-box;
       }
 
       .auth-card {
         padding: 1.5rem;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        box-sizing: border-box;
       }
 
       .auth-card h1 {
-        font-size: 1.25rem;
+        font-size: 1.3rem;
+        text-align: center;
+      }
+
+      .auth-subtitle {
+        font-size: 0.9rem;
         text-align: center;
       }
 
       .form-group {
         margin: 0;
+        margin-bottom: 0.5rem;
+      }
+
+      .form-label {
+        font-size: 0.9rem;
+      }
+
+      .form-input {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.9rem;
+      }
+
+      .btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+      }
+
+      .auth-divider {
+        margin: 1.5rem 0;
+        font-size: 0.9rem;
+      }
+
+      .auth-social {
+        width: 100%;
+        gap: 0.8rem;
+      }
+
+      .social-btn {
+        width: 100%;
+        padding: 0.6rem 0.8rem;
+        font-size: 0.85rem;
+      }
+
+      .social {
+        width: 32px;
+        height: 32px;
+      }
+
+      .auth-footer {
+        font-size: 0.85rem;
+        margin-top: 1rem;
+        text-align: center;
       }
 
       .auth-benefits {
         padding: 1.5rem;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+
+      .auth-benefits h3 {
+        font-size: 1rem;
+        text-align: center;
+      }
+
+      .benefits-list {
+        gap: 0.7rem;
       }
 
       .benefits-list li {
         font-size: 0.9rem;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .auth-section {
+        min-height: 100vh;
+        padding: 1.5rem 0.8rem;
+      }
+
+      .auth-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        max-width: 100%;
+        width: 100%;
+        margin: 0 auto;
+        justify-items: center;
+        box-sizing: border-box;
+        padding: 0;
+      }
+
+      .auth-card {
+        padding: 1.2rem;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        box-sizing: border-box;
+      }
+
+      .auth-card h1 {
+        font-size: 1.1rem;
+        text-align: center;
+        margin-bottom: 0.3rem;
+      }
+
+      .auth-subtitle {
+        font-size: 0.85rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .auth-form {
+        gap: 0.8rem;
+      }
+
+      .form-group {
+        margin: 0;
+        margin-bottom: 0.4rem;
+      }
+
+      .form-label {
+        font-size: 0.8rem;
+      }
+
+      .form-input {
+        padding: 0.5rem 0.7rem;
+        font-size: 0.85rem;
+      }
+
+      .btn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
+      }
+
+      .auth-divider {
+        margin: 1rem 0;
+        font-size: 0.8rem;
+      }
+
+      .auth-social {
+        width: 100%;
+        gap: 0.6rem;
+      }
+
+      .social-btn {
+        width: 100%;
+        padding: 0.5rem 0.6rem;
+        font-size: 0.75rem;
+      }
+
+      .social {
+        width: 28px;
+        height: 28px;
+      }
+
+      .auth-footer {
+        font-size: 0.75rem;
+        margin-top: 0.8rem;
+        text-align: center;
+      }
+
+      .auth-benefits {
+        padding: 1rem;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+
+      .auth-benefits h3 {
+        font-size: 0.95rem;
+        text-align: center;
+      }
+
+      .benefits-list {
+        gap: 0.6rem;
+      }
+
+      .benefits-list li {
+        font-size: 0.8rem;
         text-align: center;
       }
     }

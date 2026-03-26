@@ -1,3 +1,35 @@
+/* Global Styles copied from workspace styles.css */
+:root {
+  --primary-bg: #000000;
+  --primary-accent: #FF0000;
+  --secondary-accent: #4361EE;
+  --text-light: #FFFFFF;
+  --text-dark: #1a1a1a;
+  --border-color: #333333;
+  --shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  --transition: all 0.3s ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: var(--primary-bg);
+  color: var(--text-light);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ... rest of styles trimmed for brevity; full file copied in workspace */
 /* Global Styles */
 :root {
   --primary-bg: #000000;
@@ -130,7 +162,7 @@ a:hover {
 .desktop-nav {
   display: flex;
   gap: 2.5rem;
-  flex: 0;
+  flex: 1;
   justify-content: center;
 }
 
@@ -166,8 +198,6 @@ a:hover {
   border-radius: 25px;
   padding: 0.5rem 1rem;
   gap: 0.5rem;
-  flex: 0 1 200px;
-  max-width: 200px;
 }
 
 .search-input {
@@ -202,301 +232,26 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  flex-shrink: 0;
 }
 
-/* Logout button - shown/hidden by JavaScript based on auth state */
-.header-actions .btn-logout,
-.header-actions .btn-logout.header-logout {
-  display: inline-block;
-}
-
-/* Login/Signup buttons - shown by default on desktop */
-.header-actions .btn-login,
-.header-actions .btn-signup {
-  display: inline-block !important;
-  margin: 0;
-}
-
-/* Hide the old language select dropdown - use Google Translate overlay instead */
 .language-select {
-  display: none !important;
-}
-
-/* Hide Google Translate container from the desktop header (will be moved to sticky widget) */
-.header-actions #google_translate_element {
-  display: none !important;
-  visibility: hidden !important;
-  width: 0 !important;
-  height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-/* Sticky Google Translate floating widget */
-#googleTranslateWidget {
-  position: fixed;
-  left: 1rem;
-  bottom: 1rem;
-  z-index: 99999;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.6rem;
-  pointer-events: none;
-}
-
-.gt-widget-toggle {
-  pointer-events: auto;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 0, 0, 0.3);
-  background: linear-gradient(145deg, rgba(102, 0, 0, 0.8), rgba(140, 0, 0, 0.8));
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  cursor: pointer;
-  box-shadow: 0 12px 30px rgba(255, 0, 0, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-.gt-widget-toggle:hover {
-  transform: scale(1.1);
-  background: linear-gradient(145deg, rgba(140, 0, 0, 0.9), rgba(180, 0, 0, 0.9));
-  border-color: rgba(255, 0, 0, 0.6);
-  box-shadow: 0 15px 40px rgba(255, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.15);
-}
-
-.gt-icon {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-  opacity: 0.95;
-  transition: opacity 0.2s ease;
-}
-
-.gt-icon-text {
-  display: none;
-  font-size: 1.4rem;
-  line-height: 24px;
-  opacity: 0.95;
-}
-
-.gt-widget-toggle:hover .gt-icon {
-  opacity: 1;
-}
-
-.gt-widget-panel {
-  display: none;
-  position: absolute;
-  bottom: 58px;
-  left: 0;
-  background: linear-gradient(135deg, rgba(20, 20, 20, 0.98) 0%, rgba(35, 25, 25, 0.98) 100%);
-  border: 1px solid rgba(255, 0, 0, 0.3);
-  border-radius: 16px;
-  padding: 1.2rem;
-  min-width: 140px;
-  max-width: 140px;
-  width: 140px;
-  color: #f9f9f9;
-  opacity: 0;
-  transform: translateY(10px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 0, 0, 0.12);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  pointer-events: auto;
-  backdrop-filter: blur(10px);
-  overflow: hidden !important;
-}
-
-.gt-widget-panel.open {
-  display: block;
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.gt-widget-hint {
-  font-size: 0.8rem;
-  opacity: 0.9;
-  margin-top: 0.8rem;
-  margin-bottom: 0;
-  color: #b0b0e0;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-}
-
-/* Always restyle Google translate button in translation panel */
-.goog-te-combo {
-  width: auto !important;
-  min-width: 180px !important;
-  max-width: 280px !important;
-  margin-top: 0.2rem !important;
-  background: linear-gradient(135deg, #FF0000 0%, #cc0000 100%) !important;
-  border: 1.5px solid rgba(255, 0, 0, 0.5) !important;
-  border-radius: 10px !important;
-  color: #ffffff !important;
-  padding: 0.8rem 1rem !important;
-  font-size: 14px !important;
-  font-weight: 600 !important;
-  cursor: pointer !important;
-  transition: all 0.3s ease !important;
-  box-shadow: 0 4px 12px rgba(255, 0, 0, 0.2) !important;
-  display: block !important;
-}
-
-/* Main page container should not be disturbed by the translate widget */
-body .goog-te-gadget {
-  display: none !important;
-}
-
-/* Add small style for the module if powered by text appears */
-.goog-te-banner-frame.skiptranslate, .goog-te-menu-frame.skiptranslate {
-  max-height: 0 !important;
-  visibility: hidden !important;
-}
-
-/* Style custom translate content area */
-#google_translate_element {
-  width: 100% !important;
-  min-width: 140px !important;
-  max-width: 140px !important;
-  display: block !important;
-  overflow: hidden !important;
-}
-
-#google_translate_element .goog-te-gadget {
-  display: block !important;
-  width: 100% !important;
-  max-width: 140px !important;
-}
-
-#google_translate_element .goog-te-combo {
-  width: 140px !important;
-  max-width: 140px !important;
-  min-width: 140px !important;
-  box-sizing: border-box !important;
-}
-
-/* Style for future heavy styling direction */
-.gt-widget-panel .goog-te-combo {
-  font-size: 14px !important;
-  border: 1.5px solid rgba(255, 0, 0, 0.6) !important;
-  border-radius: 10px !important;
-  background: linear-gradient(135deg, #FF0000 0%, #cc0000 100%) !important;
-  color: #ffffff !important;
-  padding: 0.85rem 1.1rem !important;
-  width: 95% !important;
-  max-width: 280px !important;
-  box-shadow: 0 4px 15px rgba(255, 0, 0, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.05) !important;
-}
-
-.gt-widget-panel .goog-te-combo:hover {
-  border-color: rgba(255, 0, 0, 0.8) !important;
-  box-shadow: 0 6px 20px rgba(255, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.08) !important;
-}
-
-.gt-widget-panel .goog-te-combo:focus {
-  outline: none !important;
-  border-color: #FF0000 !important;
-  box-shadow: 0 8px 25px rgba(255, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.1) !important;
-}
-
-/* More robust handling of floating translate banner – hide by default */
-.goog-te-banner-frame.skiptranslate {
-  display: none !important;
-}
-
-/* Prevent the default Google Translate toolbar from covering page content */
-body .goog-te-gadget-simple {
-  display: block !important;
-}
-
-/* Style for small touch targets in the panel */
-#google_translate_widget .goog-te-menu-value {
-  background: linear-gradient(135deg, #cc0000 0%, #990000 100%) !important;
-  color: #ffffff !important;
-  padding: 0.7rem 1rem !important;
-  border-radius: 10px !important;
-  font-weight: 700 !important;
-  font-size: 13px !important;
-  display: flex !important;
-  align-items: center !important;
-  border: 1px solid rgba(255, 0, 0, 0.5) !important;
-  box-shadow: 0 2px 8px rgba(255, 0, 0, 0.25) !important;
-}
-
-/* Styling for dropdown options in language selector */
-.goog-te-combo option {
-  background: #000000 !important;
-  color: #FFFFFF !important;
-  padding: 0.6rem !important;
-  border: 1px solid rgba(255, 0, 0, 0.3) !important;
-  font-weight: 600 !important;
-}
-
-.goog-te-combo option:hover {
-  background: linear-gradient(135deg, #FF0000 0%, #cc0000 100%) !important;
-  color: #ffffff !important;
-}
-
-.goog-te-combo option:checked {
-  background: linear-gradient(135deg, #FF0000 0%, #cc0000 100%) !important;
-  color: #ffffff !important;
-}
-
-/* Desktop header language selector styling */
-.header-actions .goog-te-combo {
-  background: linear-gradient(135deg, #FF0000 0%, #cc0000 100%) !important;
-  border: 2px solid rgba(255, 0, 0, 0.4) !important;
-  color: #ffffff !important;
-  padding: 0.7rem 1rem !important;
-  border-radius: 8px !important;
-  cursor: pointer !important;
-  transition: all 0.3s ease !important;
-  font-family: inherit !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  min-width: 90px !important;
-  max-width: 130px !important;
-  box-shadow: 0 4px 12px rgba(255, 0, 0, 0.2) !important;
-}
-
-.header-actions .goog-te-combo:hover {
-  border-color: rgba(255, 0, 0, 0.7) !important;
-  box-shadow: 0 6px 18px rgba(255, 0, 0, 0.35) !important;
-  transform: translateY(-2px) !important;
-}
-
-.header-actions .goog-te-combo option {
-  background: #000000 !important;
-  color: #ffffff !important;
-}
-
-.goog-te-combo:hover {
-  border-color: rgba(255, 0, 0, 0.7) !important;
-  box-shadow: 0 4px 15px rgba(255, 0, 0, 0.25) !important;
-}
-
-.goog-te-combo option {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
-  color: #e0e0e0 !important;
-}
-
-.btn-logout {
-  color: var(--primary-accent);
-  border: 1px solid var(--primary-accent);
-  padding: 0.5rem 1.5rem;
+  background-color: #000000; /* black background requested */
+  border: 1px solid var(--border-color);
+  color: var(--secondary-accent); /* text should be page secondary color */
+  padding: 0.5rem 0.75rem;
   border-radius: 5px;
-  font-weight: 600;
-  background: transparent;
   cursor: pointer;
   transition: var(--transition);
 }
 
-.btn-logout:hover {
-  background: rgba(255, 0, 0, 0.1);
+.language-select:hover {
+  border-color: var(--primary-accent);
+}
+
+/* Ensure the select's option text is readable */
+.language-select option {
+  background: #000;
+  color: var(--secondary-accent);
 }
 
 .btn-login {
@@ -601,7 +356,7 @@ body .goog-te-gadget-simple {
   }
 }
 
-/* Responsive header: ensure search and hamburger fit on one line */
+/* Responsive header: ensure search, translator, and hamburger fit on one line */
 @media (max-width: 900px) {
   .header-container {
     padding: 0.6rem 1rem;
@@ -614,11 +369,14 @@ body .goog-te-gadget-simple {
   .search-container { flex: 1 1 40%; min-width: 0; max-width: 60%; padding: 0.4rem 0.8rem; }
   .search-input { width: 100%; font-size: 0.9rem; }
   .header-actions { gap: 0.5rem; }
+  .language-select { padding: 0.28rem 0.45rem; font-size: 0.82rem; flex: 0 0 auto; display: inline-block; max-width: 32%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .header-actions .btn-login, .header-actions .btn-signup { padding: 0.35rem 0.8rem; font-size: 0.85rem; display: none !important; }
   /* logout placed in header on desktop only; hide on mobile */
-  .header-actions .btn-logout { display: none !important; }
+  .header-actions .btn-logout { display: inline-block; }
   .header-logo, .search-container, .header-actions, .hamburger-btn { flex-shrink: 1; }
   .brand { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* hide logout button in header on small screens */
+  .header-actions .btn-logout { display: none !important; }
 }
 
 /* Ensure logout in mobile menu is visible and styled like other mobile auth buttons */
@@ -635,6 +393,7 @@ body .goog-te-gadget-simple {
   .brand { font-size: 0.92rem }
   .search-container { max-width: 50%; flex: 1 1 45%; }
   .search-input { font-size: 0.78rem; }
+  .language-select { padding: 0.18rem 0.35rem; font-size: 0.74rem; max-width: 34%; }
   .header-actions .btn-login { display: none; }
   .header-actions .btn-signup { display: none; }
   /* ensure items never wrap to next line and allow shrinking */
@@ -880,8 +639,7 @@ body .goog-te-gadget-simple {
 
 /* Services Section */
 .services {
-  padding: 3rem 1rem;
-  margin: 0;
+  padding: 6rem 2rem;
   background: linear-gradient(135deg, rgba(67, 97, 238, 0.05) 0%, rgba(0, 0, 0, 0.5) 100%);
 }
 
@@ -1534,11 +1292,6 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar {
     min-height: auto;
   }
 
-  .services {
-    padding: 2rem 1rem;
-    margin: 0;
-  }
-
   .hero-content h1 {
     font-size: 2rem;
   }
@@ -1627,11 +1380,6 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar {
     padding: 2rem 1rem;
   }
 
-  .services {
-    padding: 1rem 0.8rem;
-    margin: 0;
-  }
-
   .hero-content h1 {
     font-size: 1.5rem;
   }
@@ -1687,8 +1435,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar {
 
 /* ===== SECTION FADE-IN ON SCROLL ===== */
 section {
-  opacity: 1;
-  transition: opacity 0ms ease-out;
+  opacity: 0;
+  transition: opacity 800ms ease-out;
 }
 
 section.visible {

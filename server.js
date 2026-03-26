@@ -998,6 +998,11 @@ app.post('/api/admin/login', validate(adminLoginSchema), async (req,res)=>{
       const token = jwt.sign({ user: username }, JWT_SECRET, { expiresIn: '12h' });
       return res.json({ token });
     }
+    return res.status(401).send('Unauthorized');
+  }
+  if(username === ADMIN_USER && password === ADMIN_PASS){
+    const token = jwt.sign({ user: username }, JWT_SECRET, { expiresIn: '12h' });
+    return res.json({ token });
   }
   return res.status(401).send('Unauthorized');
 });

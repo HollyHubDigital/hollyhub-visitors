@@ -436,7 +436,8 @@
 
   <style>
     .services-details {
-      padding: 6rem 2rem;
+      padding: 3rem 1rem;
+      margin: 0;
     }
 
     .service-detail-card {
@@ -444,7 +445,7 @@
       border: 1px solid var(--border-color);
       border-radius: 15px;
       padding: 2.5rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       transition: var(--transition);
     }
 
@@ -511,7 +512,8 @@
     }
 
     .services-process {
-      padding: 6rem 2rem;
+      padding: 3rem 1rem;
+      margin: 0;
       background: linear-gradient(135deg, rgba(67, 97, 238, 0.05) 0%, rgba(255, 0, 0, 0.05) 100%);
     }
 
@@ -563,6 +565,10 @@
         padding: 3rem 1.5rem;
       }
 
+      .services-process {
+        padding: 3rem 1.5rem;
+      }
+
       .service-detail-card {
         padding: 1.5rem;
       }
@@ -573,6 +579,44 @@
 
       .feature-list {
         grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .services-details {
+        padding: 1.5rem 0.8rem;
+        margin: 0;
+      }
+
+      .services-process {
+        padding: 1.5rem 0.8rem;
+        margin: 0;
+      }
+
+      .service-detail-card {
+        padding: 1.2rem 0.8rem;
+        margin-bottom: 1rem;
+      }
+
+      .service-detail-header {
+        flex-direction: column;
+        gap: 0.8rem;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+      }
+
+      .feature-list {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+      }
+
+      .process-grid {
+        gap: 1rem;
+        margin-top: 1.5rem;
+      }
+
+      .process-step {
+        padding: 1.2rem 0.8rem;
       }
     }
   </style>

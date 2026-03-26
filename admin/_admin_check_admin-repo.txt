@@ -1,0 +1,24 @@
+﻿
+
+StatusCode        : 200
+StatusDescription : OK
+Content           : {"exists":true}
+RawContent        : HTTP/1.1 200 OK
+                    Access-Control-Allow-Origin: *
+                    Age: 0
+                    Strict-Transport-Security: max-age=63072000; 
+                    includeSubDomains; preload
+                    X-Vercel-Cache: MISS
+                    X-Vercel-Id: cpt1::iad1::vpxqd-1771524217712-289...
+Forms             : 
+Headers           : {[Access-Control-Allow-Origin, *], [Age, 0], 
+                    [Strict-Transport-Security, max-age=63072000; 
+                    includeSubDomains; preload], [X-Vercel-Cache, MISS]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : 
+RawContentLength  : 15
+
+
+

@@ -142,9 +142,8 @@ if (searchModal) {
 const languageSelect = document.getElementById('languageSelect');
 if (languageSelect) {
   languageSelect.style.display = 'none';
-  if (languageSelect.parentElement) {
-    languageSelect.parentElement.style.display = 'none';
-  }
+  // Don't hide the parent element - it contains the login/signup buttons!
+  // The CSS rule .language-select { display: none !important; } already hides the select itself
 }
 
 const translations = {
@@ -219,7 +218,14 @@ if (languageSelect) {
     };
 
     if (window.google && window.google.translate) {
-      try{ new google.translate.TranslateElement({pageLanguage: 'en', autoDisplay: false}, 'google_translate_element'); }catch(e){}
+      try{
+        new google.translate.TranslateElement({
+          pageLanguage: 'en',
+          includedLanguages: 'en,es,fr,de,zh-CN,zh-TW,ja,ko,ru,pt,it,nl,sv,no,da,fi,pl,tr,ar,hi',
+          layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+          autoDisplay: false
+        }, 'google_translate_element');
+      }catch(e){}
       setTimeout(triggerCombo, 700);
     } else {
       const s = document.createElement('script');
@@ -243,7 +249,14 @@ if (languageSelect) {
 
 // Google translate init callback
 function googleTranslateElementInit(){
-  try{ new google.translate.TranslateElement({pageLanguage: 'en', autoDisplay: false}, 'google_translate_element'); }catch(e){ /* ignore */ }
+  try{
+    new google.translate.TranslateElement({
+      pageLanguage: 'en',
+      includedLanguages: 'en,es,fr,de,zh-CN,zh-TW,ja,ko,ru,pt,it,nl,sv,no,da,fi,pl,tr,ar,hi',
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+      autoDisplay: false
+    }, 'google_translate_element');
+  }catch(e){ /* ignore */ }
 }
 
 // Create sticky Google Translate icon + panel at bottom-left of the page
@@ -252,14 +265,29 @@ function setupStickyTranslateWidget(){
 
   const widget = document.createElement('div');
   widget.id = 'googleTranslateWidget';
+  // Use text fallback if image doesn't load
   widget.innerHTML = `
-    <button id="gtToggle" class="gt-widget-toggle" aria-label="Translate page"><img src="https://cdn.jsdelivr.net/gh/HollyHubDigital/hollyhub-visitors@main/public/assets/google-translate.png" alt="Translate" class="gt-icon" /></button>
+    <button id="gtToggle" class="gt-widget-toggle" aria-label="Translate page" title="Click to translate">
+      <img src="/public/assets/google-translate.png" alt="Translate" class="gt-icon" onerror="this.style.display='none'; this.parentElement.textContent='🌐'" />
+      <span id="gtFallback" class="gt-icon-text">🌐</span>
+    </button>
     <div id="gtPanel" class="gt-widget-panel"></div>
   `;
   document.body.appendChild(widget);
 
   const panel = widget.querySelector('#gtPanel');
   const toggle = widget.querySelector('#gtToggle');
+  const icon = widget.querySelector('.gt-icon');
+
+  // Hide text fallback if image loads successfully
+  if (icon && icon.complete && icon.naturalWidth > 0) {
+    document.querySelector('#gtFallback').style.display = 'none';
+  } else {
+    icon.addEventListener('load', () => {
+      const fallback = document.querySelector('#gtFallback');
+      if (fallback) fallback.style.display = 'none';
+    });
+  }
 
   // Place existing translator container inside our panel, if available
   let translateContainer = document.getElementById('google_translate_element');
@@ -268,6 +296,7 @@ function setupStickyTranslateWidget(){
     translateContainer.style.width = '100%';
     translateContainer.style.maxWidth = '260px';
     translateContainer.style.margin = '0';
+    translateContainer.style.overflow = 'hidden';
     panel.appendChild(translateContainer);
   } else {
     translateContainer = document.createElement('div');
@@ -275,6 +304,31 @@ function setupStickyTranslateWidget(){
     panel.appendChild(translateContainer);
   }
 
+  // Clean up duplicate text and force dropdown width
+  setTimeout(() => {
+    const combo = panel.querySelector('.goog-te-combo');
+    const gadget = panel.querySelector('.goog-te-gadget');
+    
+    if (combo) {
+      // Force very compact width for dropdown
+      combo.style.setProperty('width', '140px', 'important');
+      combo.style.setProperty('max-width', '140px', 'important');
+      combo.style.setProperty('min-width', '140px', 'important');
+      combo.style.setProperty('box-sizing', 'border-box', 'important');
+      
+      // Remove any duplicate text nodes
+      const childNodes = Array.from(combo.childNodes);
+      let textCount = 0;
+      childNodes.forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+          textCount++;
+          if (textCount > 1) {
+            node.remove();
+          }
+        }
+      });
+    }
+  }, 1000);
 
   toggle.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -288,12 +342,23 @@ function setupStickyTranslateWidget(){
   });
 
   // Ensure Google Translate script is loaded and initialized
+  const initGoogleTranslate = () => {
+    if (window.google && window.google.translate && window.google.translate.TranslateElement) {
+      try {
+        if (!document.getElementById('google_translate_element').innerText) {
+          googleTranslateElementInit();
+        }
+      } catch(e) { console.log('GT init error:', e); }
+    }
+  };
+
   if (window.google && window.google.translate) {
-    googleTranslateElementInit();
+    initGoogleTranslate();
   } else if (!document.querySelector('script[src*="translate_a/element.js"]')) {
     const s = document.createElement('script');
     s.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
     s.async = true;
+    s.onload = initGoogleTranslate;
     document.head.appendChild(s);
   }
 }
@@ -415,13 +480,15 @@ const setAuthToken = (token, isAdmin = false) => {
 const updateAuthUI = () => {
   const token = getAuthToken();
   const loginBtns = Array.from(document.querySelectorAll('.btn-login, .btn-signup'));
-  const mobileMenu = document.querySelector('.mobile-menu');
   const headerActions = document.querySelector('.header-actions');
 
   if (token) {
-    loginBtns.forEach(b => { if(b) b.style.display = 'none'; });
+    // LOGGED IN: Hide login buttons, show logout
+    loginBtns.forEach(b => { 
+      if(b) b.style.setProperty('display', 'none', 'important'); 
+    });
 
-    // ensure header logout (desktop) exists
+    // Create/show header logout
     let headerLogout = document.querySelector('.btn-logout.header-logout');
     if (!headerLogout && headerActions) {
       headerLogout = document.createElement('button');
@@ -429,13 +496,14 @@ const updateAuthUI = () => {
       headerLogout.textContent = 'LOGOUT';
       headerLogout.addEventListener('click', () => { try{ logout(); }catch(e){} });
       headerActions.appendChild(headerLogout);
-    } else if (headerLogout) {
-      headerLogout.style.display = 'inline-block';
+    }
+    if (headerLogout) {
+      headerLogout.style.setProperty('display', 'inline-block', 'important');
     }
 
-    // ensure mobile logout inside mobile menu (.mobile-auth)
+    // Create/show mobile logout
     let mobileAuth = document.querySelector('.mobile-auth');
-    let mobileLogout = document.querySelector('.btn-logout.mobile-logout');
+    let mobileLogout = mobileAuth ? mobileAuth.querySelector('.btn-logout.mobile-logout') : null;
     if (!mobileLogout && mobileAuth) {
       mobileLogout = document.createElement('button');
       mobileLogout.className = 'btn btn-logout mobile-logout';
@@ -443,26 +511,26 @@ const updateAuthUI = () => {
       mobileLogout.style.width = '100%';
       mobileLogout.addEventListener('click', () => { try{ logout(); }catch(e){} });
       mobileAuth.appendChild(mobileLogout);
-    } else if (mobileLogout) {
-      mobileLogout.style.display = 'block';
     }
-  } else {
-    loginBtns.forEach(b => { if(b) b.style.display = 'inline-block'; });
-    const headerLogout = document.querySelector('.btn-logout.header-logout');
-    if (headerLogout) headerLogout.style.display = 'none';
-    const mobileLogout = document.querySelector('.btn-logout.mobile-logout');
-    if (mobileLogout) mobileLogout.style.display = 'none';
+    if (mobileLogout) {
+      mobileLogout.style.setProperty('display', 'block', 'important');
+    }
   }
+  // If NOT logged in, DO NOTHING - let CSS handle ALL visibility
 };
 
 const getAuthToken = () => {
-  return localStorage.getItem('authToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
+  const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
+  // Only return token if it's not empty/null/undefined
+  return token && token.trim() ? token : null;
 };
 
 const logout = () => {
   localStorage.removeItem('authToken');
   localStorage.removeItem('adminToken');
   localStorage.removeItem('userData');
+  // Ensure generic token key is also removed to prevent stale login state
+  localStorage.removeItem('token');
   window.location.href = 'index.html';
   showNotification('Logged out successfully');
 };
@@ -533,8 +601,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-  // ensure header UI updates on initial load even if token was set earlier
-  document.addEventListener('DOMContentLoaded', () => updateAuthUI());
+  // Update UI when window is resized (switching between desktop/mobile)
+  window.addEventListener('resize', () => {
+    if (getAuthToken()) {
+      updateAuthUI();
+    }
+  });
 
 // Intercept 'Order' links that point to signup and route logged-in users to checkout instead
 document.addEventListener('DOMContentLoaded', ()=>{

@@ -113,8 +113,6 @@
           <option value="ka">ქართული</option>
           <option value="mn">Монгол</option>
         </select>
-          <!-- Hidden Google Translate container (script will initialize the widget) -->
-          <div id="google_translate_element" style="display:none"></div>
         <a href="login.html" class="btn-login">LOGIN</a>
         <a href="signup.html" class="btn-signup">SIGN UP</a>
       </div>
@@ -140,6 +138,9 @@
       </div>
     </nav>
   </header>
+
+  <!-- Hidden Google Translate container (moved out of header to prevent layout interference) -->
+  <div id="google_translate_element" style="display:none"></div>
 
   <!-- SEARCH RESULTS MODAL -->
   <div id="searchModal" class="search-modal">
@@ -175,7 +176,7 @@
       </div>
     </div>
     <div class="hero-image">
-      <div class="hero-graphic"><img src="hollyhubhero.jpg" alt="web" class="inter" /></div>
+      <div class="hero-graphic"><img src="/public/assets/hollyhubhero.jpg" alt="web" class="inter" /></div>
     </div>
   </section>
 
