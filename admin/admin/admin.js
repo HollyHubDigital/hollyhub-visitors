@@ -741,6 +741,190 @@ function attachEvents(){
   const loadPageBtn = document.getElementById('loadPageBtn');
   if(loadPageBtn) loadPageBtn.addEventListener('click', loadPageSections); else { console.warn('attachEvents: loadPageBtn not found'); }
 
+  // Download Files Tab listener
+  const downloadFilesTab = document.querySelector('[data-tab="download-files"]');
+  if(downloadFilesTab) {
+    downloadFilesTab.addEventListener('click', () => {
+      setTimeout(() => loadDownloadFilesUI(), 50);
+    });
+  }
+
+  // Publish Download File Button
+  const publishDownloadFileBtn = document.getElementById('publishDownloadFileBtn');
+  if(publishDownloadFileBtn) {
+    publishDownloadFileBtn.addEventListener('click', publishDownloadFile);
+  } else {
+    console.warn('attachEvents: publishDownloadFileBtn not found');
+  }
+
+  // Initialize download files UI on load
+  requireAuth();
+  setTimeout(() => loadDownloadFilesUI(), 100);
+}
+
+// ===== DOWNLOAD FILES MANAGEMENT =====
+async function loadDownloadFilesUI() {
+  try {
+    // Load download files (published with tokens)
+    const dfRes = await fetch(API_BASE_URL + '/api/download-files');
+    const downloadFiles = dfRes.ok ? await dfRes.json() : [];
+
+    // Get full file metadata from admin endpoint
+    let fullDownloadFiles = [];
+    try {
+      const adminRes = await fetch(API_BASE_URL + '/api/admin/download-files', { headers: API.headers() });
+      if(adminRes.ok) {
+        const data = await adminRes.json();
+        fullDownloadFiles = data || [];
+      }
+    } catch(e) { /* Use empty list if admin endpoint not available */ }
+
+    // Load success files
+    let successFiles = [];
+    try {
+      const sfRes = await fetch(API_BASE_URL + '/api/success-files', { headers: API.headers() });
+      if(sfRes.ok) {
+        successFiles = await sfRes.json();
+      }
+    } catch(e) { /* Use empty list */ }
+
+    // Render published download files
+    const publishedContainer = document.getElementById('publishedDownloadFiles');
+    if(publishedContainer) {
+      if(fullDownloadFiles.length === 0) {
+        publishedContainer.innerHTML = '<p style="opacity:0.8">No published download files yet</p>';
+      } else {
+        publishedContainer.innerHTML = fullDownloadFiles.map(f => `
+          <div style="padding:0.75rem; border:1px solid rgba(255,255,255,0.1); border-radius:6px; margin-bottom:0.5rem; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-weight:600">${f.originalname || f.filename}</div>
+              <div style="opacity:0.7; font-size:0.9rem">Token: <code style="background:rgba(255,255,255,0.05); padding:2px 4px; border-radius:3px;">${f.token}</code> • ${(f.size / 1024).toFixed(1)} KB</div>
+              <div style="opacity:0.7; font-size:0.85rem">${new Date(f.uploadedAt).toLocaleString()}</div>
+            </div>
+            <button class="btn-danger" onclick="deleteDownloadFile('${f.id}')" style="min-width:80px;">Delete</button>
+          </div>
+        `).join('');
+      }
+    }
+
+    // Render success page uploads
+    const successContainer = document.getElementById('successPageUploads');
+    if(successContainer) {
+      if(successFiles.length === 0) {
+        successContainer.innerHTML = '<p style="opacity:0.8">No success page uploads yet</p>';
+      } else {
+        successContainer.innerHTML = successFiles.map(f => `
+          <div style="padding:0.75rem; border:1px solid rgba(255,255,255,0.1); border-radius:6px; margin-bottom:0.5rem; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-weight:600">${f.originalname || f.filename}</div>
+              <div style="opacity:0.7; font-size:0.9rem">${(f.size / 1024).toFixed(1)} KB</div>
+              <div style="opacity:0.7; font-size:0.85rem">${new Date(f.uploadedAt).toLocaleString()}</div>
+            </div>
+            <button class="btn-danger" onclick="deleteSuccessFile('${f.id}')" style="min-width:80px;">Delete</button>
+          </div>
+        `).join('');
+      }
+    }
+  } catch(e) {
+    console.error('loadDownloadFilesUI error:', e);
+    const container = document.getElementById('publishedDownloadFiles');
+    if(container) container.innerHTML = '<p style="color:#FF5555">Error loading files. Check console.</p>';
+  }
+}
+
+async function publishDownloadFile() {
+  const fileInput = document.getElementById('dfFileInput');
+  const tokenInput = document.getElementById('dfTokenInput');
+  const statusMsg = document.getElementById('dfStatusMsg');
+
+  if(!fileInput.files || !fileInput.files[0]) {
+    statusMsg.textContent = '⚠️ Please select a file';
+    statusMsg.className = 'token-status-msg error';
+    statusMsg.style.display = 'block';
+    return;
+  }
+
+  const token = (tokenInput.value || '').trim();
+  if(!token || token.length < 6 || token.length > 8 || !/^\d+$/.test(token)) {
+    statusMsg.textContent = '⚠️ Token must be 6-8 digits';
+    statusMsg.className = 'token-status-msg error';
+    statusMsg.style.display = 'block';
+    return;
+  }
+
+  try {
+    statusMsg.textContent = '⏳ Uploading file...';
+    statusMsg.style.color = '#5555ff';
+    statusMsg.className = '';
+    statusMsg.style.display = 'block';
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    formData.append('token', token);
+
+    const r = await fetch(API_BASE_URL + '/api/upload-download-file', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + API.token() },
+      body: formData
+    });
+
+    if(!r.ok) {
+      const error = await r.json();
+      throw new Error(error.error || 'Upload failed');
+    }
+
+    const result = await r.json();
+    statusMsg.textContent = '✅ File published successfully!';
+    statusMsg.className = 'token-status-msg success';
+    statusMsg.style.display = 'block';
+
+    fileInput.value = '';
+    tokenInput.value = '';
+
+    setTimeout(() => loadDownloadFilesUI(), 500);
+  } catch(e) {
+    statusMsg.textContent = '❌ ' + e.message;
+    statusMsg.className = 'token-status-msg error';
+    statusMsg.style.display = 'block';
+  }
+}
+
+async function deleteDownloadFile(fileId) {
+  if(!confirm('Delete this download file?')) return;
+
+  try {
+    const r = await fetch(API_BASE_URL + '/api/download-file?id=' + encodeURIComponent(fileId), {
+      method: 'DELETE',
+      headers: API.headers()
+    });
+
+    if(!r.ok) throw new Error(await r.text());
+
+    showToast('Download file deleted');
+    await loadDownloadFilesUI();
+  } catch(e) {
+    alert('Delete failed: ' + e.message);
+  }
+}
+
+async function deleteSuccessFile(fileId) {
+  if(!confirm('Delete this success file?')) return;
+
+  try {
+    const r = await fetch(API_BASE_URL + '/api/success-file?id=' + encodeURIComponent(fileId), {
+      method: 'DELETE',
+      headers: API.headers()
+    });
+
+    if(!r.ok) throw new Error(await r.text());
+
+    showToast('Success file deleted');
+    await loadDownloadFilesUI();
+  } catch(e) {
+    alert('Delete failed: ' + e.message);
+  }
+}
+
   const publishPortfolioBtn = document.getElementById('publishPortfolioBtn');
   if(publishPortfolioBtn) publishPortfolioBtn.addEventListener('click', publishPortfolio); else { console.warn('attachEvents: publishPortfolioBtn not found'); }
 
