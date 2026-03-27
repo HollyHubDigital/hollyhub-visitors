@@ -338,61 +338,7 @@
     })();
   </script>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-    // Handle file upload squares - click to open file picker
-    function attachSquareListeners() {
-      document.querySelectorAll('.file-upload-square').forEach(square => {
-        square.addEventListener('click', function(e) {
-          if (e.target.classList.contains('remove-file-btn')) return;
-          const input = this.querySelector('.file-input-hidden');
-          if (input) {
-            input.click(); // Opens file picker
-          }
-        });
-      });
-    }
-
-    // Attach listeners to file inputs
-    function attachInputListeners() {
-      document.querySelectorAll('.file-input-hidden').forEach(input => {
-        input.addEventListener('change', function() {
-          const square = this.closest('.file-upload-square');
-          if (!square) return;
-          
-          const index = parseInt(square.dataset.index);
-          const file = this.files[0];
-          const icon = square.querySelector('.file-icon');
-          const label = square.querySelector('.file-name');
-          const removeBtn = square.querySelector('.remove-file-btn');
-
-          if (file) {
-            square.style.borderColor = 'var(--primary-accent)';
-            square.style.background = 'rgba(0, 128, 0, 0.06)';
-            if (icon) icon.textContent = '📄';
-            if (label) label.textContent = file.name;
-            if (removeBtn) removeBtn.style.display = 'block';
-          } else {
-            resetSquare(square);
-          }
-          updateFileCountDisplay();
-        });
-      });
-    }
-
-    attachSquareListeners();
-    attachInputListeners();
-
-    document.addEventListener('click', function(e) {
-      if (e.target.classList.contains('remove-file-btn')) {
-        const index = parseInt(e.target.dataset.index);
-        const square = document.querySelector(`.file-upload-square[data-index="${index}"]`);
-        const input = square.querySelector('.file-input-hidden');
-        input.value = '';
-        resetSquare(square);
-        updateFileCountDisplay();
-      }
-    });
-
+    // Define functions at global scope so they can be called from HTML
     function resetSquare(square) {
       const icon = square.querySelector('.file-icon');
       const label = square.querySelector('.file-name');
@@ -440,166 +386,68 @@
       updateFileCountDisplay();
     }
 
-    document.getElementById('contactForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      
-      const submitBtn = document.getElementById('contact-submit-btn');
-      const originalText = submitBtn.textContent;
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Sending...';
-      
-      try {
-        const formData = new FormData(this);
-        const files = getSelectedFiles();
-
-        // Validate file count
-        if (files.length === 0) {
-          throw new Error('Please upload at least one file');
-        }
-
-        if (files.length > 4) {
-          throw new Error('Maximum 4 files allowed');
-        }
-
-        const name = formData.get('name');
-        const email = formData.get('email');
-        const message = formData.get('message');
-        const service = formData.get('service');
-        const phone = formData.get('phone');
-
-        // Step 1: Submit text-only data to web3forms
-        const web3data = new FormData();
-        web3data.append('access_key', formData.get('access_key'));
-        web3data.append('subject', formData.get('subject'));
-        web3data.append('from_name', name);
-        web3data.append('name', name);
-        web3data.append('email', email);
-        web3data.append('phone', phone || '');
-        web3data.append('service', service);
-        web3data.append('message', message);
-
-        const res1 = await fetch('https://api.web3forms.com/submit', {
-          method: 'POST',
-          body: web3data
-        });
-
-        if (!res1.ok) {
-          throw new Error('Failed to send form via web3forms');
-        }
-
-        // Step 2: Submit files + project data to /api/projects
-        const projectData = new FormData();
-        projectData.append('userEmail', email);
-        projectData.append('name', name);
-        projectData.append('contact', phone || email);
-        projectData.append('description', message);
-        projectData.append('projectType', service);
-
-        // Append files
-        for (let i = 0; i < files.length; i++) {
-          projectData.append('files', files[i]);
-        }
-
-        const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
-        const res2 = await fetch(baseURL + '/api/projects', {
-          method: 'POST',
-          body: projectData
-        });
-
-        if (!res2.ok) {
-          const error = await res2.json();
-          throw new Error(error.error || 'Failed to submit project');
-        }
-
-        const project = await res2.json();
-
-        // Store user email in localStorage for project tracking
-        localStorage.setItem('contactFormUserEmail', email);
-        sessionStorage.setItem('contactFormUserEmail', email);
-
-        // Show success message
-        alert('✓ Project submitted successfully! You can track your project below.');
-        this.reset();
-        resetUploadSquares();
-        
-        // Reload user projects
-        await loadUserProjects();
-
-        submitBtn.textContent = 'Message Sent ✓';
-        setTimeout(() => {
-          submitBtn.disabled = false;
-          submitBtn.textContent = originalText;
-        }, 2000);
-      } catch (error) {
-        console.error('Form submission error:', error);
-        alert('Error: ' + error.message);
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalText;
-      }
-    });
-
-    // Load user projects
-    async function loadUserProjects() {
+    function loadUserProjects() {
       const email = localStorage.getItem('contactFormUserEmail') || sessionStorage.getItem('contactFormUserEmail');
       
       if (!email) {
-        document.getElementById('userProjectsSection').style.display = 'none';
+        const section = document.getElementById('userProjectsSection');
+        if (section) section.style.display = 'none';
         return;
       }
 
       try {
         const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
-        const res = await fetch(baseURL + '/api/projects?userEmail=' + encodeURIComponent(email));
-        
-        if (!res.ok) throw new Error('Failed to load projects');
-        
-        const projects = await res.json();
+        fetch(baseURL + '/api/projects?userEmail=' + encodeURIComponent(email))
+          .then(res => res.json())
+          .then(projects => {
+            const section = document.getElementById('userProjectsSection');
+            const list = document.getElementById('userProjectsList');
 
-        const section = document.getElementById('userProjectsSection');
-        const list = document.getElementById('userProjectsList');
+            if (projects.length === 0) {
+              section.style.display = 'none';
+              return;
+            }
 
-        if (projects.length === 0) {
-          section.style.display = 'none';
-          return;
-        }
+            section.style.display = 'block';
+            list.innerHTML = projects.map(p => `
+              <div style="border:1px solid var(--border-color); border-radius:12px; padding:1.5rem; background:rgba(255,255,255,0.02);">
+                <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:1rem;">
+                  <div>
+                    <div style="font-weight:600; color:var(--primary-accent); font-size:1.1rem;">${p.projectType}</div>
+                    <div style="opacity:0.8; font-size:0.9rem; margin-top:0.5rem;">${new Date(p.uploadedAt).toLocaleDateString()}</div>
+                  </div>
+                  <button class="btn-secondary" onclick="openEditProjectModal('${p.id}')" style="padding:0.6rem 1rem; font-size:0.9rem;">Edit Project</button>
+                </div>
 
-        section.style.display = 'block';
-        list.innerHTML = projects.map(p => `
-          <div style="border:1px solid var(--border-color); border-radius:12px; padding:1.5rem; background:rgba(255,255,255,0.02);">
-            <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:1rem;">
-              <div>
-                <div style="font-weight:600; color:var(--primary-accent); font-size:1.1rem;">${p.projectType}</div>
-                <div style="opacity:0.8; font-size:0.9rem; margin-top:0.5rem;">${new Date(p.uploadedAt).toLocaleDateString()}</div>
+                <div style="background:rgba(255,255,255,0.05); padding:0.75rem; border-radius:8px; margin-bottom:1rem; font-size:0.9rem;">
+                  <div style="opacity:0.8;">${p.description}</div>
+                </div>
+
+                <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;">
+                  <span style="display:inline-block; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; ${p.status === 'finished' ? 'background:rgba(0,255,0,0.2); color:#0f0;' : 'background:rgba(255,165,0,0.2); color:#ffcc00;'}">
+                    ${p.status === 'finished' ? 'Delivered' : 'Pending Project'}
+                  </span>
+                  <span style="display:inline-block; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; ${p.payment === 'verified' ? 'background:rgba(0,255,0,0.2); color:#0f0;' : 'background:rgba(255,165,0,0.2); color:#ffcc00;'}">
+                    ${p.payment === 'verified' ? 'Paid' : 'Payment Verifying'}
+                  </span>
+                </div>
+
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                  ${p.files.map((f, idx) => `
+                    <a href="https://raw.githubusercontent.com/HollyHubDigital/hollyhub-visitors/main/public/uploads/${f.filename}" target="_blank" class="btn-secondary" style="padding:0.5rem 0.8rem; font-size:0.9rem; text-decoration:none; display:inline-block;">📄 File ${idx + 1}</a>
+                  `).join('')}
+                </div>
               </div>
-              <button class="btn-secondary" onclick="openEditProjectModal('${p.id}')" style="padding:0.6rem 1rem; font-size:0.9rem;">Edit Project</button>
-            </div>
-
-            <div style="background:rgba(255,255,255,0.05); padding:0.75rem; border-radius:8px; margin-bottom:1rem; font-size:0.9rem;">
-              <div style="opacity:0.8;">${p.description}</div>
-            </div>
-
-            <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;">
-              <span style="display:inline-block; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; ${p.status === 'finished' ? 'background:rgba(0,255,0,0.2); color:#0f0;' : 'background:rgba(255,165,0,0.2); color:#ffcc00;'}">
-                ${p.status === 'finished' ? 'Delivered' : 'Pending Project'}
-              </span>
-              <span style="display:inline-block; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; ${p.payment === 'verified' ? 'background:rgba(0,255,0,0.2); color:#0f0;' : 'background:rgba(255,165,0,0.2); color:#ffcc00;'}">
-                ${p.payment === 'verified' ? 'Paid' : 'Payment Verifying'}
-              </span>
-            </div>
-
-            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-              ${p.files.map((f, idx) => `
-                <a href="https://raw.githubusercontent.com/HollyHubDigital/hollyhub-visitors/main/public/uploads/${f.filename}" target="_blank" class="btn-secondary" style="padding:0.5rem 0.8rem; font-size:0.9rem; text-decoration:none; display:inline-block;">📄 File ${idx + 1}</a>
-              `).join('')}
-            </div>
-          </div>
-        `).join('');
+            `).join('');
+          })
+          .catch(error => {
+            console.error('Failed to load projects:', error);
+          });
       } catch (error) {
         console.error('Failed to load projects:', error);
       }
     }
 
-    // Edit project modal
     function openEditProjectModal(projectId) {
       // Fetch current project data
       const email = localStorage.getItem('contactFormUserEmail') || sessionStorage.getItem('contactFormUserEmail');
@@ -750,11 +598,151 @@
       }
     }
 
-    // Load user projects on page load and periodically refresh
-    window.addEventListener('load', () => {
+    // Initialize on DOM ready
+    document.addEventListener('DOMContentLoaded', function() {
+      // Attach event listeners to file upload squares
+      function attachSquareListeners() {
+        document.querySelectorAll('.file-upload-square').forEach(square => {
+          square.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-file-btn')) return;
+            const input = this.querySelector('.file-input-hidden');
+            if (input) input.click();
+          });
+        });
+      }
+
+      function attachInputListeners() {
+        document.querySelectorAll('.file-input-hidden').forEach(input => {
+          input.addEventListener('change', function() {
+            const square = this.closest('.file-upload-square');
+            if (!square) return;
+            const index = parseInt(square.dataset.index);
+            const file = this.files[0];
+            const icon = square.querySelector('.file-icon');
+            const label = square.querySelector('.file-name');
+            const removeBtn = square.querySelector('.remove-file-btn');
+
+            if (file) {
+              square.style.borderColor = 'var(--primary-accent)';
+              square.style.background = 'rgba(0, 128, 0, 0.06)';
+              if (icon) icon.textContent = '📄';
+              if (label) label.textContent = file.name;
+              if (removeBtn) removeBtn.style.display = 'block';
+            } else {
+              resetSquare(square);
+            }
+            updateFileCountDisplay();
+          });
+        });
+      }
+
+      attachSquareListeners();
+      attachInputListeners();
+
+      document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-file-btn')) {
+          const index = parseInt(e.target.dataset.index);
+          const square = document.querySelector(`.file-upload-square[data-index="${index}"]`);
+          const input = square.querySelector('.file-input-hidden');
+          input.value = '';
+          resetSquare(square);
+          updateFileCountDisplay();
+        }
+      });
+
+      document.getElementById('contactForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const submitBtn = document.getElementById('contact-submit-btn');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+        
+        try {
+          const formData = new FormData(this);
+          const files = getSelectedFiles();
+
+          if (files.length === 0) {
+            throw new Error('Please upload at least one file');
+          }
+
+          if (files.length > 4) {
+            throw new Error('Maximum 4 files allowed');
+          }
+
+          const name = formData.get('name');
+          const email = formData.get('email');
+          const message = formData.get('message');
+          const service = formData.get('service');
+          const phone = formData.get('phone');
+
+          const web3data = new FormData();
+          web3data.append('access_key', formData.get('access_key'));
+          web3data.append('subject', formData.get('subject'));
+          web3data.append('from_name', name);
+          web3data.append('name', name);
+          web3data.append('email', email);
+          web3data.append('phone', phone || '');
+          web3data.append('service', service);
+          web3data.append('message', message);
+
+          const res1 = await fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            body: web3data
+          });
+
+          if (!res1.ok) {
+            throw new Error('Failed to send form via web3forms');
+          }
+
+          const projectData = new FormData();
+          projectData.append('userEmail', email);
+          projectData.append('name', name);
+          projectData.append('contact', phone || email);
+          projectData.append('description', message);
+          projectData.append('projectType', service);
+
+          for (let i = 0; i < files.length; i++) {
+            projectData.append('files', files[i]);
+          }
+
+          const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+          const res2 = await fetch(baseURL + '/api/projects', {
+            method: 'POST',
+            body: projectData
+          });
+
+          if (!res2.ok) {
+            const error = await res2.json();
+            throw new Error(error.error || 'Failed to submit project');
+          }
+
+          const project = await res2.json();
+
+          localStorage.setItem('contactFormUserEmail', email);
+          sessionStorage.setItem('contactFormUserEmail', email);
+
+          alert('✓ Project submitted successfully! You can track your project below.');
+          this.reset();
+          resetUploadSquares();
+          
+          await loadUserProjects();
+
+          submitBtn.textContent = 'Message Sent ✓';
+          setTimeout(() => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+          }, 2000);
+        } catch (error) {
+          console.error('Form submission error:', error);
+          alert('Error: ' + error.message);
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+        }
+      });
+
+      // Periodically refresh user projects
       loadUserProjects();
-      setInterval(loadUserProjects, 10000); // refresh every 10 seconds
-    });
+      setInterval(loadUserProjects, 10000);
     });
   </script>
   <script src="app-loader.js"></script>
