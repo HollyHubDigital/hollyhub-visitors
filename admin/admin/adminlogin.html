@@ -1,80 +1,326 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Admin Login - Holly</title>
-  <link rel="stylesheet" href="../styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login</title>
   <style>
-    .login-wrap { max-width: 420px; margin: 8vh auto; padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.02); }
-    .login-input { width: 100%; padding: 0.8rem; margin-bottom: 1rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: var(--text-light); }
-    .login-btn { width: 100%; padding: 0.8rem; background: var(--primary-accent); border: none; color: #000; border-radius: 6px; font-weight: 700; }
+    :root {
+      --primary-bg: #000000;
+      --primary-accent: #FF0000;
+      --secondary-accent: #4361EE;
+      --text-light: #FFFFFF;
+      --border-color: #333333;
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: var(--primary-bg);
+      color: var(--text-light);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+      padding: 20px;
+    }
+    
+    .login-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 50px 40px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    
+    .login-box h1 {
+      font-size: 32px;
+      margin-bottom: 8px;
+      text-align: center;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .login-box h1 .accent {
+      color: var(--primary-accent);
+    }
+    
+    .login-box p {
+      text-align: center;
+      opacity: 0.7;
+      margin-bottom: 35px;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+    }
+    
+    .form-group {
+      margin-bottom: 24px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.9;
+    }
+    
+    .password-wrapper {
+      position: relative;
+      width: 100%;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 12px 40px 12px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-light);
+      font-size: 14px;
+      transition: var(--transition);
+    }
+    
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--primary-accent);
+      background: rgba(255, 0, 0, 0.05);
+      box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.1);
+    }
+    
+    .form-group input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+    
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+
+    .password-toggle:hover {
+      color: var(--primary-accent);
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 6px;
+      background: var(--primary-accent);
+      color: var(--text-light);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 10px;
+    }
+    
+    .btn:hover:not(:disabled) {
+      background: #CC0000;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255, 0, 0, 0.3);
+    }
+    
+    .btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    
+    .btn:disabled {
+      background: rgba(255, 0, 0, 0.5);
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+    
+    .error {
+      color: #FF6B6B;
+      margin: 20px 0;
+      padding: 14px 16px;
+      background: rgba(255, 107, 107, 0.1);
+      border: 1px solid rgba(255, 107, 107, 0.3);
+      border-radius: 6px;
+      text-align: center;
+      display: none;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    .success {
+      color: #51CF66;
+      margin: 20px 0;
+      padding: 14px 16px;
+      background: rgba(81, 207, 102, 0.1);
+      border: 1px solid rgba(81, 207, 102, 0.3);
+      border-radius: 6px;
+      text-align: center;
+      display: none;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    @media (max-width: 480px) {
+      .login-box {
+        padding: 40px 30px;
+      }
+
+      .login-box h1 {
+        font-size: 26px;
+      }
+
+      .login-container {
+        max-width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="login-wrap">
-    <h2 style="color:var(--primary-accent);">Admin Login</h2>
-    <p style="opacity:0.8;">Sign in to manage the site</p>
-    <label>Username</label>
-    <input id="username" class="login-input" value="admin" />
-    <label>Password</label>
-    <input id="password" class="login-input" type="password" />
-    <button id="loginBtn" class="login-btn">Sign In</button>
-    <p style="margin-top:0.5rem;"><a href="#" id="forgotLink" style="color:var(--primary-accent);">Forgot password?</a></p>
-    <p id="loginMsg" style="margin-top:1rem; opacity:0.8;"></p>
-  </div>
-
-  <script>
-    const API_BASE_URL = "https://hollyhubdigitals.vercel.app";
-    
-    document.getElementById('loginBtn').addEventListener('click', async function(){
-      const user = document.getElementById('username').value;
-      const pass = document.getElementById('password').value;
-      const res = await fetch(`${API_BASE_URL}/api/admin/login`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({username:user,password:pass}) });
-      if(res.ok){ const j=await res.json(); localStorage.setItem('adminToken', j.token); window.location.href = 'admin.html'; }
-      else { const txt = await res.text(); document.getElementById('loginMsg').textContent = 'Login failed: ' + txt; }
-    });
-
-    // Forgot password flow
-    const forgotLink = document.getElementById('forgotLink');
-    forgotLink.addEventListener('click', function(e){
-      e.preventDefault();
-      if(document.getElementById('forgotModal')){ document.getElementById('forgotModal').style.display = 'flex'; return; }
-      const modal = document.createElement('div');
-      modal.id = 'forgotModal';
-      modal.style = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:4000;';
-      modal.innerHTML = `
-        <div style="background:#fff;padding:1.25rem;border-radius:10px;max-width:420px;width:100%;">
-          <h3 style="margin-top:0;margin-bottom:0.5rem">Reset admin password</h3>
-          <p style="margin-top:0;margin-bottom:0.75rem;opacity:0.85">Enter your admin username or email to receive a reset token.</p>
-          <input id="forgotInput" placeholder="username or email" style="width:100%;padding:0.6rem;margin-bottom:0.75rem;border:1px solid #ddd;border-radius:6px;" />
-          <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
-            <button id="forgotCancel" class="login-btn" style="background:#eee;color:#000;padding:0.5rem 0.75rem;border-radius:6px;">Cancel</button>
-            <button id="forgotSend" class="login-btn" style="padding:0.5rem 0.75rem;border-radius:6px;">Send reset link</button>
+  <div class="login-container">
+    <div class="login-box">
+      <h1>ADMIN <span class="accent">LOGIN</span></h1>
+      <p>Enter your credentials to continue</p>
+      
+      <div id="errorMsg" class="error"></div>
+      <div id="successMsg" class="success"></div>
+      
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input 
+            type="text" 
+            id="username" 
+            name="username" 
+            placeholder="Enter username" 
+            required
+            autocomplete="username"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="password-wrapper">
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              placeholder="Enter password" 
+              required
+              autocomplete="current-password"
+            />
+            <button type="button" class="password-toggle" id="togglePassword" aria-label="Toggle password visibility">
+              👁️
+            </button>
           </div>
-          <div id="forgotMsg" style="margin-top:0.75rem;opacity:0.9"></div>
-        </div>`;
-      document.body.appendChild(modal);
-      document.getElementById('forgotCancel').addEventListener('click', ()=>{ document.getElementById('forgotModal').style.display='none'; });
-      document.getElementById('forgotSend').addEventListener('click', async ()=>{
-        const v = document.getElementById('forgotInput').value.trim();
-        if(!v) return document.getElementById('forgotMsg').textContent = 'Please enter username or email';
-        document.getElementById('forgotMsg').textContent = 'Sending...';
-        try{
-          const payload = (v.indexOf('@')!==-1) ? { email: v } : { username: v };
-          const r = await fetch(`${API_BASE_URL}/api/admin/reset-request`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-          const j = await r.json();
-          if(!r.ok) return document.getElementById('forgotMsg').textContent = (j && j.error) ? j.error : 'Request failed';
-          if(j.resetToken){
-            document.getElementById('forgotMsg').innerHTML = `Reset token:<br/><code style="word-break:break-all;background:#f6f8fa;padding:0.5rem;border-radius:6px;display:block;margin-top:0.5rem">${j.resetToken}</code><div style="margin-top:0.5rem"><button id=\"forgotCopy\" class=\"login-btn\" style=\"padding:0.35rem 0.6rem;border-radius:6px;font-size:0.9rem\">Copy token</button></div>`;
-            document.getElementById('forgotCopy').addEventListener('click', ()=>{ navigator.clipboard.writeText(j.resetToken); document.getElementById('forgotMsg').textContent = 'Token copied to clipboard'; });
-          } else if (j.resetUrl){
-            document.getElementById('forgotMsg').innerHTML = `Reset link: <a href="${j.resetUrl}" target="_blank">Open reset page</a>`;
-          } else {
-            document.getElementById('forgotMsg').textContent = 'If the account exists, a reset link has been sent.';
-          }
-        }catch(err){ document.getElementById('forgotMsg').textContent = 'Request failed'; }
-      });
+        </div>
+        
+        <button type="submit" class="btn" id="submitBtn">Login</button>
+      </form>
+    </div>
+  </div>
+  
+  <script>
+    // Set API_BASE_URL if needed
+    if (typeof window.API_BASE_URL === 'undefined') {
+      const apiBase = window.location.hostname.includes('admin') 
+        ? 'https://hollyhubdigitals.vercel.app'
+        : 'http://localhost:3000';
+      window.API_BASE_URL = apiBase;
+    }
+    
+    const form = document.getElementById('loginForm');
+    const errorMsg = document.getElementById('errorMsg');
+    const successMsg = document.getElementById('successMsg');
+    const submitBtn = document.getElementById('submitBtn');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    
+    // Password visibility toggle
+    togglePassword.addEventListener('click', (e) => {
+      e.preventDefault();
+      const type = passwordInput.type === 'password' ? 'text' : 'password';
+      passwordInput.type = type;
+      togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
+    });
+    
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      errorMsg.style.display = 'none';
+      successMsg.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Logging in...';
+      
+      try {
+        const apiUrl = window.API_BASE_URL || '';
+        const response = await fetch((apiUrl ? apiUrl : '') + '/api/admin/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, password })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Invalid username or password');
+        }
+        
+        const data = await response.json();
+        
+        if (data.token) {
+          localStorage.setItem('adminToken', data.token);
+          localStorage.setItem('authToken', data.token);
+          successMsg.textContent = 'Login successful! Redirecting...';
+          successMsg.style.display = 'block';
+          
+          setTimeout(() => {
+            window.location.href = 'admin.html';
+          }, 1000);
+        } else {
+          throw new Error('No token received');
+        }
+      } catch (error) {
+        errorMsg.textContent = error.message || 'Login failed. Please try again.';
+        errorMsg.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Login';
+      }
+    });
+    
+    // Check if already logged in
+    window.addEventListener('load', () => {
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('authToken');
+      if (token) {
+        window.location.href = 'admin.html';
+      }
     });
   </script>
 </body>

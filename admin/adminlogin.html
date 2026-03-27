@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Login</title>
   <style>
+    :root {
+      --primary-bg: #000000;
+      --primary-accent: #FF0000;
+      --secondary-accent: #4361EE;
+      --text-light: #FFFFFF;
+      --border-color: #333333;
+      --transition: all 0.3s ease;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -13,8 +22,8 @@
     
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
-      color: #fff;
+      background: var(--primary-bg);
+      color: var(--text-light);
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -23,122 +32,178 @@
     
     .login-container {
       width: 100%;
-      max-width: 400px;
+      max-width: 420px;
       padding: 20px;
     }
     
     .login-box {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.02);
+      border: 2px solid var(--border-color);
       border-radius: 12px;
-      padding: 40px 30px;
+      padding: 50px 40px;
       backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
     
     .login-box h1 {
-      font-size: 28px;
-      margin-bottom: 10px;
+      font-size: 32px;
+      margin-bottom: 8px;
       text-align: center;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .login-box h1 .accent {
+      color: var(--primary-accent);
     }
     
     .login-box p {
       text-align: center;
       opacity: 0.7;
-      margin-bottom: 30px;
+      margin-bottom: 35px;
       font-size: 14px;
+      letter-spacing: 0.5px;
     }
     
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
     
     .form-group label {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.9;
+    }
+    
+    .password-wrapper {
+      position: relative;
+      width: 100%;
     }
     
     .form-group input {
       width: 100%;
-      padding: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 12px 40px 12px 14px;
+      border: 1px solid var(--border-color);
       border-radius: 6px;
-      background: rgba(255, 255, 255, 0.05);
-      color: white;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-light);
       font-size: 14px;
-      transition: all 0.2s;
+      transition: var(--transition);
     }
     
     .form-group input:focus {
       outline: none;
-      border-color: #007bff;
-      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--primary-accent);
+      background: rgba(255, 0, 0, 0.05);
+      box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.1);
     }
     
     .form-group input::placeholder {
-      color: rgba(255, 255, 255, 0.5);
+      color: rgba(255, 255, 255, 0.4);
+    }
+    
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+
+    .password-toggle:hover {
+      color: var(--primary-accent);
     }
     
     .btn {
       width: 100%;
-      padding: 12px;
+      padding: 13px;
       border: none;
       border-radius: 6px;
-      background: #007bff;
-      color: white;
-      font-size: 16px;
-      font-weight: 600;
+      background: var(--primary-accent);
+      color: var(--text-light);
+      font-size: 15px;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: var(--transition);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 10px;
     }
     
-    .btn:hover {
-      background: #0056b3;
+    .btn:hover:not(:disabled) {
+      background: #CC0000;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255, 0, 0, 0.3);
+    }
+    
+    .btn:active:not(:disabled) {
+      transform: translateY(0);
     }
     
     .btn:disabled {
-      background: #6c757d;
+      background: rgba(255, 0, 0, 0.5);
       cursor: not-allowed;
-      opacity: 0.6;
+      opacity: 0.7;
     }
     
     .error {
-      color: #ff6b6b;
+      color: #FF6B6B;
       margin: 20px 0;
-      padding: 12px;
+      padding: 14px 16px;
       background: rgba(255, 107, 107, 0.1);
+      border: 1px solid rgba(255, 107, 107, 0.3);
       border-radius: 6px;
       text-align: center;
       display: none;
+      font-size: 13px;
+      font-weight: 500;
     }
     
     .success {
-      color: #51cf66;
+      color: #51CF66;
       margin: 20px 0;
-      padding: 12px;
+      padding: 14px 16px;
       background: rgba(81, 207, 102, 0.1);
+      border: 1px solid rgba(81, 207, 102, 0.3);
       border-radius: 6px;
       text-align: center;
       display: none;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    @media (max-width: 480px) {
+      .login-box {
+        padding: 40px 30px;
+      }
+
+      .login-box h1 {
+        font-size: 26px;
+      }
+
+      .login-container {
+        max-width: 100%;
+      }
     }
   </style>
-  <script>
-    // Configure API base URL based on current hostname
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      window.API_BASE_URL = 'http://localhost:3000';
-    } else if (window.location.hostname.includes('admin-hollyhub')) {
-      window.API_BASE_URL = 'https://hollyhubdigitals.vercel.app';
-    } else {
-      window.API_BASE_URL = 'https://hollyhubdigitals.vercel.app';
-    }
-    console.log('[Admin Login] API Base URL configured:', window.API_BASE_URL);
-  </script>
 </head>
 <body>
   <div class="login-container">
     <div class="login-box">
-      <h1>Admin Login</h1>
+      <h1>ADMIN <span class="accent">LOGIN</span></h1>
       <p>Enter your credentials to continue</p>
       
       <div id="errorMsg" class="error"></div>
@@ -159,14 +224,19 @@
         
         <div class="form-group">
           <label for="password">Password</label>
-          <input 
-            type="password" 
-            id="password" 
-            name="password" 
-            placeholder="Enter password" 
-            required
-            autocomplete="current-password"
-          />
+          <div class="password-wrapper">
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              placeholder="Enter password" 
+              required
+              autocomplete="current-password"
+            />
+            <button type="button" class="password-toggle" id="togglePassword" aria-label="Toggle password visibility">
+              👁️
+            </button>
+          </div>
         </div>
         
         <button type="submit" class="btn" id="submitBtn">Login</button>
@@ -187,6 +257,16 @@
     const errorMsg = document.getElementById('errorMsg');
     const successMsg = document.getElementById('successMsg');
     const submitBtn = document.getElementById('submitBtn');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    
+    // Password visibility toggle
+    togglePassword.addEventListener('click', (e) => {
+      e.preventDefault();
+      const type = passwordInput.type === 'password' ? 'text' : 'password';
+      passwordInput.type = type;
+      togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
+    });
     
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
