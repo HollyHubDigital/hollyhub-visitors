@@ -368,12 +368,20 @@
           if (!file) throw new Error('File not found');
 
           const previewUrl = this.getFilePreviewUrl(file.filename);
+          
+          // Fetch file as blob and trigger download
+          const response = await fetch(previewUrl);
+          if (!response.ok) throw new Error('Failed to download file');
+          
+          const blob = await response.blob();
+          const blobUrl = window.URL.createObjectURL(blob);
           const link = document.createElement('a');
-          link.href = previewUrl;
+          link.href = blobUrl;
           link.download = file.originalname || file.filename;
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
+          window.URL.revokeObjectURL(blobUrl);
         } catch (error) {
           console.error('Download error:', error);
           alert('Download failed: ' + error.message);

@@ -2132,6 +2132,9 @@ app.post('/api/upload-success-file', upload.single('file'), async (req, res) => 
   try {
     if (!req.file) return res.status(400).json({ error: 'No file provided' });
 
+    const fullName = (req.body.fullName || '').trim();
+    if (!fullName) return res.status(400).json({ error: 'Full name is required' });
+
     const { getRepoConfig } = require('./api/utils');
     const { getFile, putFile } = require('./api/gh');
     const repoOpts = await getRepoConfig(req);
@@ -2167,6 +2170,7 @@ app.post('/api/upload-success-file', upload.single('file'), async (req, res) => 
       id: Date.now().toString(),
       filename,
       originalname: req.file.originalname,
+      fullName: fullName,
       size: buffer.length,
       uploadedAt: new Date().toISOString()
     };
