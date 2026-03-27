@@ -338,6 +338,7 @@
     })();
   </script>
   <script>
+    document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('projectFilesInput').addEventListener('change', function(e) {
       const display = document.getElementById('fileCountDisplay');
       const count = this.files.length;
@@ -773,6 +774,7 @@
     window.addEventListener('load', () => {
       loadUserProjects();
       setInterval(loadUserProjects, 10000); // refresh every 10 seconds
+    });
     });
   </script>
   <script src="app-loader.js"></script>
