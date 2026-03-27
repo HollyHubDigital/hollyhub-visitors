@@ -629,6 +629,7 @@
         return;
       }
 
+      const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
       fetch(baseURL + '/api/projects?userEmail=' + encodeURIComponent(email))
         .then(res => res.json())
         .then(projects => {
