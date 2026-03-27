@@ -245,10 +245,29 @@
     const FileManager = {
       files: [],
       unlocked: new Map(), // fileId -> {token, unlockTime}
+      timerInterval: null,
+      displayInterval: null,
 
       async init() {
+        // Restore unlocked files from localStorage
+        try {
+          const stored = localStorage.getItem('dlf_unlocked');
+          if (stored) {
+            const unlocked = JSON.parse(stored);
+            for (const [fileId, data] of Object.entries(unlocked)) {
+              // Only restore if still within 2-hour window
+              const remaining = data.unlockTime + (2 * 60 * 60 * 1000) - Date.now();
+              if (remaining > 0) {
+                this.unlocked.set(fileId, data);
+              }
+            }
+            localStorage.setItem('dlf_unlocked', JSON.stringify(Object.fromEntries(this.unlocked)));
+          }
+        } catch (e) { console.warn('Failed to restore unlocked files:', e); }
+
         await this.loadFiles();
         this.render();
+        this.startTimerUpdate();
       },
 
       async loadFiles() {
@@ -261,6 +280,42 @@
           console.error('Error loading files:', error);
           this.files = [];
         }
+      },
+
+      startTimerUpdate() {
+        // Clear existing intervals to prevent duplicates
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        if (this.displayInterval) clearInterval(this.displayInterval);
+        
+        // Cleanup interval - check every second for expired files
+        this.timerInterval = setInterval(() => {
+          const unlocked = Object.fromEntries(this.unlocked);
+          let changed = false;
+          for (const fileId of Object.keys(unlocked)) {
+            const data = unlocked[fileId];
+            if (Date.now() > data.unlockTime + (2 * 60 * 60 * 1000)) {
+              delete unlocked[fileId];
+              this.unlocked.delete(fileId);
+              changed = true;
+            }
+          }
+          if (changed) {
+            localStorage.setItem('dlf_unlocked', JSON.stringify(unlocked));
+            this.render();
+          }
+        }, 1000);
+
+        // Display update interval - update countdown timer display every second
+        this.displayInterval = setInterval(() => {
+          // Update timer displays without re-rendering entire page
+          this.unlocked.forEach((value, fileId) => {
+            const timeRemaining = this.getUnlockTimeRemaining(fileId);
+            const timerEl = document.querySelector(`[data-timer-${fileId}]`);
+            if (timerEl) {
+              timerEl.textContent = `Expires in: ${this.formatTime(timeRemaining)}`;
+            }
+          });
+        }, 500); // Update twice per second for smooth countdown
       },
 
       isFileUnlocked(fileId) {
@@ -375,7 +430,7 @@
               ` : `
                 <div style="background: rgba(37, 211, 102, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
                   <p style="color: #25D366; margin: 0;">✅ File unlocked</p>
-                  <p style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Expires in: ${this.formatTime(timeRemaining)}</p>
+                  <p style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;" data-timer-${file.id}>Expires in: ${this.formatTime(timeRemaining)}</p>
                 </div>
               `}
 
@@ -400,9 +455,6 @@
             }
           });
         });
-
-        // Update timer display
-        this.startTimerUpdate();
       },
 
       startTimerUpdate() {
@@ -437,6 +489,9 @@
           await this.validateToken(fileId, token);
 
           this.unlocked.set(fileId, { token, unlockTime: Date.now() });
+          
+          // Save to localStorage to persist across page refreshes
+          localStorage.setItem('dlf_unlocked', JSON.stringify(Object.fromEntries(this.unlocked)));
 
           msgEl.textContent = '✅ Token verified! File is now available.';
           msgEl.className = 'token-status-msg success';
