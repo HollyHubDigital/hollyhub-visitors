@@ -2133,6 +2133,7 @@ app.post('/api/upload-success-file', upload.single('file'), async (req, res) => 
     if (!req.file) return res.status(400).json({ error: 'No file provided' });
 
     const fullName = (req.body.fullName || '').trim();
+    const email = (req.body.email || '').trim();
     if (!fullName) return res.status(400).json({ error: 'Full name is required' });
 
     const { getRepoConfig } = require('./api/utils');
@@ -2171,6 +2172,7 @@ app.post('/api/upload-success-file', upload.single('file'), async (req, res) => 
       filename,
       originalname: req.file.originalname,
       fullName: fullName,
+      email: email,
       size: buffer.length,
       uploadedAt: new Date().toISOString()
     };
@@ -2774,22 +2776,14 @@ app.put('/api/projects/:id', authRequired, async (req, res) => {
   }
 });
 
-// Edit project files (update) - allows re-uploading files
+// Edit project files (update) - allows re-uploading files and updating details
 app.post('/api/projects/:id/edit', upload.array('files', 4), async (req, res) => {
   try {
     const projectId = req.params.id;
-    const { userEmail } = req.body;
+    const { userEmail, name, contact, projectType, description } = req.body;
 
     if (!userEmail) {
       return res.status(400).json({ error: 'User email required' });
-    }
-
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ error: 'At least one file is required' });
-    }
-
-    if (req.files.length > 4) {
-      return res.status(400).json({ error: 'Maximum 4 files allowed' });
     }
 
     const { getRepoConfig } = require('./api/utils');
@@ -2816,47 +2810,61 @@ app.post('/api/projects/:id/edit', upload.array('files', 4), async (req, res) =>
 
     const project = projects[projectIndex];
 
-    // Delete old files
-    for (const file of project.files) {
-      try {
-        await deleteFile(`public/uploads/${file.filename}`, `Delete old project file`, null, repoOpts);
-      } catch (e) {
-        console.warn('[project edit] Failed to delete old file:', e.message);
+    // Update project details
+    if (name) project.name = name;
+    if (contact) project.contact = contact;
+    if (projectType) project.projectType = projectType;
+    if (description) project.description = description;
+    project.userEmail = userEmail; // Allow email update
+
+    // Handle file updates if files are provided
+    if (req.files && req.files.length > 0) {
+      if (req.files.length > 4) {
+        return res.status(400).json({ error: 'Maximum 4 files allowed' });
       }
+
+      // Delete old files
+      for (const file of project.files) {
+        try {
+          await deleteFile(`public/uploads/${file.filename}`, `Delete old project file`, null, repoOpts);
+        } catch (e) {
+          console.warn('[project edit] Failed to delete old file:', e.message);
+        }
+      }
+
+      const fileMetadata = [];
+
+      // Upload new files
+      for (const file of req.files) {
+        const filename = `${projectId}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+        const base64 = file.buffer.toString('base64');
+
+        await putFile(
+          `public/uploads/${filename}`,
+          base64,
+          `Project edit: ${projectId}`,
+          null,
+          repoOpts,
+          true
+        );
+
+        fileMetadata.push({
+          filename,
+          originalname: file.originalname,
+          size: file.buffer.length
+        });
+      }
+
+      project.files = fileMetadata;
     }
 
-    const fileMetadata = [];
-
-    // Upload new files
-    for (const file of req.files) {
-      const filename = `${projectId}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-      const base64 = file.buffer.toString('base64');
-
-      await putFile(
-        `public/uploads/${filename}`,
-        base64,
-        `Project edit: ${projectId}`,
-        null,
-        repoOpts,
-        true
-      );
-
-      fileMetadata.push({
-        filename,
-        originalname: file.originalname,
-        size: file.buffer.length
-      });
-    }
-
-    // Update project files
-    project.files = fileMetadata;
     project.updatedAt = new Date().toISOString();
 
     // Save updated projects
     await putFile(
       'data/projects.json',
       JSON.stringify(projects, null, 2),
-      `Edit project files ${projectId}`,
+      `Edit project ${projectId}`,
       null,
       repoOpts
     );

@@ -223,7 +223,29 @@
 
             <div class="form-group">
               <label class="form-label">Upload Project Files (Maximum 4 files)</label>
-              <input type="file" id="projectFilesInput" class="form-input" multiple accept="*/*" style="padding:1rem; cursor:pointer;" />
+              <div id="fileUploadArea" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem;">
+                <!-- 4 upload squares -->
+                <div class="file-upload-square" data-index="0" style="border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); transition: all 0.3s;">
+                  <div style="font-size: 2rem; opacity: 0.5;">+</div>
+                  <div style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File 1</div>
+                  <input type="file" class="file-input-hidden" accept="*/*" style="display: none;" />
+                </div>
+                <div class="file-upload-square" data-index="1" style="border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); transition: all 0.3s;">
+                  <div style="font-size: 2rem; opacity: 0.5;">+</div>
+                  <div style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File 2</div>
+                  <input type="file" class="file-input-hidden" accept="*/*" style="display: none;" />
+                </div>
+                <div class="file-upload-square" data-index="2" style="border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); transition: all 0.3s;">
+                  <div style="font-size: 2rem; opacity: 0.5;">+</div>
+                  <div style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File 3</div>
+                  <input type="file" class="file-input-hidden" accept="*/*" style="display: none;" />
+                </div>
+                <div class="file-upload-square" data-index="3" style="border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); transition: all 0.3s;">
+                  <div style="font-size: 2rem; opacity: 0.5;">+</div>
+                  <div style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File 4</div>
+                  <input type="file" class="file-input-hidden" accept="*/*" style="display: none;" />
+                </div>
+              </div>
               <small style="opacity:0.7; display:block; margin-top:0.5rem;">You can upload up to 4 files. Supported: images, documents, archives, etc.</small>
               <div id="fileCountDisplay" style="opacity:0.7; font-size:0.9rem; margin-top:0.5rem; display:none;"></div>
             </div>
@@ -246,7 +268,10 @@
 
           <!-- User Projects Display Section -->
           <div id="userProjectsSection" style="margin-top:3rem; display:none;">
-            <h3 style="color: var(--primary-accent); margin-bottom:1.5rem;">Your Submitted Projects</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+              <h3 style="color: var(--primary-accent); margin:0;">Your Submitted Projects</h3>
+              <button onclick="loadUserProjects()" class="btn-secondary" style="padding:0.6rem 1rem; font-size:0.9rem;">🔄 Refresh</button>
+            </div>
             <div id="userProjectsList" style="display:grid; gap:1.5rem;"></div>
           </div>
         </div>
@@ -320,6 +345,70 @@
       }
     });
 
+    // Handle file upload squares
+    document.querySelectorAll('.file-upload-square').forEach(square => {
+      square.addEventListener('click', function() {
+        const input = this.querySelector('.file-input-hidden');
+        input.click();
+      });
+    });
+
+    document.querySelectorAll('.file-input-hidden').forEach(input => {
+      input.addEventListener('change', function(e) {
+        const square = this.parentElement;
+        const index = parseInt(square.dataset.index);
+        const file = this.files[0];
+        
+        if (file) {
+          square.innerHTML = `
+            <div style="font-size: 1.5rem; color: var(--primary-accent);">📄</div>
+            <div style="font-size: 0.8rem; opacity: 0.8; margin-top: 0.5rem; word-break: break-all;">${file.name}</div>
+            <button type="button" class="remove-file-btn" data-index="${index}" style="position: absolute; top: 5px; right: 5px; background: #ff5555; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px;">×</button>
+          `;
+          square.style.borderColor = 'var(--primary-accent)';
+          square.style.background = 'rgba(255, 0, 0, 0.05)';
+        }
+        
+        updateFileCountDisplay();
+      });
+    });
+
+    // Handle remove file buttons
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('remove-file-btn')) {
+        const index = parseInt(e.target.dataset.index);
+        const square = document.querySelector(`.file-upload-square[data-index="${index}"]`);
+        const input = square.querySelector('.file-input-hidden');
+        
+        input.value = '';
+        square.innerHTML = `
+          <div style="font-size: 2rem; opacity: 0.5;">+</div>
+          <div style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File ${index + 1}</div>
+          <input type="file" class="file-input-hidden" accept="*/*" style="display: none;" />
+        `;
+        square.style.borderColor = 'var(--border-color)';
+        square.style.background = 'rgba(255,255,255,0.02)';
+        
+        updateFileCountDisplay();
+      }
+    });
+
+    function updateFileCountDisplay() {
+      const inputs = document.querySelectorAll('.file-input-hidden');
+      let count = 0;
+      inputs.forEach(input => {
+        if (input.files.length > 0) count++;
+      });
+      
+      const display = document.getElementById('fileCountDisplay');
+      if (count > 0) {
+        display.textContent = `${count} file(s) selected`;
+        display.style.display = 'block';
+      } else {
+        display.style.display = 'none';
+      }
+    }
+
     document.getElementById('contactForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       
@@ -330,15 +419,20 @@
       
       try {
         const formData = new FormData(this);
-        const files = document.getElementById('projectFilesInput').files;
+        const files = [];
+        document.querySelectorAll('.file-input-hidden').forEach(input => {
+          if (input.files.length > 0) {
+            files.push(input.files[0]);
+          }
+        });
         
         // Validate file count
-        if (files.length > 4) {
-          throw new Error('Maximum 4 files allowed');
-        }
-
         if (files.length === 0) {
           throw new Error('Please upload at least one file');
+        }
+
+        if (files.length > 4) {
+          throw new Error('Maximum 4 files allowed');
         }
 
         const name = formData.get('name');
@@ -400,7 +494,19 @@
         // Show success message
         alert('✓ Project submitted successfully! You can track your project below.');
         this.reset();
-        document.getElementById('fileCountDisplay').style.display = 'none';
+        // Reset file upload area
+        document.querySelectorAll('.file-upload-square').forEach((square, index) => {
+          const input = square.querySelector('.file-input-hidden');
+          if (input) input.value = '';
+          square.innerHTML = `
+            <div style="font-size: 2rem; opacity: 0.5;">+</div>
+            <div style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File ${index + 1}</div>
+            <input type="file" class="file-input-hidden" accept="*/*" style="display: none;" />
+          `;
+          square.style.borderColor = 'var(--border-color)';
+          square.style.background = 'rgba(255,255,255,0.02)';
+        });
+        updateFileCountDisplay();
         
         // Reload user projects
         await loadUserProjects();
@@ -481,43 +587,98 @@
 
     // Edit project modal
     function openEditProjectModal(projectId) {
-      // Create modal HTML
-      const modal = document.createElement('div');
-      modal.id = 'editProjectModal';
-      modal.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:10000; padding:1rem;';
-      
-      modal.innerHTML = `
-        <div style="background:#1a1a1a; border:1px solid var(--border-color); border-radius:12px; padding:2rem; max-width:600px; width:100%; max-height:80vh; overflow-y:auto;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-            <h3 style="color:var(--primary-accent); margin:0;">Edit Project Files</h3>
-            <button onclick="closeEditProjectModal()" style="background:none; border:none; font-size:1.5rem; color:var(--text-light); cursor:pointer;">✕</button>
-          </div>
+      // Fetch current project data
+      const email = localStorage.getItem('contactFormUserEmail') || sessionStorage.getItem('contactFormUserEmail');
+      if (!email) {
+        alert('User email not found. Please refresh the page.');
+        return;
+      }
 
-          <div style="margin-bottom:1.5rem;">
-            <label style="display:block; margin-bottom:0.5rem; color:var(--primary-accent); font-weight:600;">Upload New Project Files (Max 4)</label>
-            <input type="file" id="editProjectFilesInput" multiple accept="*/*" style="width:100%; padding:0.8rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); border-radius:6px; color:var(--text-light);" />
-            <small style="opacity:0.7; display:block; margin-top:0.5rem;">Select 1-4 files to replace existing project files</small>
-            <div id="editFileCount" style="opacity:0.7; font-size:0.9rem; margin-top:0.5rem;"></div>
-          </div>
+      fetch(baseURL + '/api/projects?userEmail=' + encodeURIComponent(email))
+        .then(res => res.json())
+        .then(projects => {
+          const project = projects.find(p => p.id === projectId);
+          if (!project) {
+            alert('Project not found');
+            return;
+          }
 
-          <div style="display:flex; gap:1rem;">
-            <button onclick="submitEditProject('${projectId}')" class="btn-primary" style="flex:1; padding:0.8rem;">Save Changes</button>
-            <button onclick="closeEditProjectModal()" class="btn-secondary" style="flex:1; padding:0.8rem;">Cancel</button>
-          </div>
-        </div>
-      `;
+          // Create modal HTML
+          const modal = document.createElement('div');
+          modal.id = 'editProjectModal';
+          modal.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:10000; padding:1rem;';
+          
+          modal.innerHTML = `
+            <div style="background:#1a1a1a; border:1px solid var(--border-color); border-radius:12px; padding:2rem; max-width:600px; width:100%; max-height:80vh; overflow-y:auto;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                <h3 style="color:var(--primary-accent); margin:0;">Edit Project Details</h3>
+                <button onclick="closeEditProjectModal()" style="background:none; border:none; font-size:1.5rem; color:var(--text-light); cursor:pointer;">✕</button>
+              </div>
 
-      document.body.appendChild(modal);
+              <div style="margin-bottom:1.5rem;">
+                <label style="display:block; margin-bottom:0.5rem; color:var(--primary-accent); font-weight:600;">Full Name</label>
+                <input type="text" id="editFullName" value="${project.name || ''}" style="width:100%; padding:0.8rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); border-radius:6px; color:var(--text-light);" />
+              </div>
 
-      document.getElementById('editProjectFilesInput').addEventListener('change', function() {
-        const count = this.files.length;
-        const display = document.getElementById('editFileCount');
-        if (count > 0) {
-          display.textContent = `${count} file(s) selected`;
-        } else {
-          display.textContent = '';
-        }
-      });
+              <div style="margin-bottom:1.5rem;">
+                <label style="display:block; margin-bottom:0.5rem; color:var(--primary-accent); font-weight:600;">Email Address</label>
+                <input type="email" id="editEmail" value="${project.userEmail || ''}" style="width:100%; padding:0.8rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); border-radius:6px; color:var(--text-light);" />
+              </div>
+
+              <div style="margin-bottom:1.5rem;">
+                <label style="display:block; margin-bottom:0.5rem; color:var(--primary-accent); font-weight:600;">Phone Number</label>
+                <input type="tel" id="editPhone" value="${project.contact ? project.contact.replace(project.userEmail || '', '').trim() : ''}" style="width:100%; padding:0.8rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); border-radius:6px; color:var(--text-light);" />
+              </div>
+
+              <div style="margin-bottom:1.5rem;">
+                <label style="display:block; margin-bottom:0.5rem; color:var(--primary-accent); font-weight:600;">Project Type</label>
+                <select id="editProjectType" style="width:100%; padding:0.8rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); border-radius:6px; color:var(--text-light);">
+                  <option value="web-dev" ${project.projectType === 'web-dev' ? 'selected' : ''}>Web Development</option>
+                  <option value="web-app" ${project.projectType === 'web-app' ? 'selected' : ''}>Web Application</option>
+                  <option value="marketing" ${project.projectType === 'marketing' ? 'selected' : ''}>Digital Marketing</option>
+                  <option value="seo" ${project.projectType === 'seo' ? 'selected' : ''}>SEO Services</option>
+                  <option value="ecommerce" ${project.projectType === 'ecommerce' ? 'selected' : ''}>E-Commerce</option>
+                  <option value="consultation" ${project.projectType === 'consultation' ? 'selected' : ''}>Consultation</option>
+                  <option value="branding" ${project.projectType === 'branding' ? 'selected' : ''}>Branding Design</option>
+                  <option value="other" ${project.projectType === 'other' ? 'selected' : ''}>Other</option>
+                </select>
+              </div>
+
+              <div style="margin-bottom:1.5rem;">
+                <label style="display:block; margin-bottom:0.5rem; color:var(--primary-accent); font-weight:600;">Project Description</label>
+                <textarea id="editDescription" style="width:100%; padding:0.8rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); border-radius:6px; color:var(--text-light); min-height:100px;">${project.description || ''}</textarea>
+              </div>
+
+              <div style="margin-bottom:1.5rem;">
+                <label style="display:block; margin-bottom:0.5rem; color:var(--primary-accent); font-weight:600;">Upload New Project Files (Max 4)</label>
+                <input type="file" id="editProjectFilesInput" multiple accept="*/*" style="width:100%; padding:0.8rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); border-radius:6px; color:var(--text-light);" />
+                <small style="opacity:0.7; display:block; margin-top:0.5rem;">Select 1-4 files to replace existing project files</small>
+                <div id="editFileCount" style="opacity:0.7; font-size:0.9rem; margin-top:0.5rem;"></div>
+              </div>
+
+              <div style="display:flex; gap:1rem;">
+                <button onclick="submitEditProject('${projectId}')" class="btn-primary" style="flex:1; padding:0.8rem;">Save Changes</button>
+                <button onclick="closeEditProjectModal()" class="btn-secondary" style="flex:1; padding:0.8rem;">Cancel</button>
+              </div>
+            </div>
+          `;
+
+          document.body.appendChild(modal);
+
+          document.getElementById('editProjectFilesInput').addEventListener('change', function() {
+            const count = this.files.length;
+            const display = document.getElementById('editFileCount');
+            if (count > 0) {
+              display.textContent = `${count} file(s) selected`;
+            } else {
+              display.textContent = '';
+            }
+          });
+        })
+        .catch(error => {
+          console.error('Failed to load project data:', error);
+          alert('Failed to load project data');
+        });
     }
 
     function closeEditProjectModal() {
@@ -527,10 +688,14 @@
 
     async function submitEditProject(projectId) {
       const files = document.getElementById('editProjectFilesInput').files;
-      const email = localStorage.getItem('contactFormUserEmail') || sessionStorage.getItem('contactFormUserEmail');
+      const fullName = document.getElementById('editFullName').value.trim();
+      const email = document.getElementById('editEmail').value.trim();
+      const phone = document.getElementById('editPhone').value.trim();
+      const projectType = document.getElementById('editProjectType').value;
+      const description = document.getElementById('editDescription').value.trim();
 
-      if (!files || files.length === 0) {
-        alert('Please select at least one file');
+      if (!fullName || !email || !description) {
+        alert('Please fill in all required fields');
         return;
       }
 
@@ -542,6 +707,11 @@
       try {
         const formData = new FormData();
         formData.append('userEmail', email);
+        formData.append('name', fullName);
+        formData.append('contact', phone || email);
+        formData.append('projectType', projectType);
+        formData.append('description', description);
+        
         for (let i = 0; i < files.length; i++) {
           formData.append('files', files[i]);
         }
@@ -557,7 +727,7 @@
           throw new Error(error.error || 'Failed to update project');
         }
 
-        alert('✓ Project files updated successfully!');
+        alert('✓ Project updated successfully!');
         closeEditProjectModal();
         await loadUserProjects();
       } catch (error) {

@@ -119,6 +119,12 @@
         formData.append('file', fileInput.files[0]);
         formData.append('fullName', fullName);
         
+        // Get email from localStorage if available
+        const userEmail = localStorage.getItem('contactFormUserEmail') || sessionStorage.getItem('contactFormUserEmail') || '';
+        if (userEmail) {
+          formData.append('email', userEmail);
+        }
+        
         const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
         const uploadUrl = baseURL + '/api/upload-success-file';
         
