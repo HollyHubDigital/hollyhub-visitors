@@ -2572,6 +2572,359 @@ app.delete('/api/success-file', authRequired, async (req, res) => {
   }
 });
 
+// ===== PROJECT MANAGEMENT =====
+// Get all projects or filter by user
+app.get('/api/projects', async (req, res) => {
+  try {
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+    
+    let projects = [];
+    if (repoOpts && repoOpts.owner && repoOpts.repo) {
+      try {
+        const f = await getFile('data/projects.json', repoOpts);
+        projects = JSON.parse(f.content || '[]');
+      } catch (e) {
+        projects = [];
+      }
+    }
+
+    // Filter by userEmail if provided
+    const userEmail = req.query.userEmail;
+    if (userEmail) {
+      projects = projects.filter(p => p.userEmail === userEmail);
+    }
+
+    res.json(projects);
+  } catch (error) {
+    console.error('[projects GET] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get single project
+app.get('/api/projects/:id', async (req, res) => {
+  try {
+    const projectId = req.params.id;
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+
+    let projects = [];
+    if (repoOpts && repoOpts.owner && repoOpts.repo) {
+      try {
+        const f = await getFile('data/projects.json', repoOpts);
+        projects = JSON.parse(f.content || '[]');
+      } catch (e) {
+        projects = [];
+      }
+    }
+
+    const project = projects.find(p => p.id === projectId);
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    res.json(project);
+  } catch (error) {
+    console.error('[project GET] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Submit new project with files
+app.post('/api/projects', upload.array('files', 4), async (req, res) => {
+  try {
+    const { userEmail, name, contact, description, projectType } = req.body;
+    
+    if (!userEmail || !name || !contact || !description || !projectType) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: 'At least one file is required' });
+    }
+
+    if (req.files.length > 4) {
+      return res.status(400).json({ error: 'Maximum 4 files allowed' });
+    }
+
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req);
+
+    if (!repoOpts || !repoOpts.token) {
+      return res.status(501).json({ error: 'File storage not configured' });
+    }
+
+    const projectId = Date.now().toString();
+    const fileMetadata = [];
+
+    // Upload all files
+    for (const file of req.files) {
+      const filename = `${projectId}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      const base64 = file.buffer.toString('base64');
+
+      await putFile(
+        `public/uploads/${filename}`,
+        base64,
+        `Project upload: ${projectId}`,
+        null,
+        repoOpts,
+        true
+      );
+
+      fileMetadata.push({
+        filename,
+        originalname: file.originalname,
+        size: file.buffer.length
+      });
+    }
+
+    // Get existing projects
+    let projects = [];
+    try {
+      const f = await getFile('data/projects.json', repoOpts);
+      projects = JSON.parse(f.content || '[]');
+    } catch (e) {
+      projects = [];
+    }
+
+    const project = {
+      id: projectId,
+      userEmail,
+      name,
+      contact,
+      description,
+      projectType,
+      files: fileMetadata,
+      status: 'pending',
+      payment: 'verifying',
+      uploadedAt: new Date().toISOString()
+    };
+
+    projects.push(project);
+
+    // Save projects metadata
+    await putFile(
+      'data/projects.json',
+      JSON.stringify(projects, null, 2),
+      'Add new project',
+      null,
+      repoOpts
+    );
+
+    res.json(project);
+  } catch (error) {
+    console.error('[project POST] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update project status (admin only)
+app.put('/api/projects/:id', authRequired, async (req, res) => {
+  try {
+    const projectId = req.params.id;
+    const { status, payment } = req.body;
+
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req);
+
+    if (!repoOpts || !repoOpts.owner || !repoOpts.repo) {
+      return res.status(501).json({ error: 'Storage not configured' });
+    }
+
+    // Get projects
+    let projects = [];
+    try {
+      const f = await getFile('data/projects.json', repoOpts);
+      projects = JSON.parse(f.content || '[]');
+    } catch (e) {
+      return res.status(500).json({ error: 'Failed to retrieve projects' });
+    }
+
+    const project = projects.find(p => p.id === projectId);
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    // Update status if provided
+    if (status !== undefined) {
+      project.status = status; // 'pending' or 'finished'
+    }
+    if (payment !== undefined) {
+      project.payment = payment; // 'verifying' or 'verified'
+    }
+
+    // Save updated projects
+    await putFile(
+      'data/projects.json',
+      JSON.stringify(projects, null, 2),
+      `Update project ${projectId}`,
+      null,
+      repoOpts
+    );
+
+    res.json(project);
+  } catch (error) {
+    console.error('[project PUT] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Edit project files (update) - allows re-uploading files
+app.post('/api/projects/:id/edit', upload.array('files', 4), async (req, res) => {
+  try {
+    const projectId = req.params.id;
+    const { userEmail } = req.body;
+
+    if (!userEmail) {
+      return res.status(400).json({ error: 'User email required' });
+    }
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: 'At least one file is required' });
+    }
+
+    if (req.files.length > 4) {
+      return res.status(400).json({ error: 'Maximum 4 files allowed' });
+    }
+
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile, deleteFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req);
+
+    if (!repoOpts || !repoOpts.token) {
+      return res.status(501).json({ error: 'File storage not configured' });
+    }
+
+    // Get projects
+    let projects = [];
+    try {
+      const f = await getFile('data/projects.json', repoOpts);
+      projects = JSON.parse(f.content || '[]');
+    } catch (e) {
+      return res.status(500).json({ error: 'Failed to retrieve projects' });
+    }
+
+    const projectIndex = projects.findIndex(p => p.id === projectId && p.userEmail === userEmail);
+    if (projectIndex === -1) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    const project = projects[projectIndex];
+
+    // Delete old files
+    for (const file of project.files) {
+      try {
+        await deleteFile(`public/uploads/${file.filename}`, `Delete old project file`, null, repoOpts);
+      } catch (e) {
+        console.warn('[project edit] Failed to delete old file:', e.message);
+      }
+    }
+
+    const fileMetadata = [];
+
+    // Upload new files
+    for (const file of req.files) {
+      const filename = `${projectId}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      const base64 = file.buffer.toString('base64');
+
+      await putFile(
+        `public/uploads/${filename}`,
+        base64,
+        `Project edit: ${projectId}`,
+        null,
+        repoOpts,
+        true
+      );
+
+      fileMetadata.push({
+        filename,
+        originalname: file.originalname,
+        size: file.buffer.length
+      });
+    }
+
+    // Update project files
+    project.files = fileMetadata;
+    project.updatedAt = new Date().toISOString();
+
+    // Save updated projects
+    await putFile(
+      'data/projects.json',
+      JSON.stringify(projects, null, 2),
+      `Edit project files ${projectId}`,
+      null,
+      repoOpts
+    );
+
+    res.json(project);
+  } catch (error) {
+    console.error('[project edit POST] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete project (admin only)
+app.delete('/api/projects/:id', authRequired, async (req, res) => {
+  try {
+    const projectId = req.params.id;
+
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile, deleteFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req);
+
+    if (!repoOpts || !repoOpts.owner || !repoOpts.repo) {
+      return res.status(501).json({ error: 'Storage not configured' });
+    }
+
+    // Get projects
+    let projects = [];
+    try {
+      const f = await getFile('data/projects.json', repoOpts);
+      projects = JSON.parse(f.content || '[]');
+    } catch (e) {
+      return res.status(500).json({ error: 'Failed to retrieve projects' });
+    }
+
+    const projectIndex = projects.findIndex(p => p.id === projectId);
+    if (projectIndex === -1) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    const project = projects[projectIndex];
+
+    // Delete all project files from GitHub
+    for (const file of project.files) {
+      try {
+        await deleteFile(`public/uploads/${file.filename}`, `Delete project file`, null, repoOpts);
+      } catch (e) {
+        console.warn('[delete-project] Failed to delete file:', e.message);
+      }
+    }
+
+    // Remove project from list
+    projects.splice(projectIndex, 1);
+
+    // Save updated projects
+    await putFile(
+      'data/projects.json',
+      JSON.stringify(projects, null, 2),
+      'Delete project',
+      null,
+      repoOpts
+    );
+
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('[delete-project] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Dynamic API loader
 app.all('/api/*', async (req, res) => {
   try{
