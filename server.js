@@ -2339,6 +2339,32 @@ app.get('/api/download-files', async (req, res) => {
   }
 });
 
+// Get download files with full details (admin only - includes tokens)
+app.get('/api/admin/download-files', authRequired, async (req, res) => {
+  try {
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req) || {};
+
+    let downloadFiles = [];
+
+    if (repoOpts && repoOpts.owner && repoOpts.repo) {
+      try {
+        const f = await getFile('data/download-files.json', repoOpts);
+        downloadFiles = JSON.parse(f.content || '[]');
+      } catch (e) {
+        downloadFiles = [];
+      }
+    }
+
+    // Return full file details including tokens (for admin only)
+    res.json(downloadFiles);
+  } catch (error) {
+    console.error('[admin/download-files GET] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Validate token and unlock file
 app.post('/api/validate-token', async (req, res) => {
   try {
