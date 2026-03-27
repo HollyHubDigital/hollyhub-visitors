@@ -339,48 +339,48 @@
   </script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('projectFilesInput').addEventListener('change', function(e) {
-      const display = document.getElementById('fileCountDisplay');
-      const count = this.files.length;
-      if (count > 0) {
-        display.textContent = `${count} file(s) selected`;
-        display.style.display = 'block';
-      } else {
-        display.style.display = 'none';
-      }
-    });
-
-    // Handle file upload squares
-    document.querySelectorAll('.file-upload-square').forEach(square => {
-      square.addEventListener('click', function(e) {
-        if (e.target.classList.contains('remove-file-btn')) return;
-        const input = this.querySelector('.file-input-hidden');
-        if (input) input.click();
+    // Handle file upload squares - click to open file picker
+    function attachSquareListeners() {
+      document.querySelectorAll('.file-upload-square').forEach(square => {
+        square.addEventListener('click', function(e) {
+          if (e.target.classList.contains('remove-file-btn')) return;
+          const input = this.querySelector('.file-input-hidden');
+          if (input) {
+            input.click(); // Opens file picker
+          }
+        });
       });
-    });
+    }
 
-    document.querySelectorAll('.file-input-hidden').forEach(input => {
-      input.addEventListener('change', function() {
-        const square = this.parentElement;
-        const index = parseInt(square.dataset.index);
-        const file = this.files[0];
-        const icon = square.querySelector('.file-icon');
-        const label = square.querySelector('.file-name');
-        const removeBtn = square.querySelector('.remove-file-btn');
+    // Attach listeners to file inputs
+    function attachInputListeners() {
+      document.querySelectorAll('.file-input-hidden').forEach(input => {
+        input.addEventListener('change', function() {
+          const square = this.closest('.file-upload-square');
+          if (!square) return;
+          
+          const index = parseInt(square.dataset.index);
+          const file = this.files[0];
+          const icon = square.querySelector('.file-icon');
+          const label = square.querySelector('.file-name');
+          const removeBtn = square.querySelector('.remove-file-btn');
 
-        if (file) {
-          square.style.borderColor = 'var(--primary-accent)';
-          square.style.background = 'rgba(0, 128, 0, 0.06)';
-          if (icon) icon.textContent = '📄';
-          if (label) label.textContent = file.name;
-          if (removeBtn) removeBtn.style.display = 'block';
-        } else {
-          resetSquare(square);
-        }
-
-        updateFileCountDisplay();
+          if (file) {
+            square.style.borderColor = 'var(--primary-accent)';
+            square.style.background = 'rgba(0, 128, 0, 0.06)';
+            if (icon) icon.textContent = '📄';
+            if (label) label.textContent = file.name;
+            if (removeBtn) removeBtn.style.display = 'block';
+          } else {
+            resetSquare(square);
+          }
+          updateFileCountDisplay();
+        });
       });
-    });
+    }
+
+    attachSquareListeners();
+    attachInputListeners();
 
     document.addEventListener('click', function(e) {
       if (e.target.classList.contains('remove-file-btn')) {
@@ -404,27 +404,6 @@
       square.style.borderColor = 'var(--border-color)';
       square.style.background = 'rgba(255,255,255,0.02)';
     }
-
-
-    // Handle remove file buttons
-    document.addEventListener('click', function(e) {
-      if (e.target.classList.contains('remove-file-btn')) {
-        const index = parseInt(e.target.dataset.index);
-        const square = document.querySelector(`.file-upload-square[data-index="${index}"]`);
-        const input = square.querySelector('.file-input-hidden');
-        
-        input.value = '';
-        square.innerHTML = `
-          <div style="font-size: 2rem; opacity: 0.5;">+</div>
-          <div style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File ${index + 1}</div>
-          <input type="file" class="file-input-hidden" accept="*/*" style="display: none;" />
-        `;
-        square.style.borderColor = 'var(--border-color)';
-        square.style.background = 'rgba(255,255,255,0.02)';
-        
-        updateFileCountDisplay();
-      }
-    });
 
     function updateFileCountDisplay() {
       const inputs = document.querySelectorAll('.file-input-hidden');
