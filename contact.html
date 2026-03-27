@@ -225,25 +225,29 @@
               <label class="form-label">Upload Project Files (Maximum 4 files)</label>
               <div id="fileUploadArea" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem;">
                 <!-- 4 upload squares -->
-                <div class="file-upload-square" data-index="0" style="border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); transition: all 0.3s;">
-                  <div style="font-size: 2rem; opacity: 0.5;">+</div>
-                  <div style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File 1</div>
+                <div class="file-upload-square" data-index="0" style="position:relative; border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); transition: all 0.3s;">
+                  <div class="file-icon" style="font-size: 2rem; opacity: 0.5;">+</div>
+                  <div class="file-name" style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File 1</div>
                   <input type="file" class="file-input-hidden" accept="*/*" style="display: none;" />
+                  <button type="button" class="remove-file-btn" data-index="0" style="display:none; position:absolute; top:8px; right:8px; background:#ff5555; color:white; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer;">&times;</button>
                 </div>
-                <div class="file-upload-square" data-index="1" style="border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); transition: all 0.3s;">
-                  <div style="font-size: 2rem; opacity: 0.5;">+</div>
-                  <div style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File 2</div>
+                <div class="file-upload-square" data-index="1" style="position:relative; border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); transition: all 0.3s;">
+                  <div class="file-icon" style="font-size: 2rem; opacity: 0.5;">+</div>
+                  <div class="file-name" style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File 2</div>
                   <input type="file" class="file-input-hidden" accept="*/*" style="display: none;" />
+                  <button type="button" class="remove-file-btn" data-index="1" style="display:none; position:absolute; top:8px; right:8px; background:#ff5555; color:white; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer;">&times;</button>
                 </div>
-                <div class="file-upload-square" data-index="2" style="border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); transition: all 0.3s;">
-                  <div style="font-size: 2rem; opacity: 0.5;">+</div>
-                  <div style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File 3</div>
+                <div class="file-upload-square" data-index="2" style="position:relative; border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); transition: all 0.3s;">
+                  <div class="file-icon" style="font-size: 2rem; opacity: 0.5;">+</div>
+                  <div class="file-name" style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File 3</div>
                   <input type="file" class="file-input-hidden" accept="*/*" style="display: none;" />
+                  <button type="button" class="remove-file-btn" data-index="2" style="display:none; position:absolute; top:8px; right:8px; background:#ff5555; color:white; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer;">&times;</button>
                 </div>
-                <div class="file-upload-square" data-index="3" style="border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); transition: all 0.3s;">
-                  <div style="font-size: 2rem; opacity: 0.5;">+</div>
-                  <div style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File 4</div>
+                <div class="file-upload-square" data-index="3" style="position:relative; border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); transition: all 0.3s;">
+                  <div class="file-icon" style="font-size: 2rem; opacity: 0.5;">+</div>
+                  <div class="file-name" style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File 4</div>
                   <input type="file" class="file-input-hidden" accept="*/*" style="display: none;" />
+                  <button type="button" class="remove-file-btn" data-index="3" style="display:none; position:absolute; top:8px; right:8px; background:#ff5555; color:white; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer;">&times;</button>
                 </div>
               </div>
               <small style="opacity:0.7; display:block; margin-top:0.5rem;">You can upload up to 4 files. Supported: images, documents, archives, etc.</small>
@@ -347,31 +351,59 @@
 
     // Handle file upload squares
     document.querySelectorAll('.file-upload-square').forEach(square => {
-      square.addEventListener('click', function() {
+      square.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-file-btn')) return;
         const input = this.querySelector('.file-input-hidden');
-        input.click();
+        if (input) input.click();
       });
     });
 
     document.querySelectorAll('.file-input-hidden').forEach(input => {
-      input.addEventListener('change', function(e) {
+      input.addEventListener('change', function() {
         const square = this.parentElement;
         const index = parseInt(square.dataset.index);
         const file = this.files[0];
-        
+        const icon = square.querySelector('.file-icon');
+        const label = square.querySelector('.file-name');
+        const removeBtn = square.querySelector('.remove-file-btn');
+
         if (file) {
-          square.innerHTML = `
-            <div style="font-size: 1.5rem; color: var(--primary-accent);">📄</div>
-            <div style="font-size: 0.8rem; opacity: 0.8; margin-top: 0.5rem; word-break: break-all;">${file.name}</div>
-            <button type="button" class="remove-file-btn" data-index="${index}" style="position: absolute; top: 5px; right: 5px; background: #ff5555; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px;">×</button>
-          `;
           square.style.borderColor = 'var(--primary-accent)';
-          square.style.background = 'rgba(255, 0, 0, 0.05)';
+          square.style.background = 'rgba(0, 128, 0, 0.06)';
+          if (icon) icon.textContent = '📄';
+          if (label) label.textContent = file.name;
+          if (removeBtn) removeBtn.style.display = 'block';
+        } else {
+          resetSquare(square);
         }
-        
+
         updateFileCountDisplay();
       });
     });
+
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('remove-file-btn')) {
+        const index = parseInt(e.target.dataset.index);
+        const square = document.querySelector(`.file-upload-square[data-index="${index}"]`);
+        const input = square.querySelector('.file-input-hidden');
+        input.value = '';
+        resetSquare(square);
+        updateFileCountDisplay();
+      }
+    });
+
+    function resetSquare(square) {
+      const icon = square.querySelector('.file-icon');
+      const label = square.querySelector('.file-name');
+      const removeBtn = square.querySelector('.remove-file-btn');
+      const idx = square.dataset.index || 0;
+      if (icon) icon.textContent = '+';
+      if (label) label.textContent = `Add File ${parseInt(idx, 10) + 1}`;
+      if (removeBtn) removeBtn.style.display = 'none';
+      square.style.borderColor = 'var(--border-color)';
+      square.style.background = 'rgba(255,255,255,0.02)';
+    }
+
 
     // Handle remove file buttons
     document.addEventListener('click', function(e) {
@@ -409,6 +441,25 @@
       }
     }
 
+    function getSelectedFiles() {
+      const files = [];
+      document.querySelectorAll('.file-input-hidden').forEach(input => {
+        if (input.files.length > 0) {
+          files.push(input.files[0]);
+        }
+      });
+      return files;
+    }
+
+    function resetUploadSquares() {
+      document.querySelectorAll('.file-upload-square').forEach(square => {
+        resetSquare(square);
+        const input = square.querySelector('.file-input-hidden');
+        if (input) input.value = '';
+      });
+      updateFileCountDisplay();
+    }
+
     document.getElementById('contactForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       
@@ -419,13 +470,8 @@
       
       try {
         const formData = new FormData(this);
-        const files = [];
-        document.querySelectorAll('.file-input-hidden').forEach(input => {
-          if (input.files.length > 0) {
-            files.push(input.files[0]);
-          }
-        });
-        
+        const files = getSelectedFiles();
+
         // Validate file count
         if (files.length === 0) {
           throw new Error('Please upload at least one file');
@@ -494,19 +540,7 @@
         // Show success message
         alert('✓ Project submitted successfully! You can track your project below.');
         this.reset();
-        // Reset file upload area
-        document.querySelectorAll('.file-upload-square').forEach((square, index) => {
-          const input = square.querySelector('.file-input-hidden');
-          if (input) input.value = '';
-          square.innerHTML = `
-            <div style="font-size: 2rem; opacity: 0.5;">+</div>
-            <div style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File ${index + 1}</div>
-            <input type="file" class="file-input-hidden" accept="*/*" style="display: none;" />
-          `;
-          square.style.borderColor = 'var(--border-color)';
-          square.style.background = 'rgba(255,255,255,0.02)';
-        });
-        updateFileCountDisplay();
+        resetUploadSquares();
         
         // Reload user projects
         await loadUserProjects();
@@ -565,11 +599,11 @@
             </div>
 
             <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;">
-              <span style="display:inline-block; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; background:${p.status === 'finished' ? 'rgba(0,255,0,0.2); color:#0f0;' : 'rgba(255,0,0,0.2); color:#f00;'}">
-                ${p.status === 'finished' ? '✓ Project-Delivered' : '⏳ Project-Pending'}
+              <span style="display:inline-block; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; ${p.status === 'finished' ? 'background:rgba(0,255,0,0.2); color:#0f0;' : 'background:rgba(255,165,0,0.2); color:#ffcc00;'}">
+                ${p.status === 'finished' ? 'Delivered' : 'Pending Project'}
               </span>
-              <span style="display:inline-block; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; background:${p.payment === 'verified' ? 'rgba(0,255,0,0.2); color:#0f0;' : 'rgba(255,0,0,0.2); color:#f00;'}">
-                ${p.payment === 'verified' ? '✓ Payment-Verified' : '💰 Payment-Verifying'}
+              <span style="display:inline-block; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; ${p.payment === 'verified' ? 'background:rgba(0,255,0,0.2); color:#0f0;' : 'background:rgba(255,165,0,0.2); color:#ffcc00;'}">
+                ${p.payment === 'verified' ? 'Paid' : 'Payment Verifying'}
               </span>
             </div>
 
@@ -735,8 +769,11 @@
       }
     }
 
-    // Load user projects on page load
-    window.addEventListener('load', loadUserProjects);
+    // Load user projects on page load and periodically refresh
+    window.addEventListener('load', () => {
+      loadUserProjects();
+      setInterval(loadUserProjects, 10000); // refresh every 10 seconds
+    });
   </script>
   <script src="app-loader.js"></script>
   <!-- Google Translate Initialization -->
