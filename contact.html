@@ -315,6 +315,59 @@
 
   <script src="script.js"></script>
   <script>
+    // Check authentication on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      function checkAuthentication() {
+        const authToken = localStorage.getItem('authToken');
+        const authUserEmail = localStorage.getItem('authUserEmail');
+        
+        if (!authToken || !authUserEmail) {
+          // Not authenticated
+          document.getElementById('userProjectsSection').style.display = 'none';
+          document.getElementById('contactForm').style.display = 'none';
+          
+          // Show login prompt
+          const loginPrompt = document.createElement('div');
+          loginPrompt.id = 'authPrompt';
+          loginPrompt.style.cssText = `
+            padding: 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(255,0,0,0.1), rgba(67,97,238,0.1));
+            border-radius: 12px;
+            margin: 2rem 0;
+          `;
+          loginPrompt.innerHTML = `
+            <h3 style="color: var(--primary-accent); margin-bottom: 1rem;">Please Log In</h3>
+            <p style="opacity: 0.8; margin-bottom: 1.5rem;">You must be logged in to submit projects and view your submissions.</p>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+              <a href="login.html" class="btn btn-primary" style="padding: 0.8rem 2rem; text-decoration: none;">Log In</a>
+              <a href="signup.html" class="btn btn-secondary" style="padding: 0.8rem 2rem; text-decoration: none;">Sign Up</a>
+            </div>
+          `;
+          
+          const formContainer = document.querySelector('form').parentElement.parentElement;
+          formContainer.insertBefore(loginPrompt, document.querySelector('form').parentElement);
+          
+          return false;
+        }
+        
+        // User is authenticated - pre-fill email and set up form
+        const emailInput = document.querySelector('input[name="email"]');
+        if (emailInput) {
+          emailInput.value = authUserEmail;
+          emailInput.setAttribute('readonly', 'readonly');
+          emailInput.style.opacity = '0.7';
+          emailInput.style.cursor = 'not-allowed';
+        }
+        
+        return true;
+      }
+      
+      // Run authentication check
+      checkAuthentication();
+    });
+  </script>
+  <script>
     // Populate WhatsApp links dynamically from public settings
     (async function(){
       try{
@@ -387,10 +440,13 @@
     }
 
     async function loadUserProjects() {
-      const email = localStorage.getItem('contactFormUserEmail') || sessionStorage.getItem('contactFormUserEmail');
+      // Load projects for authenticated user
+      const authToken = localStorage.getItem('authToken');
+      const email = localStorage.getItem('authUserEmail');
       
-      if (!email) {
-        const section = document.getElementById('userProjectsSection');
+      // Hide projects section if not authenticated
+      const section = document.getElementById('userProjectsSection');
+      if (!authToken || !email) {
         if (section) section.style.display = 'none';
         return;
       }
@@ -668,7 +724,8 @@
           }
 
           const name = formData.get('name');
-          const email = formData.get('email');
+          const authEmail = localStorage.getItem('authUserEmail'); // Use authenticated email
+          const email = authEmail || formData.get('email'); // Fallback to form email if needed
           const message = formData.get('message');
           const service = formData.get('service');
           const phone = formData.get('phone');
@@ -716,9 +773,7 @@
 
           const project = await res2.json();
 
-          localStorage.setItem('contactFormUserEmail', email);
-          sessionStorage.setItem('contactFormUserEmail', email);
-
+          // Projects now stored under authenticated user email (authUserEmail)
           alert('✓ Project submitted successfully! You can track your project below.');
           this.reset();
           resetUploadSquares();
