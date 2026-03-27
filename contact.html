@@ -386,7 +386,7 @@
       updateFileCountDisplay();
     }
 
-    function loadUserProjects() {
+    async function loadUserProjects() {
       const email = localStorage.getItem('contactFormUserEmail') || sessionStorage.getItem('contactFormUserEmail');
       
       if (!email) {
@@ -397,52 +397,50 @@
 
       try {
         const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
-        fetch(baseURL + '/api/projects?userEmail=' + encodeURIComponent(email))
-          .then(res => res.json())
-          .then(projects => {
-            const section = document.getElementById('userProjectsSection');
-            const list = document.getElementById('userProjectsList');
+        const res = await fetch(baseURL + '/api/projects?userEmail=' + encodeURIComponent(email));
+        if (!res.ok) throw new Error('Failed to load projects');
+        
+        const projects = await res.json();
 
-            if (projects.length === 0) {
-              section.style.display = 'none';
-              return;
-            }
+        const section = document.getElementById('userProjectsSection');
+        const list = document.getElementById('userProjectsList');
 
-            section.style.display = 'block';
-            list.innerHTML = projects.map(p => `
-              <div style="border:1px solid var(--border-color); border-radius:12px; padding:1.5rem; background:rgba(255,255,255,0.02);">
-                <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:1rem;">
-                  <div>
-                    <div style="font-weight:600; color:var(--primary-accent); font-size:1.1rem;">${p.projectType}</div>
-                    <div style="opacity:0.8; font-size:0.9rem; margin-top:0.5rem;">${new Date(p.uploadedAt).toLocaleDateString()}</div>
-                  </div>
-                  <button class="btn-secondary" onclick="openEditProjectModal('${p.id}')" style="padding:0.6rem 1rem; font-size:0.9rem;">Edit Project</button>
-                </div>
+        if (projects.length === 0) {
+          section.style.display = 'none';
+          return;
+        }
 
-                <div style="background:rgba(255,255,255,0.05); padding:0.75rem; border-radius:8px; margin-bottom:1rem; font-size:0.9rem;">
-                  <div style="opacity:0.8;">${p.description}</div>
-                </div>
-
-                <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;">
-                  <span style="display:inline-block; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; ${p.status === 'finished' ? 'background:rgba(0,255,0,0.2); color:#0f0;' : 'background:rgba(255,165,0,0.2); color:#ffcc00;'}">
-                    ${p.status === 'finished' ? 'Delivered' : 'Pending Project'}
-                  </span>
-                  <span style="display:inline-block; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; ${p.payment === 'verified' ? 'background:rgba(0,255,0,0.2); color:#0f0;' : 'background:rgba(255,165,0,0.2); color:#ffcc00;'}">
-                    ${p.payment === 'verified' ? 'Paid' : 'Payment Verifying'}
-                  </span>
-                </div>
-
-                <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-                  ${p.files.map((f, idx) => `
-                    <a href="https://raw.githubusercontent.com/HollyHubDigital/hollyhub-visitors/main/public/uploads/${f.filename}" target="_blank" class="btn-secondary" style="padding:0.5rem 0.8rem; font-size:0.9rem; text-decoration:none; display:inline-block;">📄 File ${idx + 1}</a>
-                  `).join('')}
-                </div>
+        section.style.display = 'block';
+        list.innerHTML = projects.map(p => `
+          <div style="border:1px solid var(--border-color); border-radius:12px; padding:1.5rem; background:rgba(255,255,255,0.02);">
+            <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:1rem;">
+              <div>
+                <div style="font-weight:600; color:var(--primary-accent); font-size:1.1rem;">${p.projectType}</div>
+                <div style="opacity:0.8; font-size:0.9rem; margin-top:0.5rem;">${new Date(p.uploadedAt).toLocaleDateString()}</div>
               </div>
-            `).join('');
-          })
-          .catch(error => {
-            console.error('Failed to load projects:', error);
-          });
+              <button class="btn-secondary" onclick="openEditProjectModal('${p.id}')" style="padding:0.6rem 1rem; font-size:0.9rem;">Edit Project</button>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.05); padding:0.75rem; border-radius:8px; margin-bottom:1rem; font-size:0.9rem;">
+              <div style="opacity:0.8;">${p.description}</div>
+            </div>
+
+            <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;">
+              <span style="display:inline-block; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; ${p.status === 'finished' ? 'background:rgba(0,255,0,0.2); color:#0f0;' : 'background:rgba(255,165,0,0.2); color:#ffcc00;'}">
+                ${p.status === 'finished' ? 'Delivered' : 'Pending Project'}
+              </span>
+              <span style="display:inline-block; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; ${p.payment === 'verified' ? 'background:rgba(0,255,0,0.2); color:#0f0;' : 'background:rgba(255,165,0,0.2); color:#ffcc00;'}">
+                ${p.payment === 'verified' ? 'Paid' : 'Payment Verifying'}
+              </span>
+            </div>
+
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              ${p.files.map((f, idx) => `
+                <a href="https://raw.githubusercontent.com/HollyHubDigital/hollyhub-visitors/main/public/uploads/${f.filename}" target="_blank" class="btn-secondary" style="padding:0.5rem 0.8rem; font-size:0.9rem; text-decoration:none; display:inline-block;">📄 File ${idx + 1}</a>
+              `).join('')}
+            </div>
+          </div>
+        `).join('');
       } catch (error) {
         console.error('Failed to load projects:', error);
       }
