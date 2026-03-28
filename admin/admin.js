@@ -1103,6 +1103,147 @@ window.addEventListener('load', async ()=>{
     }
   });
 
+  // ===== PROJECTS MANAGEMENT =====
+  async function loadProjectsUI() {
+    try {
+      const r = await fetch(API.buildURL('/api/projects'), { headers: API.headers() });
+      if (!r.ok) throw new Error('Failed to load projects');
+      const projects = await r.json();
+
+      const container = document.getElementById('projectsContainer');
+      if (!container) return;
+
+      if (projects.length === 0) {
+        container.innerHTML = '<p style="opacity:0.8">No projects submitted yet</p>';
+        return;
+      }
+
+      container.innerHTML = projects.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)).map(p => `
+        <div style="padding:1rem; border:1px solid rgba(255,255,255,0.1); border-radius:8px; margin-bottom:1rem;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem;">
+            <div>
+              <div style="font-weight:600; color:var(--primary-accent); font-size:1.1rem;">${p.projectType}</div>
+              <div style="opacity:0.8; font-size:0.9rem;">👤 ${p.name} • 📧 ${p.contact}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:0.85rem; opacity:0.7;">${new Date(p.uploadedAt).toLocaleString()}</div>
+            </div>
+          </div>
+          
+          <div style="background:rgba(255,255,255,0.02); padding:0.75rem; border-radius:6px; margin-bottom:1rem;">
+            <div style="font-weight:600; margin-bottom:0.5rem;">Description:</div>
+            <div style="opacity:0.85;">${p.description}</div>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.02); padding:0.75rem; border-radius:6px; margin-bottom:1rem;">
+            <div style="font-weight:600; margin-bottom:0.5rem;">Files (${p.files.length}):</div>
+            <div style="opacity:0.85; font-size:0.9rem;">
+              ${p.files.map(f => '<div>📄 ' + f.originalname + ' (' + (f.size / 1024).toFixed(1) + ' KB)</div>').join('')}
+            </div>
+          </div>
+
+          <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
+            ${p.files.map((f, idx) => '<button class="btn-primary" onclick="viewProjectFile(\'' + f.filename + '\')" style="min-width:70px; background-color:#4A90E2; padding:0.6rem 1rem; font-size:0.9rem;">View ' + (idx + 1) + '</button><button class="btn-primary" onclick="downloadProjectFile(\'' + f.filename + '\')" style="min-width:70px; background-color:#2ECC71; padding:0.6rem 1rem; font-size:0.9rem;">DL ' + (idx + 1) + '</button>').join('')}
+          </div>
+
+          <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+            <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; background:${p.status === 'completed' ? 'rgba(0,255,0,0.1)' : 'rgba(255,165,0,0.1)'}; border:1px solid ${p.status === 'completed' ? 'rgba(0,255,0,0.3)' : 'rgba(255,165,0,0.3)'}; border-radius:6px; cursor:pointer; font-size:0.9rem;">
+              <input type="checkbox" ${p.status === 'completed' ? 'checked' : ''} onchange="toggleProjectStatus(\'' + p.id + '\', this.checked)" style="cursor:pointer;"/>
+              <span style="color:${p.status === 'completed' ? '#0f0' : '#ffcc00'};">${p.status === 'completed' ? 'Completed' : 'Pending'}</span>
+            </label>
+          
+            <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; background:${p.payment === 'verified' ? 'rgba(0,255,0,0.1)' : 'rgba(255,165,0,0.1)'}; border:1px solid ${p.payment === 'verified' ? 'rgba(0,255,0,0.3)' : 'rgba(255,165,0,0.3)'}; border-radius:6px; cursor:pointer; font-size:0.9rem;">
+              <input type="checkbox" ${p.payment === 'verified' ? 'checked' : ''} onchange="toggleProjectPayment(\'' + p.id + '\', this.checked)" style="cursor:pointer;"/>
+              <span style="color:${p.payment === 'verified' ? '#0f0' : '#ffcc00'};">${p.payment === 'verified' ? 'Paid' : 'Verifying'}</span>
+            </label>
+          </div>
+
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <button class="btn-danger" onclick="deleteProject(\'' + p.id + '\')" style="min-width:70px; padding:0.6rem 1rem; font-size:0.9rem;">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    } catch (e) {
+      console.error('loadProjectsUI error:', e);
+      const container = document.getElementById('projectsContainer');
+      if (container) container.innerHTML = '<p style="color:#FF5555">Error loading projects. Check console.</p>';
+    }
+  }
+
+  window.viewProjectFile = function(filename) {
+    window.open('/public/uploads/' + filename, '_blank');
+  };
+
+  window.downloadProjectFile = function(filename) {
+    const link = document.createElement('a');
+    link.href = '/public/uploads/' + filename;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  window.toggleProjectStatus = async function(projectId, isCompleted) {
+    try {
+      const r = await fetch(API.buildURL('/api/projects/' + projectId), {
+        method: 'PUT',
+        headers: API.headers(),
+        body: JSON.stringify({ status: isCompleted ? 'completed' : 'pending' })
+      });
+      
+      if (!r.ok) throw new Error('Failed to update project status');
+      
+      showToast(isCompleted ? '✅ Project marked as completed' : '⏳ Project marked as pending', null, null, 3000);
+      loadProjectsUI();
+    } catch (error) {
+      alert('Error updating status: ' + error.message);
+      loadProjectsUI();
+    }
+  };
+
+  window.toggleProjectPayment = async function(projectId, isVerified) {
+    try {
+      const r = await fetch(API.buildURL('/api/projects/' + projectId), {
+        method: 'PUT',
+        headers: API.headers(),
+        body: JSON.stringify({ payment: isVerified ? 'verified' : 'verifying' })
+      });
+      
+      if (!r.ok) throw new Error('Failed to update payment status');
+      
+      showToast(isVerified ? '✅ Payment verified' : '⏳ Payment status reset', null, null, 3000);
+      loadProjectsUI();
+    } catch (error) {
+      alert('Error updating payment: ' + error.message);
+      loadProjectsUI();
+    }
+  };
+
+  window.deleteProject = async function(projectId) {
+    if (!confirm('Delete this project? This cannot be undone.')) return;
+    
+    try {
+      const r = await fetch(API.buildURL('/api/projects/' + projectId), {
+        method: 'DELETE',
+        headers: API.headers()
+      });
+      
+      if (!r.ok) throw new Error('Failed to delete project');
+      
+      showToast('✅ Project deleted', null, null, 3000);
+      loadProjectsUI();
+    } catch (error) {
+      alert('Error deleting project: ' + error.message);
+    }
+  };
+
+  // Add projects tab event listener
+  document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+    if (btn.dataset.tab === 'projects') {
+      btn.addEventListener('click', loadProjectsUI);
+    }
+  });
+
   // ===== HEADLINE MANAGEMENT =====
   async function loadHeadlineUI() {
     try {
