@@ -81,6 +81,7 @@
       <button class="admin-tab-btn" data-tab="portfolio">Portfolio</button>
       <button class="admin-tab-btn" data-tab="blog">Blog</button>
       <button class="admin-tab-btn" data-tab="download-files">Download Files</button>
+      <button class="admin-tab-btn" data-tab="headline">Headline</button>
       <button class="admin-tab-btn" data-tab="settings">Settings</button>
       <button class="admin-tab-btn" data-tab="analytics">Analytics</button>
     </div>
@@ -311,6 +312,28 @@
       <div class="section-card">
         <h3 class="section-title">Page Views</h3>
         <div id="pageViewStats"></div>
+      </div>
+    </div>
+
+    <!-- HEADLINE PANEL -->
+    <div id="headline" class="admin-panel">
+      <h2>Scrolling Headline</h2>
+      <div class="section-card">
+        <h3 class="section-title">Manage Website Headline</h3>
+        <div class="form-group">
+          <label class="form-label">Headline Text</label>
+          <textarea id="headlineText" class="form-input" placeholder="Enter your scrolling headline message..." style="min-height:100px; resize:vertical;" readonly></textarea>
+          <small style="opacity:0.7; display:block; margin-top:0.5rem;">Click Edit to modify the headline text</small>
+        </div>
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+          <button id="editHeadlineBtn" class="btn-primary" style="flex:1; min-width:120px;">✏️ Edit</button>
+          <button id="updateHeadlineBtn" class="btn-primary" style="flex:1; min-width:120px; display:none;">💾 Update</button>
+          <button id="toggleHeadlineBtn" class="btn-secondary" style="flex:1; min-width:120px;">🔴 OFF</button>
+        </div>
+        <div id="headlineStatus" style="padding:1rem; border-radius:8px; background:rgba(255,255,255,0.05); margin-top:1rem; display:none;">
+          <div style="font-size:0.9rem; opacity:0.8;" id="headlineStatusText"></div>
+          <div style="font-size:0.85rem; opacity:0.6; margin-top:0.5rem;" id="headlineLastUpdated"></div>
+        </div>
       </div>
     </div>
   </div>

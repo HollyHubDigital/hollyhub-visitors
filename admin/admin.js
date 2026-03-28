@@ -1103,4 +1103,118 @@ window.addEventListener('load', async ()=>{
     }
   });
 
+  // ===== HEADLINE MANAGEMENT =====
+  async function loadHeadlineUI() {
+    try {
+      const r = await fetch(API.buildURL('/api/headline'), { headers: API.headers() });
+      if (!r.ok) throw new Error('Failed to load headline');
+      
+      const data = await r.json();
+      const textarea = document.getElementById('headlineText');
+      const status = document.getElementById('headlineStatus');
+      const statusText = document.getElementById('headlineStatusText');
+      const lastUpdated = document.getElementById('headlineLastUpdated');
+      const toggleBtn = document.getElementById('toggleHeadlineBtn');
+      
+      textarea.value = data.text || '';
+      textarea.readOnly = true;
+      
+      if (data.enabled) {
+        toggleBtn.textContent = '🟢 ON';
+        toggleBtn.style.borderColor = '#51CF66';
+        toggleBtn.style.color = '#51CF66';
+      } else {
+        toggleBtn.textContent = '🔴 OFF';
+        toggleBtn.style.borderColor = 'var(--secondary-accent)';
+        toggleBtn.style.color = 'var(--secondary-accent)';
+      }
+      
+      status.style.display = 'block';
+      statusText.textContent = 'Status: ' + (data.enabled ? '✅ ACTIVE' : '❌ INACTIVE');
+      lastUpdated.textContent = 'Last updated: ' + new Date(data.lastUpdated || Date.now()).toLocaleString();
+    } catch (error) {
+      console.error('Error loading headline:', error);
+      showToast('Error loading headline: ' + error.message, null, null, 3000);
+    }
+  }
+  
+  window.editHeadline = function() {
+    const textarea = document.getElementById('headlineText');
+    const editBtn = document.getElementById('editHeadlineBtn');
+    const updateBtn = document.getElementById('updateHeadlineBtn');
+    
+    textarea.readOnly = false;
+    textarea.focus();
+    editBtn.style.display = 'none';
+    updateBtn.style.display = 'block';
+  };
+  
+  window.updateHeadline = async function() {
+    const textarea = document.getElementById('headlineText');
+    const editBtn = document.getElementById('editHeadlineBtn');
+    const updateBtn = document.getElementById('updateHeadlineBtn');
+    
+    try {
+      const text = textarea.value;
+      const token = API.token();
+      
+      const r = await fetch(API.buildURL('/api/headline'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ text })
+      });
+      
+      if (!r.ok) throw new Error('Failed to update headline');
+      
+      textarea.readOnly = true;
+      editBtn.style.display = 'block';
+      updateBtn.style.display = 'none';
+      
+      showToast('✅ Headline updated successfully!', null, null, 3000);
+      loadHeadlineUI();
+    } catch (error) {
+      alert('Error updating headline: ' + error.message);
+    }
+  };
+  
+  window.toggleHeadline = async function() {
+    try {
+      const r = await fetch(API.buildURL('/api/headline'), { headers: API.headers() });
+      if (!r.ok) throw new Error('Failed to load headline');
+      
+      const data = await r.json();
+      const token = API.token();
+      
+      const updateR = await fetch(API.buildURL('/api/headline'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ text: data.text, enabled: !data.enabled })
+      });
+      
+      if (!updateR.ok) throw new Error('Failed to toggle headline');
+      
+      showToast('✅ Headline turned ' + (!data.enabled ? 'ON' : 'OFF') + '!', null, null, 3000);
+      loadHeadlineUI();
+    } catch (error) {
+      alert('Error toggling headline: ' + error.message);
+    }
+  };
+  
+  // Add headline tab event listener
+  document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+    if (btn.dataset.tab === 'headline') {
+      btn.addEventListener('click', loadHeadlineUI);
+    }
+  });
+  
+  document.getElementById('editHeadlineBtn').addEventListener('click', editHeadline);
+  document.getElementById('updateHeadlineBtn').addEventListener('click', updateHeadline);
+  document.getElementById('toggleHeadlineBtn').addEventListener('click', toggleHeadline);
+
 } // End of ADMIN_INITIALIZED guard
