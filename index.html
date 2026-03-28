@@ -598,6 +598,8 @@
   
   <!-- Headline Loading Script -->
   <script>
+    let headlineInterval;
+    
     async function loadHeadline() {
       try {
         const res = await fetch('/api/headline');
@@ -618,11 +620,28 @@
       }
     }
     
-    // Load headline on page load
-    document.addEventListener('DOMContentLoaded', loadHeadline);
+    function getHeadlineRefreshInterval() {
+      const width = window.innerWidth;
+      if (width <= 356) return 43000;      // Very small mobile
+      if (width <= 480) return 38000;      // Standard mobile
+      if (width <= 700) return 35000;      // Large mobile / small tablet
+      return 30000;                        // Tablet and up
+    }
     
-    // Refresh headline every 25 seconds to sync with admin changes
-    setInterval(loadHeadline, 25000);
+    function setupHeadlineRefresh() {
+      if (headlineInterval) clearInterval(headlineInterval);
+      const interval = getHeadlineRefreshInterval();
+      headlineInterval = setInterval(loadHeadline, interval);
+    }
+    
+    // Load headline on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadHeadline();
+      setupHeadlineRefresh();
+    });
+    
+    // Update refresh interval on window resize
+    window.addEventListener('resize', setupHeadlineRefresh);
   </script>
   
   <!-- Google Translate Initialization -->
