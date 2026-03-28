@@ -51,12 +51,17 @@ module.exports = async (req, res) => {
 
     const user = users.find(u=>u.email===email);
     if(!user) return res.status(401).json({ error: 'Invalid credentials' });
-    // Check plaintext password first (new accounts), then fallback to hash (old accounts)
-    const plaintext = (user.password || '') === password;
+    
+    // Check hashed password (primary method for all new accounts)
     const hash = user.passwordHash || user.hash || '';
     const hashed = hash && bcrypt.compareSync(password, hash);
-    const ok = plaintext || hashed;
-    if(!ok) return res.status(401).json({ error: 'Invalid credentials' });
+    
+    // Fallback to plain text password only for very old legacy accounts
+    // (New accounts created after security fix: register.js no longer stores plain text)
+    const plaintext = !hashed && (user.password === password);
+    
+    if(!hashed && !plaintext) return res.status(401).json({ error: 'Invalid credentials' });
+    
     const token = makeToken(user);
     return res.json({ token, user: { id: user.id, email: user.email, fullname: user.fullname } });
   }catch(e){ console.error(e); res.status(500).json({ error: e.message }); }
