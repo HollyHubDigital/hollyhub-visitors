@@ -128,7 +128,12 @@
 
           <div class="form-group">
             <label class="form-label">Password</label>
-            <input type="password" class="form-input" name="password" placeholder="Enter your password" required />
+            <div class="password-wrapper" style="position:relative;">
+              <input type="password" class="form-input" name="password" placeholder="Enter your password" required style="padding-right:40px;" />
+              <button type="button" class="password-toggle" id="togglePasswordLogin" aria-label="Toggle password visibility" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,0.6);cursor:pointer;font-size:18px;padding:4px 8px;">
+                👁️
+              </button>
+            </div>
           </div>
 
           <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
@@ -490,12 +495,9 @@
       const checkToken = () => {
         const cfInput = document.querySelector('input[name="cf-turnstile-response"]');
         const token = cfInput ? cfInput.value : '';
+        // Strictly require Cloudflare token - no fallback
         if(token){ if(submitBtn) submitBtn.disabled = false; }
-        else {
-          // if Turnstile hasn't rendered within 5s, allow fallback to proceed (works around adblockers)
-          if(Date.now() - start > 5000){ allowFallback = true; if(submitBtn) submitBtn.disabled = false; }
-          else { if(submitBtn) submitBtn.disabled = true; }
-        }
+        else { if(submitBtn) submitBtn.disabled = true; }
       };
       // Poll for token state every 500ms
       const iv = setInterval(checkToken, 500);
@@ -505,10 +507,10 @@
       const password = this.elements.password.value;
       const remember = this.elements.remember.checked;
         if (!pageUtils.validateEmail(email) || !password) { pageUtils.showNotification('Please enter valid credentials', 'error'); return; }
-        // include Cloudflare Turnstile token if present
+        // Cloudflare Turnstile token is REQUIRED - no fallback allowed
         const cfInput = document.querySelector('input[name="cf-turnstile-response"]');
         const cfToken = cfInput ? cfInput.value : null;
-        if(!cfToken && !allowFallback){ pageUtils.showNotification('Please complete the captcha', 'error'); return; }
+        if(!cfToken){ pageUtils.showNotification('Please complete the captcha verification', 'error'); return; }
       try{
         pageUtils.showNotification('Logging in...', 'success');
         const r = await fetch('/api/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email, password, cfToken }) });
@@ -522,6 +524,18 @@
         window.location.href = 'index.html';
       }catch(err){ pageUtils.showNotification('Login failed: '+err.message, 'error'); }
     });
+
+    // Password toggle functionality
+    const togglePasswordLogin = document.getElementById('togglePasswordLogin');
+    const passwordInputLogin = document.querySelector('input[name="password"]');
+    if(togglePasswordLogin && passwordInputLogin) {
+      togglePasswordLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+        const type = passwordInputLogin.type === 'password' ? 'text' : 'password';
+        passwordInputLogin.type = type;
+        togglePasswordLogin.textContent = type === 'password' ? '👁️' : '🙈';
+      });
+    }
 
     // Forgot password modal
     const forgotModalHtml = `

@@ -111,13 +111,23 @@
 
           <div class="form-group">
             <label class="form-label">Password</label>
-            <input type="password" class="form-input" name="password" placeholder="Enter secure password" required />
+            <div class="password-wrapper" style="position:relative;">
+              <input type="password" class="form-input" name="password" placeholder="Enter secure password" required style="padding-right:40px;" />
+              <button type="button" class="password-toggle" id="togglePasswordSignup" aria-label="Toggle password visibility" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,0.6);cursor:pointer;font-size:18px;padding:4px 8px;">
+                👁️
+              </button>
+            </div>
             <small style="opacity: 0.7; display: block; margin-top: 0.3rem;">At least 8 characters with uppercase, lowercase, and number</small>
           </div>
 
           <div class="form-group">
             <label class="form-label">Confirm Password</label>
-            <input type="password" class="form-input" name="confirmPassword" placeholder="Confirm password" required />
+            <div class="password-wrapper" style="position:relative;">
+              <input type="password" class="form-input" name="confirmPassword" placeholder="Confirm password" required style="padding-right:40px;" />
+              <button type="button" class="password-toggle" id="togglePasswordConfirm" aria-label="Toggle password visibility" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,0.6);cursor:pointer;font-size:18px;padding:4px 8px;">
+                👁️
+              </button>
+            </div>
           </div>
 
           <div class="form-group">
@@ -629,6 +639,30 @@
         window.location.href = 'index.html';
       }catch(err){ pageUtils.showNotification('Signup failed: '+err.message, 'error'); }
     });
+
+    // Password toggle functionality
+    const togglePasswordSignup = document.getElementById('togglePasswordSignup');
+    const togglePasswordConfirm = document.getElementById('togglePasswordConfirm');
+    const passwordInputSignup = document.querySelector('input[name="password"]');
+    const confirmPasswordInput = document.querySelector('input[name="confirmPassword"]');
+
+    if(togglePasswordSignup && passwordInputSignup) {
+      togglePasswordSignup.addEventListener('click', (e) => {
+        e.preventDefault();
+        const type = passwordInputSignup.type === 'password' ? 'text' : 'password';
+        passwordInputSignup.type = type;
+        togglePasswordSignup.textContent = type === 'password' ? '👁️' : '🙈';
+      });
+    }
+
+    if(togglePasswordConfirm && confirmPasswordInput) {
+      togglePasswordConfirm.addEventListener('click', (e) => {
+        e.preventDefault();
+        const type = confirmPasswordInput.type === 'password' ? 'text' : 'password';
+        confirmPasswordInput.type = type;
+        togglePasswordConfirm.textContent = type === 'password' ? '👁️' : '🙈';
+      });
+    }
   </script>
   <!-- Google Translate Initialization -->
   <script>
