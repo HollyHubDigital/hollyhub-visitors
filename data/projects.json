@@ -52,7 +52,7 @@
     "userEmail": "hollywilly418@gmail.com",
     "name": "Holly Holly",
     "contact": "08137448596",
-    "description": "Just testing the logics",
+    "description": "Just testing the logics and others",
     "projectType": "ecommerce",
     "files": [
       {
@@ -63,6 +63,7 @@
     ],
     "status": "pending",
     "payment": "verifying",
-    "uploadedAt": "2026-03-28T00:47:02.058Z"
+    "uploadedAt": "2026-03-28T00:47:02.058Z",
+    "updatedAt": "2026-03-28T00:53:13.958Z"
   }
 ]
