@@ -504,14 +504,16 @@
 
     function openEditProjectModal(projectId) {
       // Fetch current project data
-      const email = localStorage.getItem('contactFormUserEmail') || sessionStorage.getItem('contactFormUserEmail');
-      if (!email) {
-        alert('User email not found. Please refresh the page.');
+      const authUserEmail = localStorage.getItem('authUserEmail');
+      const authToken = localStorage.getItem('authToken');
+      
+      if (!authToken || !authUserEmail) {
+        alert('You must be logged in to edit projects');
         return;
       }
 
       const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
-      fetch(baseURL + '/api/projects?userEmail=' + encodeURIComponent(email))
+      fetch(baseURL + '/api/projects?userEmail=' + encodeURIComponent(authUserEmail))
         .then(res => res.json())
         .then(projects => {
           const project = projects.find(p => p.id === projectId);
@@ -568,9 +570,35 @@
 
               <div style="margin-bottom:1.5rem;">
                 <label style="display:block; margin-bottom:0.5rem; color:var(--primary-accent); font-weight:600;">Upload New Project Files (Max 4)</label>
-                <input type="file" id="editProjectFilesInput" multiple accept="*/*" style="width:100%; padding:0.8rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); border-radius:6px; color:var(--text-light);" />
-                <small style="opacity:0.7; display:block; margin-top:0.5rem;">Select 1-4 files to replace existing project files</small>
-                <div id="editFileCount" style="opacity:0.7; font-size:0.9rem; margin-top:0.5rem;"></div>
+                <div id="editFileUploadArea" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem;">
+                  <!-- 4 upload squares for edit modal -->
+                  <div class="edit-file-upload-square" data-index="0" style="position:relative; border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); transition: all 0.3s;">
+                    <div class="file-icon" style="font-size: 2rem; opacity: 0.5;">+</div>
+                    <div class="file-name" style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File 1</div>
+                    <input type="file" class="edit-file-input-hidden" accept="*/*" style="display: none;" />
+                    <button type="button" class="edit-remove-file-btn" data-index="0" style="display:none; position:absolute; top:8px; right:8px; background:#ff5555; color:white; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer;">&times;</button>
+                  </div>
+                  <div class="edit-file-upload-square" data-index="1" style="position:relative; border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); transition: all 0.3s;">
+                    <div class="file-icon" style="font-size: 2rem; opacity: 0.5;">+</div>
+                    <div class="file-name" style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File 2</div>
+                    <input type="file" class="edit-file-input-hidden" accept="*/*" style="display: none;" />
+                    <button type="button" class="edit-remove-file-btn" data-index="1" style="display:none; position:absolute; top:8px; right:8px; background:#ff5555; color:white; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer;">&times;</button>
+                  </div>
+                  <div class="edit-file-upload-square" data-index="2" style="position:relative; border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); transition: all 0.3s;">
+                    <div class="file-icon" style="font-size: 2rem; opacity: 0.5;">+</div>
+                    <div class="file-name" style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File 3</div>
+                    <input type="file" class="edit-file-input-hidden" accept="*/*" style="display: none;" />
+                    <button type="button" class="edit-remove-file-btn" data-index="2" style="display:none; position:absolute; top:8px; right:8px; background:#ff5555; color:white; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer;">&times;</button>
+                  </div>
+                  <div class="edit-file-upload-square" data-index="3" style="position:relative; border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); transition: all 0.3s;">
+                    <div class="file-icon" style="font-size: 2rem; opacity: 0.5;">+</div>
+                    <div class="file-name" style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Add File 4</div>
+                    <input type="file" class="edit-file-input-hidden" accept="*/*" style="display: none;" />
+                    <button type="button" class="edit-remove-file-btn" data-index="3" style="display:none; position:absolute; top:8px; right:8px; background:#ff5555; color:white; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer;">&times;</button>
+                  </div>
+                </div>
+                <small style="opacity:0.7; display:block; margin-top:0.5rem;">You can upload up to 4 files. Supported: images, documents, archives, etc.</small>
+                <div id="editFileCountDisplay" style="opacity:0.7; font-size:0.9rem; margin-top:0.5rem; display:none;"></div>
               </div>
 
               <div style="display:flex; gap:1rem;">
@@ -582,13 +610,64 @@
 
           document.body.appendChild(modal);
 
-          document.getElementById('editProjectFilesInput').addEventListener('change', function() {
-            const count = this.files.length;
-            const display = document.getElementById('editFileCount');
-            if (count > 0) {
-              display.textContent = `${count} file(s) selected`;
-            } else {
-              display.textContent = '';
+          // Attach event listeners to edit modal file upload squares
+          function attachEditSquareListeners() {
+            document.querySelectorAll('.edit-file-upload-square').forEach(square => {
+              square.addEventListener('click', function(e) {
+                if (e.target.classList.contains('edit-remove-file-btn')) return;
+                const input = this.querySelector('.edit-file-input-hidden');
+                if (input) input.click();
+              });
+            });
+          }
+
+          function attachEditInputListeners() {
+            document.querySelectorAll('.edit-file-input-hidden').forEach(input => {
+              input.addEventListener('change', function() {
+                const square = this.closest('.edit-file-upload-square');
+                if (!square) return;
+                const index = parseInt(square.dataset.index);
+                const file = this.files[0];
+                const icon = square.querySelector('.file-icon');
+                const label = square.querySelector('.file-name');
+                const removeBtn = square.querySelector('.edit-remove-file-btn');
+
+                if (file) {
+                  square.style.borderColor = 'var(--primary-accent)';
+                  square.style.background = 'rgba(0, 128, 0, 0.06)';
+                  if (icon) icon.textContent = '📄';
+                  if (label) label.textContent = file.name;
+                  if (removeBtn) removeBtn.style.display = 'block';
+                } else {
+                  resetEditSquare(square);
+                }
+              });
+            });
+          }
+
+          function resetEditSquare(square) {
+            square.style.borderColor = 'var(--border-color)';
+            square.style.background = 'rgba(255,255,255,0.02)';
+            const icon = square.querySelector('.file-icon');
+            const label = square.querySelector('.file-name');
+            const removeBtn = square.querySelector('.edit-remove-file-btn');
+            const index = parseInt(square.dataset.index);
+            if (icon) icon.textContent = '+';
+            if (label) label.textContent = `Add File ${index + 1}`;
+            if (removeBtn) removeBtn.style.display = 'none';
+          }
+
+          attachEditSquareListeners();
+          attachEditInputListeners();
+
+          // Handle remove file button clicks in edit modal
+          modal.addEventListener('click', function(e) {
+            if (e.target.classList.contains('edit-remove-file-btn')) {
+              const index = parseInt(e.target.dataset.index);
+              const square = modal.querySelector(`.edit-file-upload-square[data-index="${index}"]`);
+              const input = square.querySelector('.edit-file-input-hidden');
+              input.value = '';
+              resetEditSquare(square);
             }
           });
         })
@@ -604,7 +683,16 @@
     }
 
     async function submitEditProject(projectId) {
-      const files = document.getElementById('editProjectFilesInput').files;
+      // Collect files from edit modal squares
+      const editSquares = document.querySelectorAll('.edit-file-upload-square');
+      const files = [];
+      editSquares.forEach(square => {
+        const input = square.querySelector('.edit-file-input-hidden');
+        if (input && input.files.length > 0) {
+          files.push(input.files[0]);
+        }
+      });
+
       const fullName = document.getElementById('editFullName').value.trim();
       const email = document.getElementById('editEmail').value.trim();
       const phone = document.getElementById('editPhone').value.trim();
