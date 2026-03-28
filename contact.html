@@ -467,7 +467,7 @@
         }
 
         section.style.display = 'block';
-        list.innerHTML = projects.map(p => `
+        list.innerHTML = projects.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)).map(p => `
           <div style="border:1px solid var(--border-color); border-radius:12px; padding:1.5rem; background:rgba(255,255,255,0.02);">
             <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:1rem;">
               <div>
