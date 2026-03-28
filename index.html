@@ -156,7 +156,7 @@
   <!-- SCROLLING HEADLINE -->
   <div id="headlineBlock" style="display:none; background:linear-gradient(90deg, rgba(255,0,0,0.2), rgba(67,97,238,0.2)); padding:0.6rem 0; border-bottom:2px solid var(--primary-accent); overflow:hidden;">
     <div style="width:100%; overflow:hidden;">
-      <div id="headlineText" style="font-size:1.25rem; font-weight:700; color:var(--primary-accent); white-space:nowrap; animation:scrolling 25s linear infinite; padding:0 1rem;">
+      <div id="headlineText" style="font-size:1.25rem; font-weight:700; color:var(--primary-accent); white-space:nowrap; animation:scrolling 35s linear infinite; padding:0 1rem;">
         <!-- Headline text fills here -->
       </div>
     </div>
@@ -626,17 +626,17 @@
       
       let interval;
       if (width <= 356) {
-        interval = 43000;      // Very small mobile
-        console.log('[Headline] Set interval: 43s (≤356px)');
+        interval = 53000;      // Very small mobile: 53s
+        console.log('[Headline] Set interval: 53s (≤356px)');
       } else if (width <= 480) {
-        interval = 38000;      // Standard mobile
-        console.log('[Headline] Set interval: 38s (≤480px)');
+        interval = 48000;      // Standard mobile: 48s
+        console.log('[Headline] Set interval: 48s (≤480px)');
       } else if (width <= 700) {
-        interval = 35000;      // Large mobile / small tablet
-        console.log('[Headline] Set interval: 35s (≤700px)');
+        interval = 45000;      // Large mobile / small tablet: 45s
+        console.log('[Headline] Set interval: 45s (≤700px)');
       } else {
-        interval = 30000;      // Tablet and up
-        console.log('[Headline] Set interval: 30s (>700px)');
+        interval = 40000;      // Tablet and up: 40s
+        console.log('[Headline] Set interval: 40s (>700px)');
       }
       return interval;
     }
