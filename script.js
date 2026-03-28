@@ -529,6 +529,8 @@ const logout = () => {
   localStorage.removeItem('authToken');
   localStorage.removeItem('adminToken');
   localStorage.removeItem('userData');
+  localStorage.removeItem('authUserEmail');
+  localStorage.removeItem('contactFormUserEmail');
   // Ensure generic token key is also removed to prevent stale login state
   localStorage.removeItem('token');
   window.location.href = 'index.html';
