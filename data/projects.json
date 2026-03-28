@@ -52,7 +52,7 @@
     "userEmail": "areeks2024@gmail.com",
     "name": "Malik Jacob",
     "contact": "+2348190876435",
-    "description": "This is the project to build app for my brand",
+    "description": "This is the project to build app for my brand, make sure that its responsive.",
     "projectType": "web-app",
     "files": [
       {
@@ -63,6 +63,7 @@
     ],
     "status": "pending",
     "payment": "verifying",
-    "uploadedAt": "2026-03-28T00:39:36.840Z"
+    "uploadedAt": "2026-03-28T00:39:36.840Z",
+    "updatedAt": "2026-03-28T00:42:00.030Z"
   }
 ]
