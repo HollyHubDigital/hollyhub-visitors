@@ -598,7 +598,7 @@
   
   <!-- Headline Loading Script -->
   <script>
-    let headlineInterval;
+    let headlineInterval = null;
     
     async function loadHeadline() {
       try {
@@ -622,23 +622,48 @@
     
     function getHeadlineRefreshInterval() {
       const width = window.innerWidth;
-      if (width <= 356) return 43000;      // Very small mobile
-      if (width <= 480) return 38000;      // Standard mobile
-      if (width <= 700) return 35000;      // Large mobile / small tablet
-      return 30000;                        // Tablet and up
+      console.log('[Headline] Screen width:', width);
+      
+      let interval;
+      if (width <= 356) {
+        interval = 43000;      // Very small mobile
+        console.log('[Headline] Set interval: 43s (≤356px)');
+      } else if (width <= 480) {
+        interval = 38000;      // Standard mobile
+        console.log('[Headline] Set interval: 38s (≤480px)');
+      } else if (width <= 700) {
+        interval = 35000;      // Large mobile / small tablet
+        console.log('[Headline] Set interval: 35s (≤700px)');
+      } else {
+        interval = 30000;      // Tablet and up
+        console.log('[Headline] Set interval: 30s (>700px)');
+      }
+      return interval;
     }
     
     function setupHeadlineRefresh() {
-      if (headlineInterval) clearInterval(headlineInterval);
+      if (headlineInterval !== null) {
+        clearInterval(headlineInterval);
+        console.log('[Headline] Cleared existing interval');
+      }
       const interval = getHeadlineRefreshInterval();
       headlineInterval = setInterval(loadHeadline, interval);
+      console.log('[Headline] New interval set to:', interval + 'ms (' + (interval / 1000) + 's)');
     }
     
-    // Load headline on page load
-    document.addEventListener('DOMContentLoaded', () => {
+    // Initialize immediately
+    function initHeadline() {
       loadHeadline();
       setupHeadlineRefresh();
-    });
+    }
+    
+    // Run on DOMContentLoaded
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initHeadline);
+    } else {
+      // DOM already loaded
+      initHeadline();
+    }
     
     // Update refresh interval on window resize
     window.addEventListener('resize', setupHeadlineRefresh);
