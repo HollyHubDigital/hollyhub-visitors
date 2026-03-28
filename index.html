@@ -154,9 +154,9 @@
   </div>
 
   <!-- SCROLLING HEADLINE -->
-  <div id="headlineBlock" style="display:none; background:linear-gradient(90deg, rgba(255,0,0,0.2), rgba(67,97,238,0.2)); padding:1.5rem 0; border-bottom:2px solid var(--primary-accent); overflow:hidden;">
+  <div id="headlineBlock" style="display:none; background:linear-gradient(90deg, rgba(255,0,0,0.2), rgba(67,97,238,0.2)); padding:0.6rem 0; border-bottom:2px solid var(--primary-accent); overflow:hidden;">
     <div style="width:100%; overflow:hidden;">
-      <div id="headlineText" style="font-size:2rem; font-weight:700; color:var(--primary-accent); white-space:nowrap; animation:scrolling 15s linear infinite; padding:0 2rem;">
+      <div id="headlineText" style="font-size:1.25rem; font-weight:700; color:var(--primary-accent); white-space:nowrap; animation:scrolling 25s linear infinite; padding:0 1rem;">
         <!-- Headline text fills here -->
       </div>
     </div>
@@ -166,6 +166,28 @@
     @keyframes scrolling {
       0% { transform: translateX(100%); }
       100% { transform: translateX(-100%); }
+    }
+    
+    @media (max-width: 768px) {
+      #headlineBlock {
+        padding: 0.5rem 0 !important;
+      }
+      
+      #headlineText {
+        font-size: 1rem !important;
+        padding: 0 0.75rem !important;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      #headlineBlock {
+        padding: 0.4rem 0 !important;
+      }
+      
+      #headlineText {
+        font-size: 0.9rem !important;
+        padding: 0 0.5rem !important;
+      }
     }
   </style>
 
@@ -599,8 +621,8 @@
     // Load headline on page load
     document.addEventListener('DOMContentLoaded', loadHeadline);
     
-    // Refresh headline every 10 seconds to sync with admin changes
-    setInterval(loadHeadline, 10000);
+    // Refresh headline every 25 seconds to sync with admin changes
+    setInterval(loadHeadline, 25000);
   </script>
   
   <!-- Google Translate Initialization -->
