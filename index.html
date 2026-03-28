@@ -153,6 +153,22 @@
     </div>
   </div>
 
+  <!-- SCROLLING HEADLINE -->
+  <div id="headlineBlock" style="display:none; background:linear-gradient(90deg, rgba(255,0,0,0.2), rgba(67,97,238,0.2)); padding:1.5rem 0; border-bottom:2px solid var(--primary-accent); overflow:hidden;">
+    <div style="width:100%; overflow:hidden;">
+      <div id="headlineText" style="font-size:2rem; font-weight:700; color:var(--primary-accent); white-space:nowrap; animation:scrolling 15s linear infinite; padding:0 2rem;">
+        <!-- Headline text fills here -->
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes scrolling {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+  </style>
+
   <!-- SECTION 1: HERO SECTION -->
   <section class="hero" id="hero">
     <div class="hero-content">
@@ -557,6 +573,36 @@
 
   <!-- Scripts -->
   <script src="script.js"></script>
+  
+  <!-- Headline Loading Script -->
+  <script>
+    async function loadHeadline() {
+      try {
+        const res = await fetch('/api/headline');
+        if (!res.ok) return;
+        const headline = await res.json();
+        
+        const block = document.getElementById('headlineBlock');
+        const text = document.getElementById('headlineText');
+        
+        if (headline.enabled && headline.text) {
+          block.style.display = 'block';
+          text.textContent = headline.text;
+        } else {
+          block.style.display = 'none';
+        }
+      } catch (e) {
+        console.log('Headline load error:', e);
+      }
+    }
+    
+    // Load headline on page load
+    document.addEventListener('DOMContentLoaded', loadHeadline);
+    
+    // Refresh headline every 10 seconds to sync with admin changes
+    setInterval(loadHeadline, 10000);
+  </script>
+  
   <!-- Google Translate Initialization -->
   <script>
     function googleTranslateElementInit() {
