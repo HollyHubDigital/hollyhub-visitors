@@ -46,7 +46,7 @@
     },
     "modal2": {
       "type": "mediaDisplay",
-      "enabled": true,
+      "enabled": false,
       "media": null,
       "mediaType": "image",
       "description": ""
