@@ -1,4 +1,4 @@
-const { getFile, putFile } = require('./utils');
+const { getFile, putFile } = require('./gh');
 
 const CONFIG_FILE = 'data/apps-config.json';
 
