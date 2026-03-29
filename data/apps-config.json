@@ -33,5 +33,23 @@
     "text": "Welcome to HollyHub Digital, we are happy to have you here and work with you... Please visit contact page to submit your project or get in touch with us to discuss about your goal... Thank you!",
     "enabled": true,
     "lastUpdated": "2026-03-28T02:27:08.345Z"
+  },
+  "overlay": {
+    "masterEnabled": true,
+    "modal1": {
+      "type": "contactForm",
+      "enabled": false,
+      "image": "undefined",
+      "description": "Get 10% OFF while submitting the forms and visit a href=\"contact.html\"Contact/a for the offer.",
+      "buttonText": "Apply Now",
+      "web3formsKey": "4eab8d69-b661-4f80-92b2-a99786eddbf9"
+    },
+    "modal2": {
+      "type": "mediaDisplay",
+      "enabled": true,
+      "media": null,
+      "mediaType": "image",
+      "description": ""
+    }
   }
 }
