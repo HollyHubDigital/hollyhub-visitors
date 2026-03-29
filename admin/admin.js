@@ -933,6 +933,7 @@ function attachEvents(){
     document.getElementById('modal1ImageFile').disabled = false;
     document.getElementById('modal1Description').readOnly = false;
     document.getElementById('modal1ButtonText').readOnly = false;
+    document.getElementById('modal1ImageUrl').readOnly = false;
     document.getElementById('editModal1Btn').style.display = 'none';
     document.getElementById('saveModal1Btn').style.display = 'inline-block';
   });
@@ -947,6 +948,7 @@ function attachEvents(){
   if(editModal2Btn) editModal2Btn.addEventListener('click', () => {
     document.getElementById('modal2MediaFile').disabled = false;
     document.getElementById('modal2Description').readOnly = false;
+    document.getElementById('modal2MediaUrl').readOnly = false;
     document.getElementById('editModal2Btn').style.display = 'none';
     document.getElementById('saveModal2Btn').style.display = 'inline-block';
   });
@@ -993,11 +995,13 @@ async function loadOverlayUI() {
     document.getElementById('modal1ImageFile').disabled = true;
     document.getElementById('modal1Description').readOnly = true;
     document.getElementById('modal1ButtonText').readOnly = true;
+    document.getElementById('modal1ImageUrl').readOnly = true;
     document.getElementById('editModal1Btn').style.display = 'inline-block';
     document.getElementById('saveModal1Btn').style.display = 'none';
 
     document.getElementById('modal2MediaFile').disabled = true;
     document.getElementById('modal2Description').readOnly = true;
+    document.getElementById('modal2MediaUrl').readOnly = true;
     document.getElementById('editModal2Btn').style.display = 'inline-block';
     document.getElementById('saveModal2Btn').style.display = 'none';
   } catch(e) {
@@ -1082,6 +1086,7 @@ async function saveModal1Config() {
 
     if(!saveR.ok) throw new Error('Failed to save Modal 1');
     
+    document.getElementById('modal1ImageUrl').readOnly = true;
     document.getElementById('modal1ImageUrl').value = imageUrl;
     document.getElementById('editModal1Btn').style.display = 'inline-block';
     document.getElementById('saveModal1Btn').style.display = 'none';
@@ -1139,6 +1144,7 @@ async function saveModal2Config() {
 
     if(!saveR.ok) throw new Error('Failed to save Modal 2');
     
+    document.getElementById('modal2MediaUrl').readOnly = true;
     document.getElementById('modal2MediaUrl').value = mediaUrl;
     document.getElementById('editModal2Btn').style.display = 'inline-block';
     document.getElementById('saveModal2Btn').style.display = 'none';
