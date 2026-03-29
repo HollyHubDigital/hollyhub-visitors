@@ -1026,8 +1026,26 @@ app.put('/api/pages/:page', authRequired, (req,res)=>{
   try{ fs.writeFileSync(fp, toWrite, 'utf8'); return res.json({ ok:true }); }catch(e){ return res.status(500).send('Write failed: '+e.message); }
 });
 
+// CORS handler for upload endpoint
+const corsHandler = (req, res, next) => {
+  const origin = req.get('origin') || '';
+  if (!origin || ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app')) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET, PUT, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Max-Age', '86400');
+  }
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+};
+
 // ===== FILE UPLOAD =====
-app.post('/api/upload', authRequiredOrGithub, upload.single('file'), async (req,res)=>{
+// Explicit CORS setup for upload endpoint (handle preflight and CORS headers)
+app.options('/api/upload', corsHandler);
+app.post('/api/upload', corsHandler, authRequiredOrGithub, upload.single('file'), async (req,res)=>{
   console.log('[/api/upload] ===== UPLOAD REQUEST RECEIVED =====');
   console.log('[/api/upload] User auth:', req.user ? '✓ JWT verified (' + req.user.user + ')' : 'None');
   console.log('[/api/upload] GitHub auth:', req.githubAuth ? '✓ Using GitHub token' : 'Not using GitHub auth');
@@ -2949,6 +2967,15 @@ app.listen(PORT, ()=>{ console.log('✅ Visitors Backend running on port', PORT)
 
 app.use((err, req, res, next) => {
   if (!err) return next();
+  
+  // Add CORS headers to error responses
+  const origin = req.get('origin') || '';
+  if (!origin || ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app')) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET, PUT, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  }
+  
   if (err && (err.code === 'LIMIT_FILE_SIZE' || err instanceof multer.MulterError)) {
     const msg = err.code === 'LIMIT_FILE_SIZE' ? 'File too large' : (err.message || 'Upload error');
     return res.status(413).send(msg);
