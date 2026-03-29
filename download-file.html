@@ -195,7 +195,7 @@
         <a href="index.html" class="nav-link">HOME</a>
         <a href="services.html" class="nav-link">SERVICES</a>
         <a href="contact.html" class="nav-link">CONTACT</a>
-        <a href="about.html" class="nav-link">ABOUT</a>
+        <a href="checkout.html" class="nav-link">PAYMENT</a>
       </nav>
       <div class="header-actions">
         <select id="languageSelect" class="language-select" aria-label="Select language">
@@ -212,7 +212,7 @@
       <a href="index.html" class="mobile-nav-link">HOME</a>
       <a href="services.html" class="mobile-nav-link">SERVICES</a>
       <a href="contact.html" class="mobile-nav-link">CONTACT</a>
-      <a href="about.html" class="mobile-nav-link">ABOUT</a>
+      <a href="checkout.html" class="mobile-nav-link">PAYMENT</a>
       <div class="mobile-auth">
         <a href="login.html" class="btn-login">LOGIN</a>
         <a href="signup.html" class="btn-signup">SIGN UP</a>
@@ -231,7 +231,7 @@
     <div class="container" style="max-width: 900px;">
       <div id="downloadFilesContainer"></div>
       <div id="emptyState" class="empty-state">
-        <p>No files available for download at this time.</p>
+        <p>No files available for download at this time, please order service <a href="contact.html">here</a></p>
       </div>
     </div>
   </section>
@@ -428,7 +428,7 @@
 
               ${!isUnlocked ? `
                 <div class="token-input-section active">
-                  <p style="opacity: 0.9; margin-bottom: 1rem;">⚠️ This file requires a token to access. Please enter the token provided by admin.</p>
+                  <p style="opacity: 0.9; margin-bottom: 1rem;">⚠️ This file requires a token to access. Please enter the token provided by the team.</p>
                   <div class="token-input-wrapper">
                     <input type="text" class="token-input" placeholder="Enter 6-8 digit token" data-file-id="${file.id}" maxlength="8" inputmode="numeric" />
                     <button class="token-submit-btn" onclick="FileManager.submitToken('${file.id}')">Verify</button>
