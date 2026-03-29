@@ -648,9 +648,16 @@
         clearInterval(headlineInterval);
         console.log('[Headline] Cleared existing interval');
       }
-      const interval = getHeadlineRefreshInterval();
-      headlineInterval = setInterval(loadHeadline, interval);
-      console.log('[Headline] New interval set to:', interval + 'ms (' + (interval / 1000) + 's)');
+      const width = window.innerWidth;
+      // Only set refresh intervals on desktop (>700px)
+      // Mobile will loop continuously with CSS animation
+      if (width > 700) {
+        const interval = getHeadlineRefreshInterval();
+        headlineInterval = setInterval(loadHeadline, interval);
+        console.log('[Headline] New interval set to:', interval + 'ms (' + (interval / 1000) + 's)');
+      } else {
+        console.log('[Headline] Mobile detected - continuous loop mode (no refresh intervals)');
+      }
     }
     
     // Initialize immediately
