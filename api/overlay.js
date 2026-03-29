@@ -1,4 +1,4 @@
-const { getFile, putFile } = require('../api/utils');
+const { getFile, putFile } = require('./utils');
 
 const CONFIG_FILE = 'data/apps-config.json';
 
