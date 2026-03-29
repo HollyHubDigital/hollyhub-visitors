@@ -923,6 +923,259 @@ function attachEvents(){
       if (e.target === modal) closeAppModal();
     });
   }
+
+  // ===== OVERLAY TAB EVENTS =====
+  const masterOverlayToggle = document.getElementById('masterOverlayToggle');
+  if(masterOverlayToggle) masterOverlayToggle.addEventListener('click', toggleMasterOverlay);
+  
+  const editModal1Btn = document.getElementById('editModal1Btn');
+  if(editModal1Btn) editModal1Btn.addEventListener('click', () => {
+    document.getElementById('modal1ImageFile').disabled = false;
+    document.getElementById('modal1Description').readOnly = false;
+    document.getElementById('modal1ButtonText').readOnly = false;
+    document.getElementById('editModal1Btn').style.display = 'none';
+    document.getElementById('saveModal1Btn').style.display = 'inline-block';
+  });
+
+  const saveModal1Btn = document.getElementById('saveModal1Btn');
+  if(saveModal1Btn) saveModal1Btn.addEventListener('click', saveModal1Config);
+
+  const toggleModal1Btn = document.getElementById('toggleModal1Btn');
+  if(toggleModal1Btn) toggleModal1Btn.addEventListener('click', () => toggleModalState('modal1'));
+
+  const editModal2Btn = document.getElementById('editModal2Btn');
+  if(editModal2Btn) editModal2Btn.addEventListener('click', () => {
+    document.getElementById('modal2MediaFile').disabled = false;
+    document.getElementById('modal2Description').readOnly = false;
+    document.getElementById('editModal2Btn').style.display = 'none';
+    document.getElementById('saveModal2Btn').style.display = 'inline-block';
+  });
+
+  const saveModal2Btn = document.getElementById('saveModal2Btn');
+  if(saveModal2Btn) saveModal2Btn.addEventListener('click', saveModal2Config);
+
+  const toggleModal2Btn = document.getElementById('toggleModal2Btn');
+  if(toggleModal2Btn) toggleModal2Btn.addEventListener('click', () => toggleModalState('modal2'));
+
+  // Load overlay on tab click
+  const overlayTabBtn = document.querySelector('[data-tab="overlay"]');
+  if(overlayTabBtn) overlayTabBtn.addEventListener('click', loadOverlayUI);
+}
+
+// ===== OVERLAY MANAGEMENT =====
+async function loadOverlayUI() {
+  try {
+    const r = await fetch(API.buildURL('/api/overlay'));
+    if(!r.ok) throw new Error('Failed to load overlay config');
+    const overlay = await r.json();
+
+    // Update master toggle
+    const masterBtn = document.getElementById('masterOverlayToggle');
+    masterBtn.textContent = overlay.masterEnabled ? '🟢 All Modals ON' : '🔴 All Modals OFF';
+    masterBtn.style.background = overlay.masterEnabled ? 'rgba(0,255,0,0.2)' : 'rgba(255,0,0,0.1)';
+
+    // Update Modal 1
+    document.getElementById('modal1ImageUrl').value = overlay.modal1?.image || '';
+    document.getElementById('modal1Description').value = overlay.modal1?.description || '';
+    document.getElementById('modal1ButtonText').value = overlay.modal1?.buttonText || 'Get Started';
+    const modal1Btn = document.getElementById('toggleModal1Btn');
+    modal1Btn.textContent = overlay.modal1?.enabled ? '🟢 ON' : '🔴 OFF';
+    modal1Btn.style.background = overlay.modal1?.enabled ? 'rgba(0,255,0,0.2)' : '';
+
+    // Update Modal 2
+    document.getElementById('modal2MediaUrl').value = overlay.modal2?.media || '';
+    document.getElementById('modal2Description').value = overlay.modal2?.description || '';
+    const modal2Btn = document.getElementById('toggleModal2Btn');
+    modal2Btn.textContent = overlay.modal2?.enabled ? '🟢 ON' : '🔴 OFF';
+    modal2Btn.style.background = overlay.modal2?.enabled ? 'rgba(0,255,0,0.2)' : '';
+
+    // Disable edit/save buttons by default
+    document.getElementById('modal1ImageFile').disabled = true;
+    document.getElementById('modal1Description').readOnly = true;
+    document.getElementById('modal1ButtonText').readOnly = true;
+    document.getElementById('editModal1Btn').style.display = 'inline-block';
+    document.getElementById('saveModal1Btn').style.display = 'none';
+
+    document.getElementById('modal2MediaFile').disabled = true;
+    document.getElementById('modal2Description').readOnly = true;
+    document.getElementById('editModal2Btn').style.display = 'inline-block';
+    document.getElementById('saveModal2Btn').style.display = 'none';
+  } catch(e) {
+    console.error('Error loading overlay UI:', e);
+    showToast('Failed to load overlay config', null, null, 3000);
+  }
+}
+
+async function toggleMasterOverlay() {
+  try {
+    const r = await fetch(API.buildURL('/api/overlay'));
+    if(!r.ok) throw new Error('Failed to load current config');
+    const overlay = await r.json();
+
+    const newMasterState = !overlay.masterEnabled;
+
+    const saveR = await fetch(API.buildURL('/api/overlay'), {
+      method: 'POST',
+      headers: API.headers(),
+      body: JSON.stringify({
+        masterEnabled: newMasterState,
+        modal1: overlay.modal1,
+        modal2: overlay.modal2
+      })
+    });
+
+    if(!saveR.ok) throw new Error('Failed to save');
+    
+    const btn = document.getElementById('masterOverlayToggle');
+    btn.textContent = newMasterState ? '🟢 All Modals ON' : '🔴 All Modals OFF';
+    btn.style.background = newMasterState ? 'rgba(0,255,0,0.2)' : 'rgba(255,0,0,0.1)';
+    showToast(newMasterState ? 'All overlays enabled' : 'All overlays disabled', null, null, 3000);
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function saveModal1Config() {
+  try {
+    const imageFile = document.getElementById('modal1ImageFile').files[0];
+    const description = document.getElementById('modal1Description').value;
+    const buttonText = document.getElementById('modal1ButtonText').value;
+
+    let imageUrl = document.getElementById('modal1ImageUrl').value;
+
+    // Upload image if new file selected
+    if(imageFile) {
+      const formData = new FormData();
+      formData.append('file', imageFile);
+      const uploadR = await fetch(API.buildURL('/api/upload'), {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + API.token() },
+        body: formData
+      });
+      if(!uploadR.ok) throw new Error('Image upload failed');
+      const uploadData = await uploadR.json();
+      imageUrl = uploadData.url;
+    }
+
+    // Get current config
+    const r = await fetch(API.buildURL('/api/overlay'));
+    if(!r.ok) throw new Error('Failed to load config');
+    const overlay = await r.json();
+
+    // Save Modal 1 config
+    const saveR = await fetch(API.buildURL('/api/overlay'), {
+      method: 'POST',
+      headers: API.headers(),
+      body: JSON.stringify({
+        masterEnabled: overlay.masterEnabled,
+        modal1: {
+          type: 'contactForm',
+          enabled: true,
+          image: imageUrl,
+          description: description,
+          buttonText: buttonText,
+          web3formsKey: '4eab8d69-b661-4f80-92b2-a99786eddbf9'
+        },
+        modal2: { ...overlay.modal2, enabled: false }
+      })
+    });
+
+    if(!saveR.ok) throw new Error('Failed to save Modal 1');
+    
+    document.getElementById('modal1ImageUrl').value = imageUrl;
+    document.getElementById('editModal1Btn').style.display = 'inline-block';
+    document.getElementById('saveModal1Btn').style.display = 'none';
+    document.getElementById('toggleModal1Btn').textContent = '🟢 ON';
+    showToast('Modal 1 saved and enabled!', null, null, 3000);
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function saveModal2Config() {
+  try {
+    const mediaFile = document.getElementById('modal2MediaFile').files[0];
+    const description = document.getElementById('modal2Description').value;
+
+    let mediaUrl = document.getElementById('modal2MediaUrl').value;
+
+    // Upload media if new file selected
+    if(mediaFile) {
+      const formData = new FormData();
+      formData.append('file', mediaFile);
+      const uploadR = await fetch(API.buildURL('/api/upload'), {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + API.token() },
+        body: formData
+      });
+      if(!uploadR.ok) throw new Error('Media upload failed');
+      const uploadData = await uploadR.json();
+      mediaUrl = uploadData.url;
+    }
+
+    if(!mediaUrl && !mediaFile) throw new Error('Please upload or enter a media URL');
+
+    // Get current config
+    const r = await fetch(API.buildURL('/api/overlay'));
+    if(!r.ok) throw new Error('Failed to load config');
+    const overlay = await r.json();
+
+    // Save Modal 2 config
+    const saveR = await fetch(API.buildURL('/api/overlay'), {
+      method: 'POST',
+      headers: API.headers(),
+      body: JSON.stringify({
+        masterEnabled: overlay.masterEnabled,
+        modal1: { ...overlay.modal1, enabled: false },
+        modal2: {
+          type: 'mediaDisplay',
+          enabled: true,
+          media: mediaUrl,
+          mediaType: mediaUrl.match(/youtube|vimeo/) ? 'embed' : (mediaUrl.match(/\.mp4|\.webm/) ? 'video' : 'image'),
+          description: description
+        }
+      })
+    });
+
+    if(!saveR.ok) throw new Error('Failed to save Modal 2');
+    
+    document.getElementById('modal2MediaUrl').value = mediaUrl;
+    document.getElementById('editModal2Btn').style.display = 'inline-block';
+    document.getElementById('saveModal2Btn').style.display = 'none';
+    document.getElementById('toggleModal2Btn').textContent = '🟢 ON';
+    showToast('Modal 2 saved and enabled!', null, null, 3000);
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function toggleModalState(modal) {
+  try {
+    const r = await fetch(API.buildURL('/api/overlay'));
+    if(!r.ok) throw new Error('Failed to load config');
+    const overlay = await r.json();
+
+    const newState = modal === 'modal1' ? !overlay.modal1.enabled : !overlay.modal2.enabled;
+
+    const saveR = await fetch(API.buildURL('/api/overlay'), {
+      method: 'POST',
+      headers: API.headers(),
+      body: JSON.stringify({
+        masterEnabled: overlay.masterEnabled,
+        modal1: modal === 'modal1' ? { ...overlay.modal1, enabled: newState } : { ...overlay.modal1, enabled: false },
+        modal2: modal === 'modal2' ? { ...overlay.modal2, enabled: newState } : { ...overlay.modal2, enabled: false }
+      })
+    });
+
+    if(!saveR.ok) throw new Error('Failed to save');
+    
+    const btn = document.getElementById('toggleModal' + (modal === 'modal1' ? '1' : '2') + 'Btn');
+    btn.textContent = newState ? '🟢 ON' : '🔴 OFF';
+    btn.style.background = newState ? 'rgba(0,255,0,0.2)' : '';
+    showToast(`Modal ${modal === 'modal1' ? '1' : '2'} ${newState ? 'enabled' : 'disabled'}`, null, null, 3000);
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
 }
 
 // Expose functions globally for onclick handlers
@@ -941,6 +1194,8 @@ window.openAppConfigModal = openAppConfigModal;
 window.closeAppModal = closeAppModal;
 window.saveAppConfig = saveAppConfig;
 window.disableApp = disableApp;
+window.loadOverlayUI = loadOverlayUI;
+window.toggleMasterOverlay = toggleMasterOverlay;
 
 window.addEventListener('load', async ()=>{
   try{

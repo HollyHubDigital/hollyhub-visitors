@@ -83,6 +83,7 @@
       <button class="admin-tab-btn" data-tab="download-files">Download Files</button>
       <button class="admin-tab-btn" data-tab="projects">Projects</button>
       <button class="admin-tab-btn" data-tab="headline">Headline</button>
+      <button class="admin-tab-btn" data-tab="overlay">Overlay</button>
       <button class="admin-tab-btn" data-tab="settings">Settings</button>
       <button class="admin-tab-btn" data-tab="analytics">Analytics</button>
     </div>
@@ -344,6 +345,78 @@
         <div id="headlineStatus" style="padding:1rem; border-radius:8px; background:rgba(255,255,255,0.05); margin-top:1rem; display:none;">
           <div style="font-size:0.9rem; opacity:0.8;" id="headlineStatusText"></div>
           <div style="font-size:0.85rem; opacity:0.6; margin-top:0.5rem;" id="headlineLastUpdated"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OVERLAY PANEL -->
+    <div id="overlay" class="admin-panel">
+      <h2>Popup Overlay Modals</h2>
+      
+      <div class="section-card">
+        <h3 class="section-title">Master Control</h3>
+        <p style="opacity:0.8; margin-bottom:1rem;">Enable/disable all overlay modals on the visitor page</p>
+        <button id="masterOverlayToggle" class="btn-secondary" style="padding:0.8rem 1.5rem; width:100%; font-size:1rem;">🔴 All Modals OFF</button>
+      </div>
+
+      <!-- MODAL 1: CONTACT FORM -->
+      <div class="section-card">
+        <h3 class="section-title">Modal 1: Contact Form</h3>
+        <p style="opacity:0.8; margin-bottom:1rem;">Klaviyo-style contact form for lead collection</p>
+        
+        <div class="form-group">
+          <label class="form-label">Form Image (Upload)</label>
+          <input id="modal1ImageFile" type="file" accept="image/*" class="form-input" />
+          <small style="opacity:0.7; display:block; margin-top:0.5rem;">Recommended size: 600x400px</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Form Image URL</label>
+          <input id="modal1ImageUrl" class="form-input" placeholder="Image URL (if not uploading)" readonly />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description (supports HTML links)</label>
+          <textarea id="modal1Description" class="form-input" placeholder="Enter description with optional &lt;a href='url'&gt;link text&lt;/a&gt;" style="min-height:80px;"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">CTA Button Text</label>
+          <input id="modal1ButtonText" class="form-input" placeholder="e.g. Get Started, Let's Talk" value="Get Started" />
+        </div>
+
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+          <button id="editModal1Btn" class="btn-primary" style="flex:1; min-width:120px;">✏️ Edit</button>
+          <button id="saveModal1Btn" class="btn-primary" style="flex:1; min-width:120px;">💾 Save</button>
+          <button id="toggleModal1Btn" class="btn-secondary" style="flex:1; min-width:120px;">🔴 OFF</button>
+        </div>
+      </div>
+
+      <!-- MODAL 2: MEDIA DISPLAY -->
+      <div class="section-card">
+        <h3 class="section-title">Modal 2: Media Display</h3>
+        <p style="opacity:0.8; margin-bottom:1rem;">Display images, videos, or YouTube embeds</p>
+        
+        <div class="form-group">
+          <label class="form-label">Media File/URL</label>
+          <input id="modal2MediaFile" type="file" accept="image/*,video/*" class="form-input" />
+          <small style="opacity:0.7; display:block; margin-top:0.5rem;">Support: Images (JPG, PNG, GIF), Videos (MP4, WebM), or paste YouTube link</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Media URL (Image, Video, or YouTube)</label>
+          <input id="modal2MediaUrl" class="form-input" placeholder="https://youtube.com/watch?v=... or image/video URL" readonly />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description/Caption</label>
+          <textarea id="modal2Description" class="form-input" placeholder="Enter description or link" style="min-height:80px;"></textarea>
+        </div>
+
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+          <button id="editModal2Btn" class="btn-primary" style="flex:1; min-width:120px;">✏️ Edit</button>
+          <button id="saveModal2Btn" class="btn-primary" style="flex:1; min-width:120px;">💾 Save</button>
+          <button id="toggleModal2Btn" class="btn-secondary" style="flex:1; min-width:120px;">🔴 OFF</button>
         </div>
       </div>
     </div>
