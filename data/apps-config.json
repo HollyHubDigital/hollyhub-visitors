@@ -38,7 +38,7 @@
     "masterEnabled": true,
     "modal1": {
       "type": "contactForm",
-      "enabled": false,
+      "enabled": true,
       "image": null,
       "description": "",
       "buttonText": "Get Started",
