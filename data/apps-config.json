@@ -35,7 +35,7 @@
     "lastUpdated": "2026-03-28T02:27:08.345Z"
   },
   "overlay": {
-    "masterEnabled": false,
+    "masterEnabled": true,
     "modal1": {
       "type": "contactForm",
       "enabled": true,
