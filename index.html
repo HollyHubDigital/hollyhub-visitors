@@ -176,6 +176,7 @@
       #headlineText {
         font-size: 1rem !important;
         padding: 0 0.75rem !important;
+        animation-duration: 22s !important;
       }
     }
     
@@ -187,6 +188,7 @@
       #headlineText {
         font-size: 0.9rem !important;
         padding: 0 0.5rem !important;
+        animation-duration: 14s !important;
       }
     }
   </style>
@@ -626,16 +628,16 @@
       
       let interval;
       if (width <= 356) {
-        interval = 53000;      // Very small mobile: 53s
-        console.log('[Headline] Set interval: 53s (≤356px)');
+        interval = 15000;      // Very small mobile: 15s (14s animation + 1s pause)
+        console.log('[Headline] Set interval: 15s (≤356px)');
       } else if (width <= 480) {
-        interval = 48000;      // Standard mobile: 48s
-        console.log('[Headline] Set interval: 48s (≤480px)');
+        interval = 18000;      // Standard mobile: 18s (14s animation + 4s pause)
+        console.log('[Headline] Set interval: 18s (≤480px)');
       } else if (width <= 700) {
-        interval = 45000;      // Large mobile / small tablet: 45s
-        console.log('[Headline] Set interval: 45s (≤700px)');
+        interval = 26000;      // Large mobile / small tablet: 26s (22s animation + 4s pause)
+        console.log('[Headline] Set interval: 26s (≤700px)');
       } else {
-        interval = 40000;      // Tablet and up: 40s
+        interval = 40000;      // Tablet and up: 40s (35s animation + 5s pause)
         console.log('[Headline] Set interval: 40s (>700px)');
       }
       return interval;
