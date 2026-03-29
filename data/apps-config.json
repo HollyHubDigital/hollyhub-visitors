@@ -38,10 +38,10 @@
     "masterEnabled": true,
     "modal1": {
       "type": "contactForm",
-      "enabled": false,
+      "enabled": true,
       "image": null,
-      "description": "",
-      "buttonText": "Get Started",
+      "description": "Get 10% OFF while submitting the forms and visit a href=\"contact.html\"Contact/a for the offer.",
+      "buttonText": "Apply Now",
       "web3formsKey": "4eab8d69-b661-4f80-92b2-a99786eddbf9"
     },
     "modal2": {
