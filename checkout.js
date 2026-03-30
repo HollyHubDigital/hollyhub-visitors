@@ -1,57 +1,139 @@
-// checkout.js - client script to create a Paystack Checkout authorization via /api/checkout
+// checkout.js - client script to create a Paystack or Flutterwave Checkout authorization
 document.addEventListener('DOMContentLoaded', () => {
   const payBtn = document.getElementById('payBtn');
-  const tawkBtn = document.getElementById('tawkBtn');
+  const flutterwaveBtn = document.getElementById('flutterwaveBtn');
   const amountInput = document.getElementById('amount');
   const descInput = document.getElementById('description');
   const msg = document.getElementById('checkoutMsg');
 
-  // Send description to Tawk.to
-  if (tawkBtn) {
-    tawkBtn.addEventListener('click', async () => {
-      const desc = descInput.value || 'No details provided';
-      if (!desc.trim()) {
-        msg.textContent = 'Please enter a description first.';
-        return;
-      }
-      msg.textContent = 'Opening support chat...';
-      tawkBtn.disabled = true;
+  // Flutterwave public key (from environment or fallback)
+  const FLUTTERWAVE_PUBLIC_KEY = 'FLWPUBK-c9e4ab2f265c4998a14d4ba9f2e3e812-X';
+
+  // Flutterwave payment handler
+  if (flutterwaveBtn) {
+    flutterwaveBtn.addEventListener('click', async () => {
+      msg.textContent = 'Starting Flutterwave payment...';
+      const raw = parseFloat((amountInput.value || '').toString());
+      if (isNaN(raw) || raw <= 0) { msg.textContent = 'Enter a valid amount.'; return; }
+      
+      const desc = descInput.value ? `${descInput.value} ($${raw.toFixed(2)})` : `Website payment ($${raw.toFixed(2)})`;
 
       try {
-        // Get user email from token or localStorage
-        let userEmail = '';
-        const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
+        flutterwaveBtn.disabled = true;
+        const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken') || localStorage.getItem('token') || '';
+        
+        // Get user email and name from token if available
+        let userEmail = 'visitor@example.com';
+        let userName = 'Customer';
         if (token) {
           try {
             const decoded = JSON.parse(atob(token.split('.')[1]));
-            userEmail = decoded.email || decoded.user || '';
+            userEmail = decoded.email || decoded.user || userEmail;
+            userName = decoded.name || 'Customer';
           } catch (e) {}
         }
 
-        // Send visitor info to Tawk.to
-        await pageUtils.sendToTawk(
-          `Service Details: ${desc}`,
-          userEmail || 'visitor@example.com',
-          'Checkout Customer'
-        );
-
-        msg.textContent = '✓ Chat window opening... Your description: ' + desc;
+        // Call backend to create Flutterwave payment reference
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = 'Bearer ' + token;
         
-        // Open Tawk widget immediately - visitor can see and send their message
-        if (typeof Tawk_API !== 'undefined') {
-          setTimeout(() => {
-            if (Tawk_API.toggle) {
-              Tawk_API.toggle();
-              console.log('[Checkout] Tawk widget opened');
+        const r = await fetch('/api/create-flutterwave-payment', { 
+          method: 'POST', 
+          headers, 
+          body: JSON.stringify({
+            amount: Math.round(raw * 100), // Convert to cents
+            email: userEmail,
+            name: userName,
+            description: desc,
+            currency: 'USD'
+          })
+        });
+
+        if (!r.ok) { 
+          const t = await r.json().catch(() => null);
+          throw new Error(t && t.error ? t.error : await r.text());
+        }
+
+        const data = await r.json();
+        if (!data.tx_ref || !data.amount) {
+          throw new Error('Invalid response from payment server');
+        }
+
+        msg.textContent = 'Opening Flutterwave payment...';
+        console.log('[Checkout] Opening Flutterwave for', userEmail);
+
+        // Open Flutterwave checkout
+        if (typeof FlutterwaveCheckout === 'function') {
+          FlutterwaveCheckout({
+            public_key: FLUTTERWAVE_PUBLIC_KEY,
+            tx_ref: data.tx_ref,
+            amount: data.amount,
+            currency: data.currency || 'USD',
+            payment_options: 'card, banktransfer, ussd, mobilemoney, paypal',
+            customer: {
+              email: data.email,
+              name: data.name,
+              phone_number: data.phone || ''
+            },
+            customizations: {
+              title: 'HollyHub',
+              description: data.description,
+              logo: 'https://cdn.jsdelivr.net/gh/HollyHubDigital/hollyhub-visitors@main/public/assets/hollyhub.jpg'
+            },
+            callback: function(response) {
+              console.log('Flutterwave payment response:', response);
+              if (response.status === 'successful') {
+                msg.textContent = '✓ Payment successful! Verifying...';
+                verifyFlutterwavePayment(response.transaction_id, response.tx_ref);
+              } else {
+                msg.textContent = 'Payment failed. Please try again.';
+                flutterwaveBtn.disabled = false;
+              }
+            },
+            onclose: function() {
+              console.log('Flutterwave payment modal closed');
+              msg.textContent = 'Payment cancelled.';
+              flutterwaveBtn.disabled = false;
             }
-          }, 300);
+          });
+        } else {
+          throw new Error('Flutterwave library not loaded');
         }
       } catch (e) {
         console.error(e);
-        msg.textContent = 'Error: ' + e.message;
+        msg.textContent = 'Flutterwave payment failed: ' + e.message;
+        flutterwaveBtn.disabled = false;
       }
-      tawkBtn.disabled = false;
     });
+  }
+
+  // Helper function to verify Flutterwave payment on backend
+  async function verifyFlutterwavePayment(transactionId, txRef) {
+    try {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken') || localStorage.getItem('token') || '';
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+
+      const r = await fetch('/api/verify-flutterwave-payment', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ transaction_id: transactionId, tx_ref: txRef })
+      });
+
+      const result = await r.json();
+      
+      if (result.status === 'success') {
+        msg.textContent = '✓ Payment verified! Redirecting...';
+        setTimeout(() => { window.location.href = '/success.html'; }, 1500);
+      } else {
+        msg.textContent = 'Payment verification failed. Please contact support.';
+        flutterwaveBtn.disabled = false;
+      }
+    } catch (e) {
+      console.error('Verification error:', e);
+      msg.textContent = 'Verification error: ' + e.message;
+      flutterwaveBtn.disabled = false;
+    }
   }
 
   // Function to fetch and display estimated NGN amount

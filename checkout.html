@@ -150,17 +150,20 @@
       <label>Description</label>
       <input id="description" type="text" class="admin-input" placeholder="Full Details of the service" />
       <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-        <button id="payBtn" class="btn btn-primary" type="button">Pay Now</button>
-        <button id="tawkBtn" class="btn btn-secondary" type="button">Send to Support</button>
+        <button id="payBtn" class="btn btn-primary" type="button">Paystack</button>
+        <button id="flutterwaveBtn" class="btn btn-primary" type="button">Flutterwave</button>
         <div id="checkoutMsg" style="opacity:0.8"></div>
       </div>
     </form>
 
-    <p style="margin-top:1rem; opacity:0.8; font-size:0.95rem">Payments processed securely by Paystack.</p>
+    <p style="margin-top:1rem; opacity:0.8; font-size:0.95rem">Payments processed securely by Paystack or Flutterwave.</p>
   </main>
 
-  <!-- Paystack Payment Script (load first so PaystackPop is available) -->
+  <!-- Paystack Payment Script -->
   <script src="https://js.paystack.co/v1/inline.js"></script>
+  
+  <!-- Flutterwave Payment Script -->
+  <script src="https://checkout.flutterwave.com/v3.js"></script>
   <script src="script.js"></script>
   <script src="checkout.js"></script>
   <!-- Google Translate Initialization -->
