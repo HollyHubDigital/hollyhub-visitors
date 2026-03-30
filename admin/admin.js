@@ -1160,7 +1160,7 @@ async function saveModal2Config() {
     let mediaType = 'image';
     if(mediaUrl.match(/youtube|youtu\.be|vimeo/i)) {
       mediaType = 'embed';
-    } else if(mediaUrl.match(/\.(mp4|webm|mov|avi)$/i)) {
+    } else if(mediaUrl.match(/\.(mp4|webm|mov|avi|mkv|flv|m4v|3gp|ogv|ts)$/i)) {
       mediaType = 'video';
     }
 

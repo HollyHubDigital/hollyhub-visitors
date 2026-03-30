@@ -1221,12 +1221,26 @@
           } else {
             console.warn('[setupModal2] Could not extract YouTube ID from:', media);
           }
-        } else if (media.match(/\.(mp4|webm|mov|avi|mkv|flv)$/i)) {
-          // Video file
+        } else if (media.match(/\.(mp4|webm|mov|avi|mkv|flv|m4v|3gp|ogv|ts)$/i)) {
+          // Video file - determine MIME type from extension
+          const ext = media.split('.').pop().toLowerCase();
+          const mimeMap = {
+            'mp4': 'video/mp4',
+            'webm': 'video/webm',
+            'mov': 'video/quicktime',
+            'avi': 'video/x-msvideo',
+            'mkv': 'video/x-matroska',
+            'flv': 'video/x-flv',
+            'm4v': 'video/mp4',
+            '3gp': 'video/3gpp',
+            'ogv': 'video/ogg',
+            'ts': 'video/mp2t'
+          };
+          const mimeType = mimeMap[ext] || 'video/mp4';
           const videoContainer = document.getElementById('modal2VideoContainer');
           videoContainer.style.display = 'block';
-          videoContainer.innerHTML = `<video controls style="width:100%;border-radius:12px;"><source src="${media}" type="video/mp4"><source src="${media}" type="video/webm">Your browser does not support video.</video>`;
-          console.log('[setupModal2] Video embed set:', media);
+          videoContainer.innerHTML = `<video controls style="width:100%;border-radius:12px;"><source src="${media}" type="${mimeType}">Your browser does not support video.</video>`;
+          console.log('[setupModal2] Video embed set:', media, 'MIME type:', mimeType);
         } else {
           // Image
           const img = document.getElementById('modal2Image');
