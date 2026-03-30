@@ -1157,6 +1157,40 @@ app.post('/api/upload', uploadCorsWrapper, authRequiredOrGithub, upload.single('
   }
 });
 
+// Error handler specifically for upload endpoint - ensures CORS headers on all error responses
+app.use('/api/upload', (err, req, res, next) => {
+  // Always set CORS headers on errors
+  const origin = req.get('origin') || '';
+  const isVercelApp = origin && typeof origin === 'string' && origin.includes('.vercel.app');
+  
+  if (!origin || ALLOWED_ORIGINS.includes(origin) || isVercelApp) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+  
+  console.error('[/api/upload ERROR]', err.message || err);
+  
+  // Handle Multer-specific errors
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ error: 'File too large', message: 'Maximum file size exceeded' });
+  }
+  if (err.code === 'LIMIT_PART_COUNT') {
+    return res.status(400).json({ error: 'Too many parts', message: 'Request has too many form fields' });
+  }
+  if (err.code === 'LIMIT_FILE_COUNT') {
+    return res.status(400).json({ error: 'Too many files', message: 'Only one file allowed' });
+  }
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ error: 'Upload error', message: err.message });
+  }
+  
+  // Generic error
+  return res.status(500).json({ error: 'Server error', message: err.message || 'Internal server error' });
+});
+
 app.get('/api/files', authRequired, (req,res)=>{
   const arr = JSON.parse(fs.readFileSync(filesJson,'utf8')) || []; res.json(arr);
 });
