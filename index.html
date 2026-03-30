@@ -835,6 +835,9 @@
     /* Modal 1: Contact Form */
     #modal1Backdrop .overlay-modal {
       padding: 2rem;
+      background: var(--primary-accent);
+      border: 3px solid #ffffff;
+      color: #ffffff;
     }
 
     .modal1-content {
@@ -855,14 +858,14 @@
     }
 
     .modal1-content h2 {
-      color: #333;
+      color: #ffffff;
       margin: 0 0 0.5rem 0;
       font-size: 1.8rem;
       grid-column: 2;
     }
 
     .modal1-content p {
-      color: #666;
+      color: #f0f0f0;
       margin: 0 0 1.5rem 0;
       line-height: 1.6;
       grid-column: 2;
@@ -877,17 +880,18 @@
 
     .modal1-form input {
       padding: 12px 15px;
-      border: 1px solid #ddd;
+      border: 1px solid #ffffff;
       border-radius: 8px;
       font-size: 1rem;
       color: #333;
+      background-color: #ffffff;
       transition: border-color 0.2s;
     }
 
     .modal1-form input:focus {
       outline: none;
-      border-color: var(--primary-accent);
-      box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.1);
+      border-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
     }
 
     .modal1-form input::placeholder {
