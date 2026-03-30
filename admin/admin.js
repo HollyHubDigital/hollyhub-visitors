@@ -1045,20 +1045,33 @@ async function saveModal1Config() {
     const description = document.getElementById('modal1Description').value;
     const buttonText = document.getElementById('modal1ButtonText').value;
 
-    let imageUrl = document.getElementById('modal1ImageUrl').value;
+    let imageUrl = document.getElementById('modal1ImageUrl').value || '';
 
     // Upload image if new file selected
     if(imageFile) {
       const formData = new FormData();
       formData.append('file', imageFile);
-      const uploadR = await fetch(API.buildURL('/api/upload'), {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + API.token() },
-        body: formData
-      });
-      if(!uploadR.ok) throw new Error('Image upload failed');
-      const uploadData = await uploadR.json();
-      imageUrl = uploadData.url;
+      try {
+        const uploadR = await fetch(API.buildURL('/api/upload'), {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + API.token() },
+          body: formData
+        });
+        if(!uploadR.ok) {
+          const errData = await uploadR.text();
+          throw new Error(`Image upload failed: ${uploadR.status} ${errData}`);
+        }
+        const uploadData = await uploadR.json();
+        imageUrl = uploadData.url;
+        console.log('[saveModal1] Image uploaded:', imageUrl);
+      } catch(uploadErr) {
+        console.error('[saveModal1] Upload error:', uploadErr);
+        throw uploadErr;
+      }
+    }
+
+    if(!imageUrl) {
+      throw new Error('Please upload an image or paste an image URL');
     }
 
     // Get current config
@@ -1084,15 +1097,23 @@ async function saveModal1Config() {
       })
     });
 
-    if(!saveR.ok) throw new Error('Failed to save Modal 1');
+    if(!saveR.ok) {
+      const errData = await saveR.text();
+      throw new Error(`Failed to save Modal 1: ${saveR.status} ${errData}`);
+    }
     
     document.getElementById('modal1ImageUrl').readOnly = true;
     document.getElementById('modal1ImageUrl').value = imageUrl;
+    document.getElementById('modal1Description').readOnly = true;
+    document.getElementById('modal1ButtonText').readOnly = true;
+    document.getElementById('modal1ImageFile').disabled = true;
     document.getElementById('editModal1Btn').style.display = 'inline-block';
     document.getElementById('saveModal1Btn').style.display = 'none';
     document.getElementById('toggleModal1Btn').textContent = '🟢 ON';
+    document.getElementById('toggleModal1Btn').style.background = 'rgba(0,255,0,0.2)';
     showToast('Modal 1 saved and enabled!', null, null, 3000);
   } catch(e) {
+    console.error('[saveModal1] Error:', e);
     alert('Error: ' + e.message);
   }
 }
@@ -1101,29 +1122,47 @@ async function saveModal2Config() {
   try {
     const mediaFile = document.getElementById('modal2MediaFile').files[0];
     const description = document.getElementById('modal2Description').value;
-
-    let mediaUrl = document.getElementById('modal2MediaUrl').value;
+    let mediaUrl = document.getElementById('modal2MediaUrl').value || '';
 
     // Upload media if new file selected
     if(mediaFile) {
       const formData = new FormData();
       formData.append('file', mediaFile);
-      const uploadR = await fetch(API.buildURL('/api/upload'), {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + API.token() },
-        body: formData
-      });
-      if(!uploadR.ok) throw new Error('Media upload failed');
-      const uploadData = await uploadR.json();
-      mediaUrl = uploadData.url;
+      try {
+        const uploadR = await fetch(API.buildURL('/api/upload'), {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + API.token() },
+          body: formData
+        });
+        if(!uploadR.ok) {
+          const errData = await uploadR.text();
+          throw new Error(`Media upload failed: ${uploadR.status} ${errData}`);
+        }
+        const uploadData = await uploadR.json();
+        mediaUrl = uploadData.url;
+        console.log('[saveModal2] Media uploaded:', mediaUrl);
+      } catch(uploadErr) {
+        console.error('[saveModal2] Upload error:', uploadErr);
+        throw uploadErr;
+      }
     }
 
-    if(!mediaUrl && !mediaFile) throw new Error('Please upload or enter a media URL');
+    if(!mediaUrl) {
+      throw new Error('Please upload media or paste a media URL (image, video, or YouTube link)');
+    }
 
     // Get current config
     const r = await fetch(API.buildURL('/api/overlay'));
     if(!r.ok) throw new Error('Failed to load config');
     const overlay = await r.json();
+
+    // Detect media type
+    let mediaType = 'image';
+    if(mediaUrl.match(/youtube|youtu\.be|vimeo/i)) {
+      mediaType = 'embed';
+    } else if(mediaUrl.match(/\.(mp4|webm|mov|avi)$/i)) {
+      mediaType = 'video';
+    }
 
     // Save Modal 2 config
     const saveR = await fetch(API.buildURL('/api/overlay'), {
@@ -1136,21 +1175,28 @@ async function saveModal2Config() {
           type: 'mediaDisplay',
           enabled: true,
           media: mediaUrl,
-          mediaType: mediaUrl.match(/youtube|vimeo/) ? 'embed' : (mediaUrl.match(/\.mp4|\.webm/) ? 'video' : 'image'),
+          mediaType: mediaType,
           description: description
         }
       })
     });
 
-    if(!saveR.ok) throw new Error('Failed to save Modal 2');
+    if(!saveR.ok) {
+      const errData = await saveR.text();
+      throw new Error(`Failed to save Modal 2: ${saveR.status} ${errData}`);
+    }
     
     document.getElementById('modal2MediaUrl').readOnly = true;
     document.getElementById('modal2MediaUrl').value = mediaUrl;
+    document.getElementById('modal2Description').readOnly = true;
+    document.getElementById('modal2MediaFile').disabled = true;
     document.getElementById('editModal2Btn').style.display = 'inline-block';
     document.getElementById('saveModal2Btn').style.display = 'none';
     document.getElementById('toggleModal2Btn').textContent = '🟢 ON';
+    document.getElementById('toggleModal2Btn').style.background = 'rgba(0,255,0,0.2)';
     showToast('Modal 2 saved and enabled!', null, null, 3000);
   } catch(e) {
+    console.error('[saveModal2] Error:', e);
     alert('Error: ' + e.message);
   }
 }

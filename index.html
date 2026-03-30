@@ -1100,19 +1100,28 @@
 
       setupModal1() {
         const cfg = this.config.modal1;
-        if (cfg.image) {
+        console.log('[setupModal1] Config:', cfg);
+        
+        if (cfg.image && cfg.image !== 'undefined') {
           const img = document.getElementById('modal1Image');
+          console.log('[setupModal1] Setting image:', cfg.image);
           img.src = cfg.image;
           img.loading = 'lazy';
+          img.onerror = () => console.error('[setupModal1] Image failed to load:', cfg.image);
+        } else {
+          console.warn('[setupModal1] No valid image:', cfg.image);
         }
 
         const descEl = document.getElementById('modal1Description');
-        if (cfg.description) {
+        if (cfg.description && cfg.description !== 'undefined') {
+          console.log('[setupModal1] Setting description:', cfg.description.substring(0, 100));
           descEl.innerHTML = cfg.description;
+        } else {
+          console.warn('[setupModal1] No description');
         }
 
         const submitBtn = document.getElementById('modal1SubmitBtn');
-        if (cfg.buttonText) {
+        if (cfg.buttonText && cfg.buttonText !== 'undefined') {
           submitBtn.textContent = cfg.buttonText;
         }
 
@@ -1159,6 +1168,13 @@
       setupModal2() {
         const cfg = this.config.modal2;
         const media = cfg.media || '';
+        console.log('[setupModal2] Config:', cfg);
+        console.log('[setupModal2] Media value:', media);
+
+        if (!media || media === 'undefined') {
+          console.warn('[setupModal2] No valid media URL');
+          return;
+        }
 
         // Detect media type
         if (media.includes('youtube.com') || media.includes('youtu.be')) {
@@ -1168,24 +1184,31 @@
             const container = document.getElementById('modal2VideoContainer');
             container.style.display = 'block';
             container.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>`;
+            console.log('[setupModal2] YouTube embed set:', videoId);
+          } else {
+            console.warn('[setupModal2] Could not extract YouTube ID from:', media);
           }
-        } else if (media.match(/\.(mp4|webm|mov|avi)$/i)) {
+        } else if (media.match(/\.(mp4|webm|mov|avi|mkv|flv)$/i)) {
           // Video file
           const videoContainer = document.getElementById('modal2VideoContainer');
           videoContainer.style.display = 'block';
           videoContainer.innerHTML = `<video controls style="width:100%;border-radius:12px;"><source src="${media}" type="video/mp4"><source src="${media}" type="video/webm">Your browser does not support video.</video>`;
+          console.log('[setupModal2] Video embed set:', media);
         } else {
           // Image
           const img = document.getElementById('modal2Image');
           img.src = media;
           img.loading = 'lazy';
           img.style.display = 'block';
+          img.onerror = () => console.error('[setupModal2] Image failed to load:', media);
+          console.log('[setupModal2] Image set:', media);
         }
 
         // Set description
         const descEl = document.getElementById('modal2Description');
-        if (cfg.description) {
+        if (cfg.description && cfg.description !== 'undefined') {
           descEl.innerHTML = cfg.description;
+          console.log('[setupModal2] Description set');
         }
       },
 
