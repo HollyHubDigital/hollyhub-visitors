@@ -789,7 +789,7 @@
       background: #ffffff;
       border-radius: 16px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      max-width: 500px;
+      max-width: 900px;
       width: 90%;
       max-height: 90vh;
       overflow-y: auto;
@@ -810,8 +810,9 @@
 
     .overlay-close-btn {
       position: absolute;
-      top: -18px;
-      right: -18px;
+      top: 50%;
+      right: -65px;
+      transform: translateY(-50%);
       background: var(--primary-accent);
       border: none;
       font-size: 28px;
@@ -828,7 +829,7 @@
     }
 
     .overlay-close-btn:hover {
-      transform: scale(1.1);
+      transform: translateY(-50%) scale(1.1);
       background: #ff3333;
     }
 
@@ -849,12 +850,13 @@
 
     .modal1-image {
       width: 100%;
-      height: 300px;
-      object-fit: cover;
+      height: 350px;
+      object-fit: contain;
       border-radius: 12px;
       margin-bottom: 0;
       grid-column: 1;
       grid-row: 1 / 4;
+      background-color: #f8f8f8;
     }
 
     .modal1-content h2 {
@@ -980,6 +982,11 @@
       .overlay-close-btn {
         top: 15px;
         right: 15px;
+        transform: none;
+      }
+
+      .overlay-close-btn:hover {
+        transform: scale(1.1);
       }
 
       #modal1Backdrop .overlay-modal {
