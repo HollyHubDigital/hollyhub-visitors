@@ -1038,24 +1038,18 @@ const corsHandler = (req, res, next) => {
 // ===== FILE UPLOAD =====
 // Dedicated CORS wrapper middleware - ensures headers set on all upload responses
 const uploadCorsWrapper = (req, res, next) => {
-  const origin = req.get('origin') || '';
-  const isVercelApp = origin && typeof origin === 'string' && origin.includes('.vercel.app');
+  const origin = req.get('origin') || req.get('referer') || '';
+  const isVercelApp = typeof origin === 'string' && origin.includes('.vercel.app');
   
-  // ALWAYS set CORS headers for upload endpoint, regardless of origin
-  if (!origin || ALLOWED_ORIGINS.includes(origin) || isVercelApp) {
-    res.setHeader('Access-Control-Allow-Origin', origin || '*');
-  } else {
-    // Still allow cross-origin as fallback
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  }
-  
+  // ALWAYS set CORS headers for upload endpoint
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET, PUT, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Max-Age', '86400');
   
-  // Handle preflight
+  // Handle preflight OPTIONS requests
   if (req.method === 'OPTIONS') {
-    return res.sendStatus(204);
+    return res.status(200).end();
   }
   next();
 };
