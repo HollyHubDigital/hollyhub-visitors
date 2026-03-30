@@ -108,8 +108,8 @@ app.use((err, req, res, next) => {
 });
 
 // Capture raw request body for webhook signature verification
-app.use(express.json({ limit: process.env.JSON_LIMIT || '10mb', verify: (req, res, buf) => { try{ req.rawBody = buf.toString(); }catch(e){ req.rawBody = ''; } } }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: process.env.JSON_LIMIT || '50mb', verify: (req, res, buf) => { try{ req.rawBody = buf.toString(); }catch(e){ req.rawBody = ''; } } }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // === Security middleware (headers, rate limiting, input sanitization, CSRF origin checks) ===
 app.disable('x-powered-by');

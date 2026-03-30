@@ -810,24 +810,26 @@
 
     .overlay-close-btn {
       position: absolute;
-      top: 15px;
-      right: 15px;
-      background: transparent;
+      top: -18px;
+      right: -18px;
+      background: var(--primary-accent);
       border: none;
       font-size: 28px;
-      color: #333;
+      color: #ffffff;
       cursor: pointer;
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: color 0.2s;
+      transition: all 0.2s;
       z-index: 10;
+      border-radius: 50%;
     }
 
     .overlay-close-btn:hover {
-      color: var(--primary-accent);
+      transform: scale(1.1);
+      background: #ff3333;
     }
 
     /* Modal 1: Contact Form */
@@ -835,30 +837,42 @@
       padding: 2rem;
     }
 
+    .modal1-content {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
     .modal1-image {
       width: 100%;
       height: 300px;
       object-fit: cover;
       border-radius: 12px;
-      margin-bottom: 1.5rem;
+      margin-bottom: 0;
+      grid-column: 1;
+      grid-row: 1 / 4;
     }
 
     .modal1-content h2 {
       color: #333;
       margin: 0 0 0.5rem 0;
       font-size: 1.8rem;
+      grid-column: 2;
     }
 
     .modal1-content p {
       color: #666;
       margin: 0 0 1.5rem 0;
       line-height: 1.6;
+      grid-column: 2;
     }
 
     .modal1-form {
       display: flex;
       flex-direction: column;
       gap: 1rem;
+      grid-column: 2;
     }
 
     .modal1-form input {
@@ -954,26 +968,35 @@
 
     @media (max-width: 768px) {
       .overlay-modal {
-        width: 95%;
-        max-height: 95vh;
+        width: 85vw;
+        max-height: 80vh;
         margin: auto;
+      }
+
+      .overlay-close-btn {
+        top: 15px;
+        right: 15px;
       }
 
       #modal1Backdrop .overlay-modal {
         padding: 1.5rem 1rem;
       }
 
-      #modal2Backdrop .overlay-modal {
-        padding: 1.5rem 1rem;
+      .modal1-content {
+        display: block;
       }
 
       .modal1-image {
-        height: 250px;
-        margin-bottom: 1rem;
+        height: 200px;
+        margin-bottom: 1.5rem;
       }
 
       .modal1-content h2 {
         font-size: 1.5rem;
+      }
+
+      #modal2Backdrop .overlay-modal {
+        padding: 1.5rem 1rem;
       }
 
       .modal2-media {
