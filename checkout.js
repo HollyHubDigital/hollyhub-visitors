@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
           method: 'POST', 
           headers, 
           body: JSON.stringify({
-            amount: Math.round(raw * 100), // Convert to cents
+            amount: raw, // Send as dollars, not cents
             email: userEmail,
             name: userName,
             description: desc,
@@ -92,8 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             onclose: function() {
               console.log('Flutterwave payment modal closed');
-              msg.textContent = 'Payment cancelled.';
+              msg.textContent = 'Payment cancelled. Redirecting...';
               flutterwaveBtn.disabled = false;
+              setTimeout(() => { window.location.href = '/cancel.html'; }, 1500);
             }
           });
         } else {
