@@ -1128,21 +1128,31 @@ async function saveModal2Config() {
     if(mediaFile) {
       const formData = new FormData();
       formData.append('file', mediaFile);
+      const uploadUrl = API.buildURL('/api/upload');
+      console.log('[saveModal2] Uploading to:', uploadUrl);
+      console.log('[saveModal2] File:', mediaFile.name, 'Size:', mediaFile.size);
+      
       try {
-        const uploadR = await fetch(API.buildURL('/api/upload'), {
+        const uploadR = await fetch(uploadUrl, {
           method: 'POST',
           headers: { 'Authorization': 'Bearer ' + API.token() },
           body: formData
         });
+        
+        console.log('[saveModal2] Upload response status:', uploadR.status);
+        console.log('[saveModal2] Response headers:', Array.from(uploadR.headers.entries()));
+        
         if(!uploadR.ok) {
           const errData = await uploadR.text();
+          console.error('[saveModal2] Upload failed with status', uploadR.status, ':', errData);
           throw new Error(`Media upload failed: ${uploadR.status} ${errData}`);
         }
         const uploadData = await uploadR.json();
         mediaUrl = uploadData.url;
         console.log('[saveModal2] Media uploaded:', mediaUrl);
       } catch(uploadErr) {
-        console.error('[saveModal2] Upload error:', uploadErr);
+        console.error('[saveModal2] Upload error:', uploadErr.message);
+        console.error('[saveModal2] Error details:', uploadErr);
         throw uploadErr;
       }
     }
