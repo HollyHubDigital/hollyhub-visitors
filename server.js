@@ -89,8 +89,11 @@ const ALLOWED_ORIGINS = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow when no origin (server-to-server), or exact match, or Vercel hosts
-    if (!origin || ALLOWED_ORIGINS.includes(origin) || (typeof origin === 'string' && origin.endsWith('.vercel.app'))) {
+    // Allow when no origin (server-to-server), or exact match, or Vercel hosts, or localhost
+    const isVercelApp = origin && typeof origin === 'string' && origin.includes('.vercel.app');
+    const isLocalhost = origin && typeof origin === 'string' && origin.includes('localhost');
+    
+    if (!origin || ALLOWED_ORIGINS.includes(origin) || isVercelApp || isLocalhost) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -1010,7 +1013,10 @@ app.put('/api/pages/:page', authRequired, (req,res)=>{
 // CORS handler for upload endpoint
 const corsHandler = (req, res, next) => {
   const origin = req.get('origin') || '';
-  if (!origin || ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app')) {
+  const isVercelApp = origin && typeof origin === 'string' && origin.includes('.vercel.app');
+  
+  // Always allow .vercel.app domains and whitelisted origins
+  if (!origin || ALLOWED_ORIGINS.includes(origin) || isVercelApp) {
     res.setHeader('Access-Control-Allow-Origin', origin || '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET, PUT, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
@@ -2956,7 +2962,9 @@ app.use((err, req, res, next) => {
   
   // Add CORS headers to error responses
   const origin = req.get('origin') || '';
-  if (!origin || ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app')) {
+  const isVercelApp = origin && typeof origin === 'string' && origin.includes('.vercel.app');
+  
+  if (!origin || ALLOWED_ORIGINS.includes(origin) || isVercelApp) {
     res.setHeader('Access-Control-Allow-Origin', origin || '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET, PUT, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
