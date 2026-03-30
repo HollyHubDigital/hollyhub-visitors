@@ -102,6 +102,17 @@ app.use(cors({
   credentials: true
 }));
 
+// Pre-CORS middleware - add CORS headers to ALL responses FIRST (before any error can occur)
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  next();
+});
+
 // CORS error handler - return JSON instead of plain text
 app.use((err, req, res, next) => {
   if (err && err.message === 'Not allowed by CORS') {
@@ -111,8 +122,8 @@ app.use((err, req, res, next) => {
 });
 
 // Capture raw request body for webhook signature verification
-app.use(express.json({ limit: process.env.JSON_LIMIT || '50mb', verify: (req, res, buf) => { try{ req.rawBody = buf.toString(); }catch(e){ req.rawBody = ''; } } }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: process.env.JSON_LIMIT || '500mb', verify: (req, res, buf) => { try{ req.rawBody = buf.toString(); }catch(e){ req.rawBody = ''; } } }));
+app.use(express.urlencoded({ extended: true, limit: '500mb' }));
 
 // === Security middleware (headers, rate limiting, input sanitization, CSRF origin checks) ===
 app.disable('x-powered-by');
@@ -828,7 +839,7 @@ if(!fs.existsSync(analyticsJson)) fs.writeFileSync(analyticsJson, '[]');
 if(!fs.existsSync(pagesIndexJson)) fs.writeFileSync(pagesIndexJson, '{}');
 
 // S3 was already configured at top of file; now set up upload storage & limits
-const MAX_UPLOAD_MB = parseInt(process.env.MAX_UPLOAD_MB || '200', 10);
+const MAX_UPLOAD_MB = parseInt(process.env.MAX_UPLOAD_MB || '500', 10);
 // Always use memory storage for serverless/Vercel environments OR when S3/GitHub is configured
 // (we never write uploads to local disk - always to GitHub or S3)
 const storage = (S3_ENABLED || READ_ONLY_FS || process.env.GITHUB_TOKEN) ? multer.memoryStorage() : multer.diskStorage({ destination: uploadDir, filename: (req,file,cb)=>{ const safe = Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g,'_'); cb(null, safe); } });
