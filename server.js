@@ -1022,7 +1022,13 @@ const corsHandler = (req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Max-Age', '86400');
+  } else {
+    // Still set origin to '*' as fallback for cross-origin requests
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET, PUT, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
   }
+  
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
   }
@@ -1030,16 +1036,50 @@ const corsHandler = (req, res, next) => {
 };
 
 // ===== FILE UPLOAD =====
-// Explicit CORS setup for upload endpoint (handle preflight and CORS headers)
-app.options('/api/upload', corsHandler);
-app.post('/api/upload', corsHandler, authRequiredOrGithub, upload.single('file'), async (req,res)=>{
+// Dedicated CORS wrapper middleware - ensures headers set on all upload responses
+const uploadCorsWrapper = (req, res, next) => {
+  const origin = req.get('origin') || '';
+  const isVercelApp = origin && typeof origin === 'string' && origin.includes('.vercel.app');
+  
+  // ALWAYS set CORS headers for upload endpoint, regardless of origin
+  if (!origin || ALLOWED_ORIGINS.includes(origin) || isVercelApp) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+  } else {
+    // Still allow cross-origin as fallback
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+};
+
+// Explicit CORS setup for upload endpoint
+app.options('/api/upload', uploadCorsWrapper);
+app.post('/api/upload', uploadCorsWrapper, authRequiredOrGithub, upload.single('file'), async (req,res)=>{
+  // Reapply CORS headers to ensure they're present even if middleware modified them
+  const origin = req.get('origin') || '';
+  const isVercelApp = origin && typeof origin === 'string' && origin.includes('.vercel.app');
+  if (!origin || ALLOWED_ORIGINS.includes(origin) || isVercelApp) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+  
   console.log('[/api/upload] ===== UPLOAD REQUEST RECEIVED =====');
+  console.log('[/api/upload] Origin:', origin);
   console.log('[/api/upload] User auth:', req.user ? '✓ JWT verified (' + req.user.user + ')' : 'None');
   console.log('[/api/upload] GitHub auth:', req.githubAuth ? '✓ Using GitHub token' : 'Not using GitHub auth');
   
   if(!req.file) {
     console.error('[/api/upload] No file in request');
-    return res.status(400).send('No file');
+    return res.status(400).json({ error: 'No file uploaded' });
   }
   
   console.log('[/api/upload] File received:', req.file.originalname, '| Size:', req.file.size, 'bytes');
