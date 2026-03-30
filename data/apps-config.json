@@ -46,7 +46,7 @@
     },
     "modal2": {
       "type": "mediaDisplay",
-      "enabled": false,
+      "enabled": true,
       "media": "/public/uploads/1774833392238-hollyhub.jpg",
       "mediaType": "image",
       "description": "We are here for you"
