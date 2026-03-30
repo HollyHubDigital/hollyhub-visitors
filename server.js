@@ -1041,14 +1041,21 @@ const uploadCorsWrapper = (req, res, next) => {
   const origin = req.get('origin') || req.get('referer') || '';
   const isVercelApp = typeof origin === 'string' && origin.includes('.vercel.app');
   
+  console.log('[uploadCorsWrapper] Request:', req.method, req.path);
+  console.log('[uploadCorsWrapper] Origin:', origin);
+  console.log('[uploadCorsWrapper] Is Vercel App:', isVercelApp);
+  
   // ALWAYS set CORS headers for upload endpoint
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET, PUT, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
   res.setHeader('Access-Control-Max-Age', '86400');
   
+  console.log('[uploadCorsWrapper] CORS headers set');
+  
   // Handle preflight OPTIONS requests
   if (req.method === 'OPTIONS') {
+    console.log('[uploadCorsWrapper] Responding to OPTIONS preflight');
     return res.status(200).end();
   }
   next();
