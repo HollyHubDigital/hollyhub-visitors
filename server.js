@@ -163,6 +163,10 @@ function sanitizeObject(obj){
 
 app.use((req, res, next) => {
   try{
+    // Skip sanitization for overlay endpoint (requires auth) - needs to preserve HTML in descriptions
+    if(req.path === '/api/overlay' && req.method === 'POST') {
+      return next();
+    }
     if(req.body) sanitizeObject(req.body);
     if(req.query) sanitizeObject(req.query);
   }catch(e){}
@@ -1083,7 +1087,12 @@ app.post('/api/upload', corsHandler, authRequiredOrGithub, upload.single('file')
     }
     
     console.log('[upload] Upload complete, returning metadata');
-    return res.json(meta);
+    // Include url property for convenience (path to uploaded file)
+    const response = {
+      ...meta,
+      url: `/public/uploads/${meta.filename}`
+    };
+    return res.json(response);
   }catch(e){ 
     console.error('[upload] CRITICAL ERROR:', e.message); 
     console.error('[upload] Stack:', e.stack);
