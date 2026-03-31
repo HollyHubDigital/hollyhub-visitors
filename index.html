@@ -770,7 +770,7 @@
       bottom: 0;
       background: rgba(0, 0, 0, 0.6);
       display: none;
-      z-index: 99000 !important;
+      z-index: 999999 !important;
       align-items: center;
       justify-content: center;
       animation: fadeIn 0.3s ease;
@@ -781,12 +781,17 @@
     }
     
     /* Tawk Chat - Keep behind modals */
+    [class*="tawk"],
+    [id*="tawk"],
+    [class*="Tawk"],
+    [id*="Tawk"],
     .tawk-min-container,
     .tawk-max-container,
     .tawk-toggle,
     iframe[src*="embed.tawk.to"],
     #tawkMessengerFrame {
-      z-index: 1000 !important;
+      z-index: 99 !important;
+      position: relative !important;
     }
 
     @keyframes fadeIn {
@@ -1137,7 +1142,35 @@
         const backdrop = document.getElementById(modal + 'Backdrop');
         if (backdrop) {
           backdrop.classList.add('active');
+          // Force Tawk behind modal
+          this.enforceTawkBehind();
         }
+      },
+
+      enforceTawkBehind() {
+        // Force all Tawk elements behind the modal
+        const tawkSelectors = [
+          '.tawk-min-container',
+          '.tawk-max-container',
+          '.tawk-toggle',
+          'iframe[src*="embed.tawk.to"]',
+          '#tawkMessengerFrame'
+        ];
+        
+        tawkSelectors.forEach(selector => {
+          const elements = document.querySelectorAll(selector);
+          elements.forEach(el => {
+            el.style.zIndex = '99 !important';
+            el.style.position = 'relative';
+          });
+        });
+        
+        // Also try to find any other Tawk-related elements by class/id pattern
+        const allElements = document.querySelectorAll('[class*="tawk"], [id*="tawk"]');
+        allElements.forEach(el => {
+          el.style.zIndex = '99';
+          el.style.position = 'relative';
+        });
       },
 
       setupModal1() {
@@ -1286,7 +1319,34 @@
       const backdrop = document.getElementById(modal + 'Backdrop');
       if (backdrop) {
         backdrop.classList.remove('active');
+        // Restore Tawk to normal z-index after modal closes
+        restoreTawkZIndex();
       }
+    }
+
+    function restoreTawkZIndex() {
+      const tawkSelectors = [
+        '.tawk-min-container',
+        '.tawk-max-container',
+        '.tawk-toggle',
+        'iframe[src*="embed.tawk.to"]',
+        '#tawkMessengerFrame'
+      ];
+      
+      tawkSelectors.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(el => {
+          el.style.zIndex = '';
+          el.style.position = '';
+        });
+      });
+      
+      // Also restore other Tawk elements
+      const allElements = document.querySelectorAll('[class*="tawk"], [id*="tawk"]');
+      allElements.forEach(el => {
+        el.style.zIndex = '';
+        el.style.position = '';
+      });
     }
 
     // Initialize on page load (lazy-loaded)
