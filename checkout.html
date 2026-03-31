@@ -166,21 +166,7 @@
   <!-- Flutterwave Payment Script -->
   <script src="https://checkout.flutterwave.com/v3.js"></script>
   <!-- Squad Payment Script -->
-  <script>
-    // Load Squad script dynamically
-    (function() {
-      var script = document.createElement('script');
-      script.src = 'https://squadinc.com/js/v1/squad.js';
-      script.async = true;
-      script.onload = function() {
-        console.log('Squad script loaded successfully');
-      };
-      script.onerror = function() {
-        console.error('Failed to load Squad script');
-      };
-      document.head.appendChild(script);
-    })();
-  </script>
+  <script src="https://checkout.squadco.com/widget/squad.min.js"></script>
   <script src="script.js"></script>
   <script src="checkout.js"></script>
   <!-- Google Translate Initialization -->

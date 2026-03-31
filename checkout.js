@@ -256,23 +256,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Squad Payment Function
   function SquadPay(email, amountInKobo, currency = "NGN") {
-    // Check if Squad is loaded, if not wait a bit
+    // Check if squad is loaded, if not wait a bit
     const checkSquad = () => {
-      if (typeof Squad === 'undefined') {
+      if (typeof squad === 'undefined') {
         console.log('Squad not ready, waiting...');
         setTimeout(checkSquad, 500);
         return;
       }
 
-      const squadInstance = new Squad({
+      const squadInstance = new squad({
         onClose: () => {
           console.log("Widget closed");
           msg.textContent = 'Payment cancelled.';
           squadBtn.disabled = false;
         },
         onLoad: () => console.log("Widget loaded successfully"),
-        onSuccess: (response) => {
-          console.log(`Payment successful:`, response);
+        onSuccess: () => {
+          console.log('Payment successful');
           msg.textContent = '✓ Payment successful! Redirecting...';
           setTimeout(() => { window.location.href = '/success.html'; }, 1500);
         },
