@@ -790,8 +790,8 @@
     .tawk-toggle,
     iframe[src*="embed.tawk.to"],
     #tawkMessengerFrame {
-      z-index: 99 !important;
-      position: relative !important;
+      z-index: 1 !important;
+      position: static !important;
     }
 
     @keyframes fadeIn {
@@ -1148,8 +1148,8 @@
       },
 
       enforceTawkBehind() {
-        // Wait a tick to ensure Tawk elements exist
-        setTimeout(() => {
+        // Aggressively enforce Tawk behind modals with multiple strategies
+        const enforceTawkZIndex = () => {
           const tawkSelectors = [
             '.tawk-min-container',
             '.tawk-max-container',
@@ -1158,20 +1158,25 @@
             '#tawkMessengerFrame'
           ];
           
+          // Strategy 1: Apply inline styles with !important
           tawkSelectors.forEach(selector => {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach(el => {
-              el.style.zIndex = '1';
-              el.style.pointerEvents = 'none';
+            document.querySelectorAll(selector).forEach(el => {
+              el.style.cssText = 'z-index: 1 !important; position: static !important; pointer-events: none !important;';
             });
           });
           
-          // Also target any Tawk elements by attribute pattern
+          // Strategy 2: Target all elements with tawk in class/id
           document.querySelectorAll('[class*="tawk"], [id*="tawk"]').forEach(el => {
-            el.style.zIndex = '1';
-            el.style.pointerEvents = 'none';
+            el.style.cssText = 'z-index: 1 !important; position: static !important; pointer-events: none !important;';
           });
-        }, 10);
+        };
+        
+        // Apply immediately and repeatedly
+        enforceTawkZIndex();
+        
+        // Keep enforcing for 5 seconds in case Tawk resets styles
+        const interval = setInterval(enforceTawkZIndex, 100);
+        setTimeout(() => clearInterval(interval), 5000);
       },
 
       setupModal1() {
@@ -1326,6 +1331,7 @@
     }
 
     function restoreTawkZIndex() {
+      // Restore full Tawk functionality when modal closes
       const tawkSelectors = [
         '.tawk-min-container',
         '.tawk-max-container',
@@ -1335,18 +1341,21 @@
       ];
       
       tawkSelectors.forEach(selector => {
-        const elements = document.querySelectorAll(selector);
-        elements.forEach(el => {
+        document.querySelectorAll(selector).forEach(el => {
           el.style.zIndex = '';
           el.style.pointerEvents = '';
+          el.style.position = '';
         });
       });
       
-      // Also restore other Tawk elements
+      // Restore other Tawk elements
       document.querySelectorAll('[class*="tawk"], [id*="tawk"]').forEach(el => {
         el.style.zIndex = '';
         el.style.pointerEvents = '';
+        el.style.position = '';
       });
+      
+      console.log('[Modal] Tawk z-index restored to normal');
     }
 
     // Initialize on page load (lazy-loaded)
