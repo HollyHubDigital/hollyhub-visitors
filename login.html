@@ -521,7 +521,20 @@
         pageUtils.setAuthToken(j.token);
         localStorage.setItem('authUserEmail', email);
         if (remember) localStorage.setItem('rememberMe', email);
-        window.location.href = 'index.html';
+        
+        // Check if we need to redirect to checkout
+        const returnToCheckout = sessionStorage.getItem('returnToCheckout');
+        const pendingProjectId = sessionStorage.getItem('pendingProjectId');
+        
+        if (returnToCheckout === 'true' && pendingProjectId) {
+          // Redirect to checkout with the pending project ID
+          sessionStorage.removeItem('returnToCheckout');
+          sessionStorage.removeItem('pendingProjectId');
+          sessionStorage.setItem('currentProjectEmail', email);
+          window.location.href = `/checkout.html?projectId=${pendingProjectId}`;
+        } else {
+          window.location.href = 'index.html';
+        }
       }catch(err){ pageUtils.showNotification('Login failed: '+err.message, 'error'); }
     });
 

@@ -1440,6 +1440,7 @@ window.addEventListener('load', async ()=>{
           <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem;">
             <div>
               <div style="font-weight:600; color:var(--primary-accent); font-size:1.1rem;">${p.projectType}</div>
+              <div style="opacity:0.8; font-size:0.9rem;">🆔 ID: ${p.id}</div>
               <div style="opacity:0.8; font-size:0.9rem;">👤 ${p.name} • 📧 ${p.contact}</div>
             </div>
             <div style="text-align:right;">

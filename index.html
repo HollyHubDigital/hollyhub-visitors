@@ -779,6 +779,15 @@
     .overlay-backdrop.active {
       display: flex;
     }
+    
+    /* Tawk Chat - Keep behind modals */
+    .tawk-min-container,
+    .tawk-max-container,
+    .tawk-toggle,
+    iframe[src*="embed.tawk.to"],
+    #tawkMessengerFrame {
+      z-index: 8000 !important;
+    }
 
     @keyframes fadeIn {
       from { opacity: 0; }

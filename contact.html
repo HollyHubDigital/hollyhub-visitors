@@ -143,7 +143,7 @@
           <h2 style="color: var(--primary-accent); margin-bottom: 2rem;">Contact Information</h2>
           
           <div style="margin-bottom: 2rem; padding: 1.5rem; background: rgba(255, 0, 0, 0.05); border-radius: 10px; border-left: 4px solid var(--primary-accent);">
-            <h4 style="color: var(--primary-accent); margin-bottom: 0.5rem;">📧 Email</h4>
+            <h4 style="color: var(--primary-accent); margin-bottom: 0.5rem;">Email</h4>
             <p style="opacity: 0.85;"><a href="mailto:hello@hollydev.com" style="color: var(--secondary-accent);">hello@hollydev.com</a></p>
             <p style="font-size: 0.9rem; opacity: 0.7;">We typically respond within 24 hours</p>
           </div>
@@ -268,7 +268,7 @@
               <input type="hidden" name="redirect" value="" />
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%;" id="contact-submit-btn">Send Message</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%;" id="contact-submit-btn">Submit Project</button>
           </form>
 
           <!-- User Projects Display Section -->
@@ -441,8 +441,19 @@
     }
 
     function goToCheckout(projectId) {
-      // Store project ID and email in sessionStorage for checkout.html
+      // Check authentication first
+      const authToken = localStorage.getItem('authToken');
       const email = localStorage.getItem('authUserEmail');
+      
+      if (!authToken || !email) {
+        // User not logged in, redirect to login with return URL
+        sessionStorage.setItem('pendingProjectId', projectId);
+        sessionStorage.setItem('returnToCheckout', 'true');
+        window.location.href = '/login.html';
+        return;
+      }
+      
+      // Store project ID and email in sessionStorage for checkout.html
       sessionStorage.setItem('currentProjectId', projectId);
       sessionStorage.setItem('currentProjectEmail', email);
       
