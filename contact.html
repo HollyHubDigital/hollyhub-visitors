@@ -863,17 +863,30 @@
           const project = await res2.json();
 
           // Projects now stored under authenticated user email (authUserEmail)
-          alert('✓ Project submitted successfully! You can track your project below.');
+          alert('✓ Project submitted successfully! You can now proceed to payment.');
           this.reset();
           resetUploadSquares();
           
           await loadUserProjects();
 
-          submitBtn.textContent = 'Message Sent ✓';
+          // Store project ID in sessionStorage for checkout.html
+          sessionStorage.setItem('currentProjectId', project.id);
+          sessionStorage.setItem('currentProjectEmail', email);
+
+          // Change button text and color for payment
+          submitBtn.textContent = '💳 Make Payment';
+          submitBtn.style.background = '#22c55e';
+          submitBtn.style.cursor = 'pointer';
+          submitBtn.disabled = false;
+          submitBtn.onclick = () => {
+            // Navigate to checkout.html with project ID
+            window.location.href = `/checkout.html?projectId=${project.id}`;
+          };
+
           setTimeout(() => {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
-          }, 2000);
+            // Keep the Make Payment button active
+            console.log('Project ID stored:', project.id);
+          }, 500);
         } catch (error) {
           console.error('Form submission error:', error);
           alert('Error: ' + error.message);

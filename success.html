@@ -64,6 +64,22 @@
     </header>
   <main class="container" style="padding:2rem; text-align:center;"><h1>Payment Successful</h1><p style="opacity:0.8">Thank you — your payment was completed. We'll follow up shortly.</p>
 
+  <!-- Project Information Display -->
+  <div id="projectConfirmation" style="display:none; margin-top:2rem; padding:1.5rem; background:rgba(34,197,94,0.1); border:2px solid #22c55e; border-radius:8px;">
+    <p style="font-weight:bold; color:#22c55e; margin-bottom:1rem;">✓ Project Payment Confirmed</p>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+      <div style="text-align:left; background:rgba(255,255,255,0.05); padding:1rem; border-radius:6px;">
+        <p style="opacity:0.7; font-size:0.9rem; margin:0 0 0.5rem 0;">Project ID</p>
+        <p id="confirmProjectId" style="color:#22c55e; font-weight:600; margin:0; font-size:1.1rem;">-</p>
+      </div>
+      <div style="text-align:left; background:rgba(255,255,255,0.05); padding:1rem; border-radius:6px;">
+        <p style="opacity:0.7; font-size:0.9rem; margin:0 0 0.5rem 0;">Status</p>
+        <p style="color:#22c55e; font-weight:600; margin:0; font-size:1.1rem;">Payment Verifying ⏳</p>
+      </div>
+    </div>
+    <p style="opacity:0.8; font-size:0.9rem; margin:0;">Your payment has been recorded. Our admin team will verify and update the status shortly. You will receive a notification when your status changes to "Paid".</p>
+  </div>
+
   <div style="margin-top:2rem; padding:1.5rem; background:#f9f9f9; border-radius:8px; border-left:4px solid #25D366;">
     <p style="font-weight:bold; color:#25D366; margin-bottom:0.5rem;">📱 Next Step Required</p>
     <p style="opacity:0.9; margin-bottom:1rem;">Please message the freelancer on WhatsApp immediately to confirm your payment and discuss project details.</p>
@@ -90,6 +106,29 @@
 
   <p style="margin-top:1rem;"><a class="btn btn-primary" href="index.html">Return Home</a></p></main>
   <script src="script.js"></script>
+  <script>
+    // Display project information if available from payment flow
+    (function() {
+      const projectId = sessionStorage.getItem('currentProjectId');
+      const projectEmail = sessionStorage.getItem('currentProjectEmail');
+      
+      if (projectId) {
+        // Show project confirmation
+        const projectConfirmDiv = document.getElementById('projectConfirmation');
+        projectConfirmDiv.style.display = 'block';
+        document.getElementById('confirmProjectId').textContent = projectId;
+        
+        console.log('[Success] Payment confirmed for project:', projectId);
+        console.log('[Success] Project email:', projectEmail);
+        
+        // Clear sessionStorage after displaying
+        setTimeout(() => {
+          sessionStorage.removeItem('currentProjectId');
+          sessionStorage.removeItem('currentProjectEmail');
+        }, 2000);
+      }
+    })();
+  </script>
   <script src="app-loader.js"></script>
   <script>
     // Handle payment file upload from success.html

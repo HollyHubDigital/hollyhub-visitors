@@ -3028,6 +3028,59 @@ app.delete('/api/projects/:id', authRequired, async (req, res) => {
   }
 });
 
+// Update project payment status
+app.post('/api/projects/:id/update-payment', async (req, res) => {
+  try {
+    const projectId = req.params.id;
+    const { payment } = req.body;
+
+    if (!payment) {
+      return res.status(400).json({ error: 'Payment status required' });
+    }
+
+    const { getRepoConfig } = require('./api/utils');
+    const { getFile, putFile } = require('./api/gh');
+    const repoOpts = await getRepoConfig(req);
+
+    if (!repoOpts || !repoOpts.token) {
+      return res.status(501).json({ error: 'File storage not configured' });
+    }
+
+    // Get projects
+    let projects = [];
+    try {
+      const f = await getFile('data/projects.json', repoOpts);
+      projects = JSON.parse(f.content || '[]');
+    } catch (e) {
+      return res.status(500).json({ error: 'Failed to retrieve projects' });
+    }
+
+    const projectIndex = projects.findIndex(p => p.id === projectId);
+    if (projectIndex === -1) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    const project = projects[projectIndex];
+    project.payment = payment; // Update payment status: 'pending', 'verified', etc.
+    project.updatedAt = new Date().toISOString();
+
+    // Save updated projects
+    await putFile(
+      'data/projects.json',
+      JSON.stringify(projects, null, 2),
+      `Update project payment status: ${projectId}`,
+      null,
+      repoOpts
+    );
+
+    console.log(`[payment-update] Project ${projectId} payment status updated to: ${payment}`);
+    res.json({ ok: true, project });
+  } catch (error) {
+    console.error('[update-payment] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Dynamic API loader
 app.all('/api/*', async (req, res) => {
   try{

@@ -6,6 +6,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const descInput = document.getElementById('description');
   const msg = document.getElementById('checkoutMsg');
 
+  // Function to update project payment status after successful payment
+  async function updateProjectPaymentStatus(projectId, paymentStatus = 'pending') {
+    if (!projectId) return;
+    
+    try {
+      const res = await fetch(`/api/projects/${projectId}/update-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ payment: paymentStatus })
+      });
+      
+      if (res.ok) {
+        console.log('[Payment] Project payment status updated:', projectId, paymentStatus);
+      } else {
+        console.log('[Payment] Failed to update project:', await res.text());
+      }
+    } catch (error) {
+      console.error('[Payment] Status update error:', error);
+    }
+  }
+
   // Flutterwave public key (from environment or fallback)
   const FLUTTERWAVE_PUBLIC_KEY = 'FLWPUBK-c9e4ab2f265c4998a14d4ba9f2e3e812-X';
 
@@ -84,6 +105,11 @@ document.addEventListener('DOMContentLoaded', () => {
               console.log('Flutterwave payment response:', response);
               if (response.status === 'successful') {
                 msg.textContent = '✓ Payment successful! Verifying...';
+                // Update project status if available
+                const projectId = sessionStorage.getItem('currentProjectId');
+                if (projectId) {
+                  updateProjectPaymentStatus(projectId, 'pending');
+                }
                 verifyFlutterwavePayment(response.transaction_id, response.tx_ref);
               } else {
                 msg.textContent = 'Payment failed. Please try again.';
@@ -223,6 +249,11 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             onSuccess: function (response) {
               msg.textContent = `✓ Payment successful! Reference: ${response.reference}. Redirecting...`;
+              // Update project status if available
+              const projectId = sessionStorage.getItem('currentProjectId');
+              if (projectId) {
+                updateProjectPaymentStatus(projectId, 'pending');
+              }
               setTimeout(() => { window.location.href = '/success.html'; }, 1500);
             }
           });
@@ -274,6 +305,11 @@ document.addEventListener('DOMContentLoaded', () => {
         onSuccess: () => {
           console.log('Payment successful');
           msg.textContent = '✓ Payment successful! Redirecting...';
+          // Update project status if available
+          const projectId = sessionStorage.getItem('currentProjectId');
+          if (projectId) {
+            updateProjectPaymentStatus(projectId, 'pending');
+          }
           setTimeout(() => { window.location.href = '/success.html'; }, 1500);
         },
         key: "YOUR_LIVE_SQUAD_KEY_HERE", // Replace with your live key from Squad Dashboard
