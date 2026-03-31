@@ -570,7 +570,7 @@
 
               <div style="margin-bottom:1.5rem;">
                 <label style="display:block; margin-bottom:0.5rem; color:var(--primary-accent); font-weight:600;">Phone Number</label>
-                <input type="tel" id="editPhone" value="${project.contact ? project.contact.replace(project.userEmail || '', '').trim() : ''}" style="width:100%; padding:0.8rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); border-radius:6px; color:var(--text-light);" />
+                <input type="tel" id="editPhone" value="${project.phone || ''}" style="width:100%; padding:0.8rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); border-radius:6px; color:var(--text-light);" />
               </div>
 
               <div style="margin-bottom:1.5rem;">
@@ -737,7 +737,7 @@
         const formData = new FormData();
         formData.append('userEmail', email);
         formData.append('name', fullName);
-        formData.append('contact', phone || email);
+        formData.append('phone', phone || '');
         formData.append('projectType', projectType);
         formData.append('description', description);
         
@@ -864,7 +864,7 @@
           const projectData = new FormData();
           projectData.append('userEmail', email);
           projectData.append('name', name);
-          projectData.append('contact', phone || email);
+          projectData.append('phone', phone || '');
           projectData.append('description', message);
           projectData.append('projectType', service);
 

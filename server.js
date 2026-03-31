@@ -2733,9 +2733,9 @@ app.get('/api/projects/:id', async (req, res) => {
 // Submit new project with files
 app.post('/api/projects', upload.array('files', 4), async (req, res) => {
   try {
-    const { userEmail, name, contact, description, projectType } = req.body;
+    const { userEmail, name, contact, phone, description, projectType } = req.body;
     
-    if (!userEmail || !name || !contact || !description || !projectType) {
+    if (!userEmail || !name || !description || !projectType) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -2792,7 +2792,7 @@ app.post('/api/projects', upload.array('files', 4), async (req, res) => {
       id: projectId,
       userEmail,
       name,
-      contact,
+      phone: phone || contact || '',
       description,
       projectType,
       files: fileMetadata,
@@ -2875,7 +2875,7 @@ app.put('/api/projects/:id', authRequired, async (req, res) => {
 app.post('/api/projects/:id/edit', upload.array('files', 4), async (req, res) => {
   try {
     const projectId = req.params.id;
-    const { userEmail, name, contact, projectType, description } = req.body;
+    const { userEmail, name, phone, contact, projectType, description } = req.body;
 
     if (!userEmail) {
       return res.status(400).json({ error: 'User email required' });
@@ -2907,7 +2907,7 @@ app.post('/api/projects/:id/edit', upload.array('files', 4), async (req, res) =>
 
     // Update project details
     if (name) project.name = name;
-    if (contact) project.contact = contact;
+    if (phone || contact) project.phone = phone || contact || '';
     if (projectType) project.projectType = projectType;
     if (description) project.description = description;
     project.userEmail = userEmail; // Allow email update
