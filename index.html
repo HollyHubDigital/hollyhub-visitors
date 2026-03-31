@@ -791,7 +791,7 @@
     iframe[src*="embed.tawk.to"],
     #tawkMessengerFrame {
       z-index: 1 !important;
-      position: static !important;
+      position: fixed !important;
     }
 
     @keyframes fadeIn {
@@ -1161,13 +1161,13 @@
           // Strategy 1: Apply inline styles with !important
           tawkSelectors.forEach(selector => {
             document.querySelectorAll(selector).forEach(el => {
-              el.style.cssText = 'z-index: 1 !important; position: static !important; pointer-events: none !important;';
+              el.style.cssText = 'z-index: 1 !important; position: fixed !important; pointer-events: none !important;';
             });
           });
           
           // Strategy 2: Target all elements with tawk in class/id
           document.querySelectorAll('[class*="tawk"], [id*="tawk"]').forEach(el => {
-            el.style.cssText = 'z-index: 1 !important; position: static !important; pointer-events: none !important;';
+            el.style.cssText = 'z-index: 1 !important; position: fixed !important; pointer-events: none !important;';
           });
         };
         
