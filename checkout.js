@@ -267,8 +267,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const squadInstance = new squad({
         onClose: () => {
           console.log("Widget closed");
-          msg.textContent = 'Payment cancelled.';
-          squadBtn.disabled = false;
+          msg.textContent = 'Payment cancelled. Redirecting...';
+          setTimeout(() => { window.location.href = '/cancel.html'; }, 1500);
         },
         onLoad: () => console.log("Widget loaded successfully"),
         onSuccess: () => {
