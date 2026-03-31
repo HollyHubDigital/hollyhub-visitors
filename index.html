@@ -794,25 +794,6 @@
       position: relative !important;
     }
 
-    /* Force Tawk behind when modals are active */
-    .overlay-backdrop.active ~ [class*="tawk"],
-    .overlay-backdrop.active ~ [id*="tawk"],
-    .overlay-backdrop.active ~ .tawk-min-container,
-    .overlay-backdrop.active ~ .tawk-max-container,
-    .overlay-backdrop.active ~ .tawk-toggle,
-    .overlay-backdrop.active ~ iframe[src*="embed.tawk.to"],
-    .overlay-backdrop.active ~ #tawkMessengerFrame,
-    body.modal-active [class*="tawk"],
-    body.modal-active [id*="tawk"],
-    body.modal-active .tawk-min-container,
-    body.modal-active .tawk-max-container,
-    body.modal-active .tawk-toggle,
-    body.modal-active iframe[src*="embed.tawk.to"],
-    body.modal-active #tawkMessengerFrame {
-      z-index: 1 !important;
-      position: relative !important;
-    }
-
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
@@ -1161,9 +1142,36 @@
         const backdrop = document.getElementById(modal + 'Backdrop');
         if (backdrop) {
           backdrop.classList.add('active');
-          // Force Tawk behind modal by adding class to body
-          document.body.classList.add('modal-active');
+          // Programmatically force Tawk behind modal
+          this.enforceTawkBehind();
         }
+      },
+
+      enforceTawkBehind() {
+        // Wait a tick to ensure Tawk elements exist
+        setTimeout(() => {
+          const tawkSelectors = [
+            '.tawk-min-container',
+            '.tawk-max-container',
+            '.tawk-toggle',
+            'iframe[src*="embed.tawk.to"]',
+            '#tawkMessengerFrame'
+          ];
+          
+          tawkSelectors.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(el => {
+              el.style.zIndex = '1';
+              el.style.pointerEvents = 'none';
+            });
+          });
+          
+          // Also target any Tawk elements by attribute pattern
+          document.querySelectorAll('[class*="tawk"], [id*="tawk"]').forEach(el => {
+            el.style.zIndex = '1';
+            el.style.pointerEvents = 'none';
+          });
+        }, 10);
       },
 
       setupModal1() {
@@ -1312,9 +1320,33 @@
       const backdrop = document.getElementById(modal + 'Backdrop');
       if (backdrop) {
         backdrop.classList.remove('active');
-        // Remove modal-active class from body to restore Tawk z-index
-        document.body.classList.remove('modal-active');
+        // Restore Tawk z-index when modal closes
+        restoreTawkZIndex();
       }
+    }
+
+    function restoreTawkZIndex() {
+      const tawkSelectors = [
+        '.tawk-min-container',
+        '.tawk-max-container',
+        '.tawk-toggle',
+        'iframe[src*="embed.tawk.to"]',
+        '#tawkMessengerFrame'
+      ];
+      
+      tawkSelectors.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(el => {
+          el.style.zIndex = '';
+          el.style.pointerEvents = '';
+        });
+      });
+      
+      // Also restore other Tawk elements
+      document.querySelectorAll('[class*="tawk"], [id*="tawk"]').forEach(el => {
+        el.style.zIndex = '';
+        el.style.pointerEvents = '';
+      });
     }
 
     // Initialize on page load (lazy-loaded)
