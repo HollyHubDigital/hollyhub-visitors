@@ -256,25 +256,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Squad Payment Function
   function SquadPay(email, amountInKobo, currency = "NGN") {
-    const squadInstance = new squad({
-      onClose: () => {
-        console.log("Widget closed");
-        msg.textContent = 'Payment cancelled.';
-        squadBtn.disabled = false;
-      },
-      onLoad: () => console.log("Widget loaded successfully"),
-      onSuccess: (response) => {
-        console.log(`Payment successful:`, response);
-        msg.textContent = '✓ Payment successful! Redirecting...';
-        setTimeout(() => { window.location.href = '/success.html'; }, 1500);
-      },
-      key: "test_pk_sample-public-key-1", // Replace with actual key
-      email: email,
-      amount: amountInKobo,
-      currency_code: currency
-    });
-    squadInstance.setup();
-    squadInstance.open();
+    // Check if squad is loaded, if not wait a bit
+    const checkSquad = () => {
+      if (typeof window.squad === 'undefined' && typeof squad === 'undefined') {
+        console.log('Squad not ready, waiting...');
+        setTimeout(checkSquad, 500);
+        return;
+      }
+
+      const squadClass = window.squad || squad;
+      const squadInstance = new squadClass({
+        onClose: () => {
+          console.log("Widget closed");
+          msg.textContent = 'Payment cancelled.';
+          squadBtn.disabled = false;
+        },
+        onLoad: () => console.log("Widget loaded successfully"),
+        onSuccess: (response) => {
+          console.log(`Payment successful:`, response);
+          msg.textContent = '✓ Payment successful! Redirecting...';
+          setTimeout(() => { window.location.href = '/success.html'; }, 1500);
+        },
+        key: "test_pk_sample-public-key-1", // Replace with actual key
+        email: email,
+        amount: amountInKobo,
+        currency_code: currency
+      });
+      squadInstance.setup();
+      squadInstance.open();
+    };
+
+    // Start checking
+    checkSquad();
   }
 
   // Squad button event listener
