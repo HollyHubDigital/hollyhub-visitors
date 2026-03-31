@@ -6,6 +6,11 @@
     "token": "246824",
     "size": 204905,
     "uploadedAt": "2026-03-28T22:36:56.671Z",
-    "tokenEntries": []
+    "tokenEntries": [
+      {
+        "timestamp": 1774984246195,
+        "expiresAt": 1774991446195
+      }
+    ]
   }
 ]
