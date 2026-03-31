@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
           msg.textContent = '✓ Payment successful! Redirecting...';
           setTimeout(() => { window.location.href = '/success.html'; }, 1500);
         },
-        key: "test_pk_sample-public-key-1", // Replace with actual key
+        key: "YOUR_LIVE_SQUAD_KEY_HERE", // Replace with your live key from Squad Dashboard
         email: email,
         amount: amountInKobo,
         currency_code: currency
