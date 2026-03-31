@@ -1435,54 +1435,51 @@ window.addEventListener('load', async ()=>{
         return;
       }
 
-      container.innerHTML = projects.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)).map(p => `
+      container.innerHTML = projects.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)).map(p => {
+        const email = p.userEmail || p.contact || 'Not provided';
+        return `
         <div style="padding:1rem; border:1px solid rgba(255,255,255,0.1); border-radius:8px; margin-bottom:1rem;">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem;">
             <div style="flex:1;">
               <div style="font-weight:600; color:var(--primary-accent); font-size:1.1rem;">${p.projectType}</div>
               <div style="opacity:0.8; font-size:0.9rem; margin-top:0.5rem;"><strong>📋 Project ID:</strong> <code style="background:rgba(255,255,255,0.05); padding:0.3rem 0.6rem; border-radius:4px; font-family:monospace;">${p.id}</code></div>
               <div style="opacity:0.8; font-size:0.9rem; margin-top:0.4rem;"><strong>👤 Client:</strong> ${p.name}</div>
-              <div style="opacity:0.8; font-size:0.9rem; margin-top:0.4rem;"><strong>📧 Email:</strong> <a href="mailto:${p.userEmail}" style="color:var(--secondary-accent);text-decoration:none;font-weight:500">${p.userEmail}</a></div>
+              <div style="opacity:0.8; font-size:0.9rem; margin-top:0.4rem;"><strong>📧 Email:</strong> <a href="mailto:${email}" style="color:var(--secondary-accent);text-decoration:none;font-weight:500">${email}</a></div>
               ${p.phone ? `<div style="opacity:0.8; font-size:0.9rem; margin-top:0.4rem;"><strong>📱 Phone:</strong> ${p.phone}</div>` : ''}
             </div>
             <div style="text-align:right;">
               <div style="font-size:0.85rem; opacity:0.7;">${new Date(p.uploadedAt).toLocaleString()}</div>
             </div>
           </div>
-          
           <div style="background:rgba(255,255,255,0.02); padding:0.75rem; border-radius:6px; margin-bottom:1rem;">
             <div style="font-weight:600; margin-bottom:0.5rem;">Description:</div>
             <div style="opacity:0.85;">${p.description}</div>
           </div>
-
           <div style="background:rgba(255,255,255,0.02); padding:0.75rem; border-radius:6px; margin-bottom:1rem;">
             <div style="font-weight:600; margin-bottom:0.5rem;">Files (${p.files.length}):</div>
             <div style="opacity:0.85; font-size:0.9rem;">
               ${p.files.map(f => '<div>📄 ' + f.originalname + ' (' + (f.size / 1024).toFixed(1) + ' KB)</div>').join('')}
             </div>
           </div>
-
           <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
             ${p.files.map((f, idx) => '<button class="btn-primary" onclick="viewProjectFile(\'' + f.filename + '\')" style="min-width:70px; background-color:#4A90E2; padding:0.6rem 1rem; font-size:0.9rem;">View ' + (idx + 1) + '</button><button class="btn-primary" onclick="downloadProjectFile(\'' + f.filename + '\')" style="min-width:70px; background-color:#2ECC71; padding:0.6rem 1rem; font-size:0.9rem;">DL ' + (idx + 1) + '</button>').join('')}
           </div>
-
           <div style="display:flex; gap:1rem; flex-wrap:wrap;">
             <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; background:${p.status === 'completed' ? 'rgba(0,255,0,0.1)' : 'rgba(255,165,0,0.1)'}; border:1px solid ${p.status === 'completed' ? 'rgba(0,255,0,0.3)' : 'rgba(255,165,0,0.3)'}; border-radius:6px; cursor:pointer; font-size:0.9rem;">
               <input type="checkbox" ${p.status === 'completed' ? 'checked' : ''} onchange="toggleProjectStatus(\'' + p.id + '\', this.checked)" style="cursor:pointer;"/>
               <span style="color:${p.status === 'completed' ? '#0f0' : '#ffcc00'};">${p.status === 'completed' ? 'Completed' : 'Pending'}</span>
             </label>
-          
             <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; background:${p.payment === 'verified' ? 'rgba(0,255,0,0.1)' : 'rgba(255,165,0,0.1)'}; border:1px solid ${p.payment === 'verified' ? 'rgba(0,255,0,0.3)' : 'rgba(255,165,0,0.3)'}; border-radius:6px; cursor:pointer; font-size:0.9rem;">
               <input type="checkbox" ${p.payment === 'verified' ? 'checked' : ''} onchange="toggleProjectPayment(\'' + p.id + '\', this.checked)" style="cursor:pointer;"/>
               <span style="color:${p.payment === 'verified' ? '#0f0' : '#ffcc00'};">${p.payment === 'verified' ? 'Paid' : 'Verifying'}</span>
             </label>
           </div>
-
           <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
             <button class="btn-danger" onclick="deleteProject(\'' + p.id + '\')" style="min-width:70px; padding:0.6rem 1rem; font-size:0.9rem;">Delete</button>
           </div>
         </div>
-      `).join('');
+        `;
+      }).join('');
     } catch (e) {
       console.error('loadProjectsUI error:', e);
       const container = document.getElementById('projectsContainer');
