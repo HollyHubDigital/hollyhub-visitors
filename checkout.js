@@ -256,16 +256,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Squad Payment Function
   function SquadPay(email, amountInKobo, currency = "NGN") {
-    // Check if squad is loaded, if not wait a bit
+    // Check if Squad is loaded, if not wait a bit
     const checkSquad = () => {
-      if (typeof window.squad === 'undefined' && typeof squad === 'undefined') {
+      if (typeof Squad === 'undefined') {
         console.log('Squad not ready, waiting...');
         setTimeout(checkSquad, 500);
         return;
       }
 
-      const squadClass = window.squad || squad;
-      const squadInstance = new squadClass({
+      const squadInstance = new Squad({
         onClose: () => {
           console.log("Widget closed");
           msg.textContent = 'Payment cancelled.';
