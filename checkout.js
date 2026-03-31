@@ -253,4 +253,78 @@ document.addEventListener('DOMContentLoaded', () => {
       if(!amountInput.value) amountInput.value = '';
     }
   }catch(e){/*ignore*/}
+
+  // Squad Payment Function
+  function SquadPay(email, amountInKobo, currency = "NGN") {
+    const squadInstance = new squad({
+      onClose: () => {
+        console.log("Widget closed");
+        msg.textContent = 'Payment cancelled.';
+        squadBtn.disabled = false;
+      },
+      onLoad: () => console.log("Widget loaded successfully"),
+      onSuccess: (response) => {
+        console.log(`Payment successful:`, response);
+        msg.textContent = '✓ Payment successful! Redirecting...';
+        setTimeout(() => { window.location.href = '/success.html'; }, 1500);
+      },
+      key: "test_pk_sample-public-key-1", // Replace with actual key
+      email: email,
+      amount: amountInKobo,
+      currency_code: currency
+    });
+    squadInstance.setup();
+    squadInstance.open();
+  }
+
+  // Squad button event listener
+  const squadBtn = document.getElementById('squadBtn');
+  if (squadBtn) {
+    squadBtn.addEventListener('click', async () => {
+      msg.textContent = 'Starting GTCO payment...';
+      const raw = parseFloat((amountInput.value || '').toString());
+      if (isNaN(raw) || raw <= 0) { 
+        msg.textContent = 'Enter a valid amount.'; 
+        return; 
+      }
+      
+      try {
+        squadBtn.disabled = true;
+        
+        // Get user email
+        let userEmail = 'visitor@example.com';
+        const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken') || localStorage.getItem('token') || '';
+        if (token) {
+          try {
+            const decoded = JSON.parse(atob(token.split('.')[1]));
+            userEmail = decoded.email || decoded.user || userEmail;
+          } catch (e) {}
+        }
+        
+        // Convert USD to NGN for Squad
+        let exchangeRate = 1500; // Default fallback rate
+        try {
+          const res = await fetch(`https://api.exchangerate.host/rates?base=USD&symbols=NGN`);
+          const data = await res.json();
+          if (data && data.rates && typeof data.rates.NGN === 'number') {
+            exchangeRate = data.rates.NGN;
+          }
+        } catch (e) {
+          console.log('Using default exchange rate');
+        }
+        
+        const ngnAmount = raw * exchangeRate;
+        const amountInKobo = Math.round(ngnAmount * 100); // Convert to kobo
+        
+        msg.textContent = `Processing ≈ ₦${ngnAmount.toFixed(2)} NGN...`;
+        
+        SquadPay(userEmail, amountInKobo, "NGN");
+        
+      } catch (e) {
+        console.error('Squad payment error:', e);
+        msg.textContent = 'GTCO payment failed: ' + e.message;
+        squadBtn.disabled = false;
+      }
+    });
+  }
 });
