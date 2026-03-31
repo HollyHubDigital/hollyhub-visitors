@@ -492,9 +492,10 @@
         list.innerHTML = projects.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)).map(p => `
           <div style="border:1px solid var(--border-color); border-radius:12px; padding:1.5rem; background:rgba(255,255,255,0.02);">
             <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:1rem;">
-              <div>
+              <div style="flex:1;">
                 <div style="font-weight:600; color:var(--primary-accent); font-size:1.1rem;">${p.projectType}</div>
-                <div style="opacity:0.8; font-size:0.9rem; margin-top:0.5rem;">${new Date(p.uploadedAt).toLocaleDateString()}</div>
+                <div style="opacity:0.8; font-size:0.9rem; margin-top:0.5rem;"><strong>📋 Project ID:</strong> <code style="background:rgba(255,255,255,0.05); padding:0.3rem 0.6rem; border-radius:4px; font-family:monospace;">${p.id}</code></div>
+                <div style="opacity:0.8; font-size:0.9rem; margin-top:0.4rem;">📅 ${new Date(p.uploadedAt).toLocaleDateString()}</div>
               </div>
               <button class="btn-secondary" onclick="openEditProjectModal('${p.id}')" style="padding:0.6rem 1rem; font-size:0.9rem;">Edit Project</button>
             </div>
