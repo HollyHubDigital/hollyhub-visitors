@@ -3,6 +3,7 @@ if (typeof ADMIN_INITIALIZED !== 'undefined') {
   console.log('[Admin] Script already loaded, skipping re-initialization');
 } else {
   window.ADMIN_INITIALIZED = true;
+  console.log('[Admin] admin.js loaded - version 0afa1aa, timestamp:', new Date().toISOString());
   
 const API = {
   baseURL() { return (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : ''; },
