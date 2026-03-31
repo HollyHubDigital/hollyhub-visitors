@@ -1441,7 +1441,7 @@ window.addEventListener('load', async ()=>{
             <div>
               <div style="font-weight:600; color:var(--primary-accent); font-size:1.1rem;">${p.projectType}</div>
               <div style="opacity:0.8; font-size:0.9rem;">🆔 ID: ${p.id}</div>
-              <div style="opacity:0.8; font-size:0.9rem;">👤 ${p.name} • 📧 ${p.contact}</div>
+              <div style="opacity:0.8; font-size:0.9rem;">👤 ${p.name} • Email: ${p.contact}</div>
             </div>
             <div style="text-align:right;">
               <div style="font-size:0.85rem; opacity:0.7;">${new Date(p.uploadedAt).toLocaleString()}</div>
