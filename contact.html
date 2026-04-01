@@ -515,12 +515,14 @@
       }
 
       try {
-        const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+        // For projects endpoint: use local API (same domain as contact.html)
+        // NOT admin-hollyhub proxy, since projects are stored on visitors API
+        const baseURL = ''; // Use relative URL to call local /api/projects
         
-        console.log('[loadUserProjects] Fetching from:', baseURL, 'email:', email);
+        console.log('[loadUserProjects] Fetching from LOCAL API:', baseURL || 'relative', 'email:', email);
         
         // GET projects endpoint - no auth required, just filters by email
-        const res = await fetch(baseURL + '/api/projects?userEmail=' + encodeURIComponent(email));
+        const res = await fetch('/api/projects?userEmail=' + encodeURIComponent(email));
         
         console.log('[loadUserProjects] Response status:', res.status, res.statusText);
         
@@ -593,7 +595,8 @@
         return;
       }
 
-      const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+      // Use local API for projects (NOT admin-hollyhub proxy)
+      console.log('[openEditProjectModal] Fetching projects from LOCAL API');
       
       // Fetch projects with auth header
       const headerObj = {};
@@ -601,7 +604,7 @@
         headerObj['Authorization'] = `Bearer ${authToken}`;
       }
       
-      fetch(baseURL + '/api/projects?userEmail=' + encodeURIComponent(authUserEmail), {
+      fetch('/api/projects?userEmail=' + encodeURIComponent(authUserEmail), {
         headers: headerObj
       })
         .then(res => res.json())
@@ -811,7 +814,7 @@
           formData.append('files', files[i]);
         }
 
-        const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+        const baseURL = ''; // Use local API for project updates
         
         // Add auth header
         const authToken = localStorage.getItem('authToken');
@@ -820,7 +823,7 @@
           headerObj['Authorization'] = `Bearer ${authToken}`;
         }
         
-        const res = await fetch(baseURL + '/api/projects/' + projectId + '/edit', {
+        const res = await fetch('/api/projects/' + projectId + '/edit', {
           method: 'POST',
           headers: headerObj,
           body: formData
@@ -947,7 +950,8 @@
             projectData.append('files', files[i]);
           }
 
-          const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+          // Use local API for project submission
+          const baseURL = '';
           
           // Add auth header
           const authTokenForPost = localStorage.getItem('authToken');
@@ -956,7 +960,7 @@
             headerObjForPost['Authorization'] = `Bearer ${authTokenForPost}`;
           }
           
-          const res2 = await fetch(baseURL + '/api/projects', {
+          const res2 = await fetch('/api/projects', {
             method: 'POST',
             headers: headerObjForPost,
             body: projectData
