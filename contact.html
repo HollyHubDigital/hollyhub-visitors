@@ -23,6 +23,16 @@
   <link rel="icon" href="holly-favicon.png" type="image/png" />
   <title>Contact - Holly Web Developer & Marketer</title>
   <link rel="stylesheet" href="styles.css" />
+  <script>
+    // Configure API base URL for chat endpoints (hosted on admin-hollyhub)
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      window.API_BASE_URL = 'http://localhost:3000';
+    } else {
+      // Chat API endpoints are hosted on admin-hollyhub server
+      window.API_BASE_URL = 'https://admin-hollyhub-5u9e.vercel.app';
+    }
+    console.log('[Contact] API Base URL configured:', window.API_BASE_URL);
+  </script>
 </head>
 <body>
   <header class="sticky-header" id="header">
@@ -1004,7 +1014,7 @@
           headerObj['Authorization'] = `Bearer ${authToken}`;
         }
         
-        const res = await fetch(`${baseURL}/api/chat/messages?projectId=${encodeURIComponent(projectId)}&userEmail=${encodeURIComponent(userEmail)}`, {
+        const res = await fetch(`${baseURL}/api/chat/messages?projectId=${encodeURIComponent(projectId)}&userEmail=${encodeURIComponent(userEmail)}&viewerType=user`, {
           headers: headerObj
         });
         if (!res.ok) throw new Error('Failed to load messages');
@@ -1116,7 +1126,8 @@
           body: JSON.stringify({
             projectId: projectId,
             userEmail: userEmail,
-            messageIds: Array.from(currentChatSession.readMessageIds)
+            messageIds: Array.from(currentChatSession.readMessageIds),
+            viewerType: 'user'
           })
         });
 
