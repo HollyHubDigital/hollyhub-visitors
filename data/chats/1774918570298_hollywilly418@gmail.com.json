@@ -6,7 +6,7 @@
       "senderEmail": "HollyHubDigital",
       "text": "hello",
       "timestamp": "2026-04-01T04:30:36.276Z",
-      "read": false
+      "read": true
     },
     {
       "id": "1775017952230_958o8oppe",
@@ -14,7 +14,7 @@
       "senderEmail": "HollyHubDigital",
       "text": "Are you there?",
       "timestamp": "2026-04-01T04:32:32.230Z",
-      "read": false
+      "read": true
     }
   ]
 }
