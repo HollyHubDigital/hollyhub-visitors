@@ -7,6 +7,14 @@
       "text": "Hello Admin",
       "timestamp": "2026-04-01T06:34:07.919Z",
       "read": true
+    },
+    {
+      "id": "1775025560183_h44z8r6w4",
+      "sender": "admin",
+      "senderEmail": "HollyHubDigital",
+      "text": "Hi customer",
+      "timestamp": "2026-04-01T06:39:20.183Z",
+      "read": false
     }
   ]
 }
