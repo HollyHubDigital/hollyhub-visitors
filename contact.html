@@ -513,7 +513,16 @@
 
       try {
         const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
-        const res = await fetch(baseURL + '/api/projects?userEmail=' + encodeURIComponent(email));
+        
+        // Send auth token in headers (same as chat endpoints)
+        const headerObj = {};
+        if (authToken) {
+          headerObj['Authorization'] = `Bearer ${authToken}`;
+        }
+        
+        const res = await fetch(baseURL + '/api/projects?userEmail=' + encodeURIComponent(email), {
+          headers: headerObj
+        });
         if (!res.ok) throw new Error('Failed to load projects');
         
         const projects = await res.json();
@@ -581,7 +590,16 @@
       }
 
       const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
-      fetch(baseURL + '/api/projects?userEmail=' + encodeURIComponent(authUserEmail))
+      
+      // Fetch projects with auth header
+      const headerObj = {};
+      if (authToken) {
+        headerObj['Authorization'] = `Bearer ${authToken}`;
+      }
+      
+      fetch(baseURL + '/api/projects?userEmail=' + encodeURIComponent(authUserEmail), {
+        headers: headerObj
+      })
         .then(res => res.json())
         .then(projects => {
           const project = projects.find(p => p.id === projectId);
@@ -790,8 +808,17 @@
         }
 
         const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+        
+        // Add auth header
+        const authToken = localStorage.getItem('authToken');
+        const headerObj = {};
+        if (authToken) {
+          headerObj['Authorization'] = `Bearer ${authToken}`;
+        }
+        
         const res = await fetch(baseURL + '/api/projects/' + projectId + '/edit', {
           method: 'POST',
+          headers: headerObj,
           body: formData
         });
 
@@ -917,8 +944,17 @@
           }
 
           const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+          
+          // Add auth header
+          const authTokenForPost = localStorage.getItem('authToken');
+          const headerObjForPost = {};
+          if (authTokenForPost) {
+            headerObjForPost['Authorization'] = `Bearer ${authTokenForPost}`;
+          }
+          
           const res2 = await fetch(baseURL + '/api/projects', {
             method: 'POST',
+            headers: headerObjForPost,
             body: projectData
           });
 
