@@ -1,0 +1,28 @@
+{
+  "messages": [
+    {
+      "id": "1775017836276_adnv0m8iu",
+      "sender": "admin",
+      "senderEmail": "HollyHubDigital",
+      "text": "hello",
+      "timestamp": "2026-04-01T04:30:36.276Z",
+      "read": true
+    },
+    {
+      "id": "1775017952230_958o8oppe",
+      "sender": "admin",
+      "senderEmail": "HollyHubDigital",
+      "text": "Are you there?",
+      "timestamp": "2026-04-01T04:32:32.230Z",
+      "read": true
+    },
+    {
+      "id": "1775018025297_ru0p5cdnq",
+      "sender": "admin",
+      "senderEmail": "HollyHubDigital",
+      "text": "hello",
+      "timestamp": "2026-04-01T04:33:45.297Z",
+      "read": false
+    }
+  ]
+}
