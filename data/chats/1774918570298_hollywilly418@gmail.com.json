@@ -30,7 +30,7 @@
       "senderEmail": "hollywilly418@gmail.com",
       "text": "Oh, I'm sorry, I was not online since morning, please can I get back to you once I'm done?",
       "timestamp": "2026-04-01T04:48:08.211Z",
-      "read": false
+      "read": true
     },
     {
       "id": "1775019032044_nygpjbqs8",
@@ -54,7 +54,7 @@
       "senderEmail": "hollywilly418@gmail.com",
       "text": "Okay Got you sir",
       "timestamp": "2026-04-01T04:53:07.129Z",
-      "read": false
+      "read": true
     }
   ]
 }
