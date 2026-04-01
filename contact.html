@@ -536,9 +536,8 @@
                 ${p.status === 'finished' ? 'Delivered' : 'Pending Project'}
               </span>
               <div style="position:relative; display:inline-block;">
-                <button onclick="openChatModal('${p.id}', '${p.userEmail}', 'user')" style="position:relative; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; background:rgba(67, 97, 238, 0.2); color:var(--secondary-accent); border:1px solid var(--secondary-accent); cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:0.5rem;">
-                  <img src="https://cdn.jsdelivr.net/gh/HollyHubDigital/hollyhub-visitors@main/public/assets/chat-icon.png" alt="Chat" style="width:20px; height:20px;" />
-                  <span>Message</span>
+                <button onclick="openChatModal('${p.id}', '${p.userEmail}', 'user')" style="position:relative; padding:0.5rem; border-radius:6px; font-weight:600; font-size:0.9rem; background:none; color:var(--secondary-accent); border:none; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:0.5rem;">
+                  <img src="https://cdn.jsdelivr.net/gh/HollyHubDigital/hollyhub-visitors@main/public/assets/chat-icon.png" alt="Chat" style="width:32px; height:32px;" />
                 </button>
                 <span class="chat-notification-badge" data-project-id="${p.id}" style="position:absolute; top:-8px; right:-8px; background:var(--primary-accent); color:white; border-radius:50%; width:24px; height:24px; display:none; align-items:center; justify-content:center; font-weight:bold; font-size:0.8rem; border:2px solid #1a1a1a;"></span>
               </div>
