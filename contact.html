@@ -284,6 +284,33 @@
     </div>
   </section>
 
+  <!-- CHAT MODAL -->
+  <div id="chatModal" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); display:none; align-items:center; justify-content:center; z-index:11000; padding:1rem;">
+    <div style="position:relative; background:#1a1a1a; border:1px solid var(--border-color); border-radius:12px; width:100%; max-width:500px; height:75vh; display:flex; flex-direction:column; overflow:hidden;">
+      <!-- Header -->
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:1rem; border-bottom:1px solid var(--border-color); background:rgba(67, 97, 238, 0.1);">
+        <div>
+          <h3 style="color:var(--primary-accent); margin:0; font-size:1.1rem;">Project Chat</h3>
+          <small style="opacity:0.7;" id="chatProjectInfo"></small>
+        </div>
+        <button onclick="closeChatModal()" style="background:none; border:none; font-size:1.5rem; color:var(--text-light); cursor:pointer;">&times;</button>
+      </div>
+
+      <!-- Messages Container -->
+      <div id="chatMessagesContainer" style="flex:1; overflow-y:auto; padding:1rem; display:flex; flex-direction:column; gap:1rem;">
+        <!-- Messages will be populated here -->
+      </div>
+
+      <!-- Message Input -->
+      <div style="border-top:1px solid var(--border-color); padding:1rem; background:rgba(255,255,255,0.02);">
+        <div style="display:flex; gap:0.5rem;">
+          <input type="text" id="chatMessageInput" placeholder="Type a message..." style="flex:1; padding:0.8rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); border-radius:6px; color:var(--text-light); font-size:0.9rem;" />
+          <button onclick="sendChatMessage()" style="padding:0.8rem 1.5rem; background:linear-gradient(135deg, var(--primary-accent), #ff6b6b); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600; transition:all 0.2s;">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <footer class="footer">
     <div class="container">
       <div class="footer-grid">
@@ -508,6 +535,13 @@
               <span style="display:inline-block; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; ${p.status === 'finished' ? 'background:rgba(0,255,0,0.2); color:#0f0;' : 'background:rgba(255,165,0,0.2); color:#ffcc00;'}">
                 ${p.status === 'finished' ? 'Delivered' : 'Pending Project'}
               </span>
+              <div style="position:relative; display:inline-block;">
+                <button onclick="openChatModal('${p.id}', '${p.userEmail}', 'user')" style="position:relative; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; background:rgba(67, 97, 238, 0.2); color:var(--secondary-accent); border:1px solid var(--secondary-accent); cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:0.5rem;">
+                  <img src="https://cdn.jsdelivr.net/gh/HollyHubDigital/hollyhub-visitors@main/public/assets/chat-icon.png" alt="Chat" style="width:20px; height:20px;" />
+                  <span>Message</span>
+                </button>
+                <span class="chat-notification-badge" data-project-id="${p.id}" style="position:absolute; top:-8px; right:-8px; background:var(--primary-accent); color:white; border-radius:50%; width:24px; height:24px; display:none; align-items:center; justify-content:center; font-weight:bold; font-size:0.8rem; border:2px solid #1a1a1a;"></span>
+              </div>
               ${p.payment === 'verified' ? 
                 `<span style="display:inline-block; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; background:rgba(0,255,0,0.2); color:#0f0;">Paid</span>` 
                 : `<button onclick="goToCheckout('${p.id}')" style="padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; background:linear-gradient(135deg, #22c55e, #16a34a); color:white; border:none; cursor:pointer; transition:all 0.2s;">💳 Make Payment</button>`
@@ -908,6 +942,221 @@
       // Periodically refresh user projects
       loadUserProjects();
       setInterval(loadUserProjects, 10000);
+    });
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- 💬 CHAT SYSTEM FUNCTIONS -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <script>
+    let currentChatSession = null;
+    let chatPollInterval = null;
+
+    async function openChatModal(projectId, userEmail, viewerType) {
+      currentChatSession = {
+        projectId: projectId,
+        userEmail: userEmail,
+        viewerType: viewerType,
+        readMessageIds: new Set()
+      };
+
+      const modal = document.getElementById('chatModal');
+      const container = document.getElementById('chatMessagesContainer');
+      
+      // Clear previous messages
+      container.innerHTML = '<div style="opacity:0.5; text-align:center; padding:2rem;">Loading messages...</div>';
+      
+      // Update header
+      document.getElementById('chatProjectInfo').textContent = `Project: ${projectId} | Email: ${userEmail}`;
+      
+      // Show modal
+      modal.style.display = 'flex';
+
+      // Load initial messages
+      await loadChatMessages();
+
+      // Start polling every 2 seconds
+      if (chatPollInterval) clearInterval(chatPollInterval);
+      chatPollInterval = setInterval(loadChatMessages, 2000);
+    }
+
+    function closeChatModal() {
+      if (chatPollInterval) clearInterval(chatPollInterval);
+      document.getElementById('chatModal').style.display = 'none';
+      
+      // Mark messages as read when closing
+      if (currentChatSession && currentChatSession.readMessageIds.size > 0) {
+        markMessagesAsRead();
+      }
+      
+      currentChatSession = null;
+    }
+
+    async function loadChatMessages() {
+      if (!currentChatSession) return;
+
+      try {
+        const { projectId, userEmail, viewerType } = currentChatSession;
+        const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+        
+        const res = await fetch(`${baseURL}/api/chat/messages?projectId=${encodeURIComponent(projectId)}&userEmail=${encodeURIComponent(userEmail)}`);
+        if (!res.ok) throw new Error('Failed to load messages');
+        
+        const messages = await res.json();
+        renderMessages(messages, viewerType);
+      } catch (error) {
+        console.error('Failed to load chat messages:', error);
+      }
+    }
+
+    function renderMessages(messages, viewerType) {
+      const container = document.getElementById('chatMessagesContainer');
+      
+      if (messages.length === 0) {
+        container.innerHTML = '<div style="opacity:0.5; text-align:center; padding:2rem;">No messages yet. Send one to start!</div>';
+        return;
+      }
+
+      container.innerHTML = messages.map(msg => {
+        const isUserMessage = msg.sender === 'user';
+        const isCurrentUserViewing = (viewerType === 'user' && isUserMessage) || (viewerType === 'admin' && !isUserMessage);
+        
+        // Track unread messages
+        if (!msg.read && !isCurrentUserViewing) {
+          currentChatSession.readMessageIds.add(msg.id);
+        }
+        
+        const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        return `
+          <div style="display:flex; ${isCurrentUserViewing ? 'justify-content:flex-end' : 'justify-content:flex-start'}; margin-bottom:0.5rem;">
+            <div style="
+              max-width:70%;
+              padding:0.8rem 1rem;
+              border-radius:12px;
+              background:${isCurrentUserViewing ? 'linear-gradient(135deg, var(--primary-accent), #ff6b6b)' : 'rgba(255,255,255,0.08)'};
+              color:${isCurrentUserViewing ? 'white' : 'var(--text-light)'};
+              word-wrap:break-word;
+            ">
+              <div>${msg.text}</div>
+              <small style="opacity:0.7; margin-top:0.3rem; display:block; font-size:0.8rem;">${time} ${msg.read ? '✓✓' : '✓'}</small>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Scroll to bottom
+      container.scrollTop = container.scrollHeight;
+    }
+
+    async function sendChatMessage() {
+      if (!currentChatSession) return;
+
+      const input = document.getElementById('chatMessageInput');
+      const text = input.value.trim();
+      
+      if (!text) return;
+
+      try {
+        const { projectId, userEmail, viewerType } = currentChatSession;
+        const authEmail = localStorage.getItem('authUserEmail') || userEmail;
+        const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+        
+        const res = await fetch(`${baseURL}/api/chat/send`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            projectId: projectId,
+            userEmail: userEmail,
+            senderType: viewerType,
+            senderEmail: authEmail,
+            text: text
+          })
+        });
+
+        if (!res.ok) throw new Error('Failed to send message');
+
+        input.value = '';
+        await loadChatMessages();
+      } catch (error) {
+        console.error('Failed to send message:', error);
+        alert('Error sending message: ' + error.message);
+      }
+    }
+
+    async function markMessagesAsRead() {
+      if (!currentChatSession || currentChatSession.readMessageIds.size === 0) return;
+
+      try {
+        const { projectId, userEmail } = currentChatSession;
+        const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+        
+        const res = await fetch(`${baseURL}/api/chat/mark-read`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            projectId: projectId,
+            userEmail: userEmail,
+            messageIds: Array.from(currentChatSession.readMessageIds)
+          })
+        });
+
+        if (res.ok) {
+          currentChatSession.readMessageIds.clear();
+          updateNotificationBadge(projectId);
+        }
+      } catch (error) {
+        console.error('Failed to mark messages as read:', error);
+      }
+    }
+
+    async function updateNotificationBadge(projectId) {
+      try {
+        const userEmail = localStorage.getItem('authUserEmail');
+        if (!userEmail) return;
+
+        const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+        
+        const res = await fetch(`${baseURL}/api/chat/unread-count?projectId=${encodeURIComponent(projectId)}&userEmail=${encodeURIComponent(userEmail)}&viewerType=user`);
+        if (!res.ok) return;
+
+        const data = await res.json();
+        const badge = document.querySelector(`[data-project-id="${projectId}"]`);
+        
+        if (badge) {
+          if (data.unreadCount > 0) {
+            badge.textContent = data.unreadCount;
+            badge.style.display = 'flex';
+          } else {
+            badge.style.display = 'none';
+          }
+        }
+      } catch (error) {
+        console.error('Failed to update notification badge:', error);
+      }
+    }
+
+    // Update notification badges when projects load
+    async function updateAllNotificationBadges() {
+      const badges = document.querySelectorAll('[data-project-id]');
+      const userEmail = localStorage.getItem('authUserEmail');
+      
+      if (!userEmail) return;
+
+      for (const badge of badges) {
+        const projectId = badge.getAttribute('data-project-id');
+        await updateNotificationBadge(projectId);
+      }
+    }
+
+    // Poll for new notifications every 3 seconds
+    setInterval(updateAllNotificationBadges, 3000);
+
+    // Allow Enter key to send message
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && document.getElementById('chatMessageInput') === document.activeElement) {
+        sendChatMessage();
+      }
     });
   </script>
   <script src="app-loader.js"></script>
