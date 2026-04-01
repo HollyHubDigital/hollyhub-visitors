@@ -996,9 +996,17 @@
 
       try {
         const { projectId, userEmail, viewerType } = currentChatSession;
+        const authToken = localStorage.getItem('authToken');
         const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
         
-        const res = await fetch(`${baseURL}/api/chat/messages?projectId=${encodeURIComponent(projectId)}&userEmail=${encodeURIComponent(userEmail)}`);
+        const headerObj = {};
+        if (authToken) {
+          headerObj['Authorization'] = `Bearer ${authToken}`;
+        }
+        
+        const res = await fetch(`${baseURL}/api/chat/messages?projectId=${encodeURIComponent(projectId)}&userEmail=${encodeURIComponent(userEmail)}`, {
+          headers: headerObj
+        });
         if (!res.ok) throw new Error('Failed to load messages');
         
         const messages = await res.json();
@@ -1059,11 +1067,17 @@
       try {
         const { projectId, userEmail, viewerType } = currentChatSession;
         const authEmail = localStorage.getItem('authUserEmail') || userEmail;
+        const authToken = localStorage.getItem('authToken');
         const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+        
+        const headerObj = { 'Content-Type': 'application/json' };
+        if (authToken) {
+          headerObj['Authorization'] = `Bearer ${authToken}`;
+        }
         
         const res = await fetch(`${baseURL}/api/chat/send`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: headerObj,
           body: JSON.stringify({
             projectId: projectId,
             userEmail: userEmail,
@@ -1088,11 +1102,17 @@
 
       try {
         const { projectId, userEmail } = currentChatSession;
+        const authToken = localStorage.getItem('authToken');
         const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+        
+        const headerObj = { 'Content-Type': 'application/json' };
+        if (authToken) {
+          headerObj['Authorization'] = `Bearer ${authToken}`;
+        }
         
         const res = await fetch(`${baseURL}/api/chat/mark-read`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: headerObj,
           body: JSON.stringify({
             projectId: projectId,
             userEmail: userEmail,
@@ -1112,11 +1132,19 @@
     async function updateNotificationBadge(projectId) {
       try {
         const userEmail = localStorage.getItem('authUserEmail');
+        const authToken = localStorage.getItem('authToken');
         if (!userEmail) return;
 
         const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
         
-        const res = await fetch(`${baseURL}/api/chat/unread-count?projectId=${encodeURIComponent(projectId)}&userEmail=${encodeURIComponent(userEmail)}&viewerType=user`);
+        const headerObj = {};
+        if (authToken) {
+          headerObj['Authorization'] = `Bearer ${authToken}`;
+        }
+        
+        const res = await fetch(`${baseURL}/api/chat/unread-count?projectId=${encodeURIComponent(projectId)}&userEmail=${encodeURIComponent(userEmail)}&viewerType=user`, {
+          headers: headerObj
+        });
         if (!res.ok) return;
 
         const data = await res.json();
