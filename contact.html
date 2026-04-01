@@ -504,9 +504,12 @@
       const authToken = localStorage.getItem('authToken');
       const email = localStorage.getItem('authUserEmail');
       
+      console.log('[loadUserProjects] Auth check - token:', !!authToken, 'email:', email);
+      
       // Hide projects section if not authenticated
       const section = document.getElementById('userProjectsSection');
       if (!authToken || !email) {
+        console.log('[loadUserProjects] Not authenticated, hiding projects section');
         if (section) section.style.display = 'none';
         return;
       }
@@ -514,27 +517,28 @@
       try {
         const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
         
-        // Send auth token in headers (same as chat endpoints)
-        const headerObj = {};
-        if (authToken) {
-          headerObj['Authorization'] = `Bearer ${authToken}`;
-        }
+        console.log('[loadUserProjects] Fetching from:', baseURL, 'email:', email);
         
-        const res = await fetch(baseURL + '/api/projects?userEmail=' + encodeURIComponent(email), {
-          headers: headerObj
-        });
-        if (!res.ok) throw new Error('Failed to load projects');
+        // GET projects endpoint - no auth required, just filters by email
+        const res = await fetch(baseURL + '/api/projects?userEmail=' + encodeURIComponent(email));
+        
+        console.log('[loadUserProjects] Response status:', res.status, res.statusText);
+        
+        if (!res.ok) throw new Error(`Failed to load projects (${res.status})`);
         
         const projects = await res.json();
+        console.log('[loadUserProjects] Projects returned:', projects?.length || 0, projects);
 
         const section = document.getElementById('userProjectsSection');
         const list = document.getElementById('userProjectsList');
 
         if (projects.length === 0) {
+          console.log('[loadUserProjects] No projects found, hiding section');
           section.style.display = 'none';
           return;
         }
 
+        console.log('[loadUserProjects] Displaying', projects.length, 'projects');
         section.style.display = 'block';
         list.innerHTML = projects.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)).map(p => `
           <div style="border:1px solid var(--border-color); border-radius:12px; padding:1.5rem; background:rgba(255,255,255,0.02);">
