@@ -1052,7 +1052,8 @@
       try {
         const { projectId, userEmail, viewerType } = currentChatSession;
         const authToken = localStorage.getItem('authToken');
-        const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+        // Chat endpoints are on same visitors API
+        const visitorsURL = window.location.origin;
         
         const headerObj = {};
         if (authToken) {
@@ -1063,7 +1064,7 @@
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000);
         
-        const res = await fetch(`${baseURL}/api/chat/messages?projectId=${encodeURIComponent(projectId)}&userEmail=${encodeURIComponent(userEmail)}&viewerType=user`, {
+        const res = await fetch(`${visitorsURL}/api/chat/messages?projectId=${encodeURIComponent(projectId)}&userEmail=${encodeURIComponent(userEmail)}&viewerType=user`, {
           headers: headerObj,
           signal: controller.signal
         });
@@ -1199,14 +1200,15 @@
       try {
         const { projectId, userEmail } = currentChatSession;
         const authToken = localStorage.getItem('authToken');
-        const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+        // Chat endpoints are on same visitors API
+        const visitorsURL = window.location.origin;
         
         const headerObj = { 'Content-Type': 'application/json' };
         if (authToken) {
           headerObj['Authorization'] = `Bearer ${authToken}`;
         }
         
-        const res = await fetch(`${baseURL}/api/chat/mark-read`, {
+        const res = await fetch(`${visitorsURL}/api/chat/mark-read`, {
           method: 'PUT',
           headers: headerObj,
           body: JSON.stringify({

@@ -2032,6 +2032,14 @@ app.delete('/api/portfolio', authRequired, async (req,res)=>{
   }
 });
 
+// ===== CHAT SYSTEM =====
+const { handleChatSend, handleChatMessages, handleMarkMessagesAsRead, handleUnreadCount } = require('./api/chat');
+
+app.post('/api/chat/send', handleChatSend);
+app.get('/api/chat/messages', handleChatMessages);
+app.put('/api/chat/mark-read', handleMarkMessagesAsRead);
+app.get('/api/chat/unread-count', handleUnreadCount);
+
 // ===== ADMIN CREDENTIALS =====
 app.post('/api/admin/update-credentials', authRequired, validate(adminUpdateCredsSchema), async (req,res)=>{
   const { currentPassword, newUsername, newPassword } = req.body;
