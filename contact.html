@@ -1144,6 +1144,18 @@
           headerObj['Authorization'] = `Bearer ${authToken}`;
         }
         
+        const payload = {
+          projectId: projectId,
+          userEmail: userEmail,
+          senderType: viewerType,
+          senderEmail: authEmail,
+          text: text
+        };
+        
+        console.log('[contact.html sendChatMessage] Sending payload:', payload);
+        console.log('[contact.html sendChatMessage] baseURL:', baseURL);
+        console.log('[contact.html sendChatMessage] authToken:', !!authToken);
+        
         // Set a 30 second timeout (increased from 10s for better reliability with GitHub API)
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -1152,13 +1164,7 @@
           method: 'POST',
           headers: headerObj,
           signal: controller.signal,
-          body: JSON.stringify({
-            projectId: projectId,
-            userEmail: userEmail,
-            senderType: viewerType,
-            senderEmail: authEmail,
-            text: text
-          })
+          body: JSON.stringify(payload)
         });
         clearTimeout(timeoutId);
 
