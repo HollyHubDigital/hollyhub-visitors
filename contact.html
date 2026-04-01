@@ -1015,15 +1015,23 @@
           headerObj['Authorization'] = `Bearer ${authToken}`;
         }
         
+        // Set a 10 second timeout for the fetch
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        
         const res = await fetch(`${baseURL}/api/chat/messages?projectId=${encodeURIComponent(projectId)}&userEmail=${encodeURIComponent(userEmail)}&viewerType=user`, {
-          headers: headerObj
+          headers: headerObj,
+          signal: controller.signal
         });
-        if (!res.ok) throw new Error('Failed to load messages');
+        clearTimeout(timeoutId);
+        
+        if (!res.ok) throw new Error(`Failed to load messages (${res.status})`);
         
         const messages = await res.json();
         renderMessages(messages, viewerType);
       } catch (error) {
         console.error('Failed to load chat messages:', error);
+        // Don't halt polling on error - just log and continue
       }
     }
 
@@ -1075,7 +1083,13 @@
       
       if (!text) return;
 
+      const sendBtn = document.querySelector('[onclick="sendChatMessage()"]');
+      const originalText = sendBtn?.textContent || 'Send';
+      
       try {
+        sendBtn.disabled = true;
+        sendBtn.textContent = 'Sending...';
+        
         const { projectId, userEmail, viewerType } = currentChatSession;
         const authEmail = localStorage.getItem('authUserEmail') || userEmail;
         const authToken = localStorage.getItem('authToken');
@@ -1086,9 +1100,14 @@
           headerObj['Authorization'] = `Bearer ${authToken}`;
         }
         
+        // Set a 10 second timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        
         const res = await fetch(`${baseURL}/api/chat/send`, {
           method: 'POST',
           headers: headerObj,
+          signal: controller.signal,
           body: JSON.stringify({
             projectId: projectId,
             userEmail: userEmail,
@@ -1097,14 +1116,30 @@
             text: text
           })
         });
+        clearTimeout(timeoutId);
 
-        if (!res.ok) throw new Error('Failed to send message');
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+          throw new Error(errorData.error || `Server error: ${res.status}`);
+        }
 
         input.value = '';
         await loadChatMessages();
+        
+        if (sendBtn) {
+          sendBtn.textContent = '✓ Sent';
+          setTimeout(() => {
+            sendBtn.textContent = originalText;
+            sendBtn.disabled = false;
+          }, 1500);
+        }
       } catch (error) {
         console.error('Failed to send message:', error);
         alert('Error sending message: ' + error.message);
+        if (sendBtn) {
+          sendBtn.textContent = originalText;
+          sendBtn.disabled = false;
+        }
       }
     }
 
