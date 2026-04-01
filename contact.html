@@ -1138,7 +1138,8 @@
         const { projectId, userEmail, viewerType } = currentChatSession;
         const authEmail = localStorage.getItem('authUserEmail') || userEmail;
         const authToken = localStorage.getItem('authToken');
-        const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+        // Chat endpoints are on visitors API (which has GITHUB_TOKEN)
+        const visitorsURL = 'https://hollyhubdigitals.vercel.app';
         
         const headerObj = { 'Content-Type': 'application/json' };
         if (authToken) {
@@ -1154,14 +1155,14 @@
         };
         
         console.log('[contact.html sendChatMessage] Sending payload:', payload);
-        console.log('[contact.html sendChatMessage] baseURL:', baseURL);
+        console.log('[contact.html sendChatMessage] visitorsURL:', visitorsURL);
         console.log('[contact.html sendChatMessage] authToken:', !!authToken);
         
         // Set a 30 second timeout (increased from 10s for better reliability with GitHub API)
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000);
         
-        const res = await fetch(`${baseURL}/api/chat/send`, {
+        const res = await fetch(`${visitorsURL}/api/chat/send`, {
           method: 'POST',
           headers: headerObj,
           signal: controller.signal,
@@ -1234,14 +1235,15 @@
         const authToken = localStorage.getItem('authToken');
         if (!userEmail) return;
 
-        const baseURL = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+        // Chat endpoints are on visitors API (which has GITHUB_TOKEN)
+        const visitorsURL = 'https://hollyhubdigitals.vercel.app';
         
         const headerObj = {};
         if (authToken) {
           headerObj['Authorization'] = `Bearer ${authToken}`;
         }
         
-        const res = await fetch(`${baseURL}/api/chat/unread-count?projectId=${encodeURIComponent(projectId)}&userEmail=${encodeURIComponent(userEmail)}&viewerType=user`, {
+        const res = await fetch(`${visitorsURL}/api/chat/unread-count?projectId=${encodeURIComponent(projectId)}&userEmail=${encodeURIComponent(userEmail)}&viewerType=user`, {
           headers: headerObj
         });
         if (!res.ok) return;
