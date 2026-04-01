@@ -1694,3 +1694,106 @@ section {
 section.visible {
   opacity: 1;
 }
+
+/* ===== PAYMENT METHODS SECTION ===== */
+.payment-methods-section {
+  margin-top: 2rem;
+  padding: 2rem 0 0 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.payment-methods-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.payment-methods-grid-compact {
+  max-width: 400px;
+  gap: 1rem;
+}
+
+.payment-method-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem;
+  min-height: 120px;
+  transition: all 0.3s ease;
+}
+
+.payment-method-item-compact {
+  min-height: 80px;
+  padding: 0.6rem;
+}
+
+.payment-method-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--secondary-accent);
+  transform: translateY(-4px);
+}
+
+.payment-method-img {
+  max-width: 100%;
+  max-height: 90px;
+  width: auto;
+  height: auto;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+.payment-method-img-compact {
+  max-height: 50px;
+}
+
+/* ===== RESPONSIVE PAYMENT METHODS ===== */
+@media (max-width: 768px) {
+  .payment-methods-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    max-width: 100%;
+  }
+
+  .payment-method-item {
+    min-height: 100px;
+    padding: 0.8rem;
+  }
+
+  .payment-method-img {
+    max-height: 70px;
+  }
+
+  .payment-method-img-compact {
+    max-height: 45px;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-methods-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .payment-method-item {
+    min-height: 100px;
+    padding: 1rem;
+  }
+
+  .payment-method-img {
+    max-height: 70px;
+  }
+
+  .payment-method-img-compact {
+    max-height: 40px;
+  }
+
+  .payment-methods-section h4 {
+    font-size: 0.95rem;
+  }
+}
