@@ -26,7 +26,7 @@ function validateAuthToken(token, userEmail) {
 async function verifyProjectOwnership(projectId, userEmail) {
   try {
     // Try to fetch the project from projects.json to verify ownership
-    const projectsData = await getFile('/data/projects.json');
+    const projectsData = await getFile('data/projects.json');
     const projects = JSON.parse(projectsData.content || '[]');
     
     const userOwnsProject = projects.some(p => p.id === projectId && p.userEmail === userEmail);
@@ -47,7 +47,7 @@ async function verifyProjectOwnership(projectId, userEmail) {
 // Helper: Read chat file from GitHub
 async function readChatFile(chatFileKey) {
   try {
-    const data = await getFile(`/data/chats/${chatFileKey}.json`);
+    const data = await getFile(`data/chats/${chatFileKey}.json`);
     const content = JSON.parse(data.content || '{}');
     return content && content.messages ? content : { messages: [] };
   } catch (e) {
@@ -58,7 +58,7 @@ async function readChatFile(chatFileKey) {
 // Helper: Write chat file to GitHub
 async function writeChatFile(chatFileKey, chatData) {
   try {
-    await putFile(`/data/chats/${chatFileKey}.json`, JSON.stringify(chatData, null, 2));
+    await putFile(`data/chats/${chatFileKey}.json`, JSON.stringify(chatData, null, 2));
     return true;
   } catch (error) {
     console.error('Error writing chat file:', error);
