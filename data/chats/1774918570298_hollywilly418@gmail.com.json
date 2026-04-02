@@ -134,7 +134,7 @@
       "senderEmail": "hollywilly418@gmail.com",
       "text": "hello",
       "timestamp": "2026-04-02T04:42:02.963Z",
-      "read": false
+      "read": true
     }
   ]
 }
