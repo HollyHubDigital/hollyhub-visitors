@@ -15,6 +15,14 @@
       "text": "Hi customer",
       "timestamp": "2026-04-01T06:39:20.183Z",
       "read": true
+    },
+    {
+      "id": "1775210754630_divflpb36",
+      "sender": "user",
+      "senderEmail": "hollywilly418@gmail.com",
+      "text": "How are you doing? 😊",
+      "timestamp": "2026-04-03T10:05:54.630Z",
+      "read": false
     }
   ]
 }
