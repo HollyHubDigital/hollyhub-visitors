@@ -3312,3 +3312,268 @@ section:has(.section-title) div[style*="grid-template-columns"] > div:has(h4) di
     max-height: calc(100vh - 90px) !important;
   }
 }
+
+/* ===== MOBILE LAYOUT REPAIR PASS: BLOG, CONTACT, ABOUT, CHECKOUT, SUCCESS ===== */
+.btn-danger,
+.modal-inner .btn-danger,
+#modalComments .btn-danger {
+  background: linear-gradient(135deg, #FD1843, #b90f31) !important;
+  color: #fff9fa !important;
+  border: 2px solid rgba(255, 249, 250, 0.7) !important;
+  border-radius: 999px !important;
+  font-weight: 800 !important;
+}
+
+.about-grid > div:last-child {
+  background-image: linear-gradient(135deg, rgba(253, 24, 67, 0.28), rgba(255, 249, 250, 0.42)), url('https://cdn.jsdelivr.net/gh/HollyHubDigital/hollyhub-visitors@main/public/assets/hollyhubhero.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  min-height: 360px !important;
+}
+
+@media (max-width: 768px) {
+  html,
+  body {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  .container {
+    width: min(100%, 100vw) !important;
+    max-width: 100% !important;
+    padding-left: clamp(0.85rem, 4vw, 1.2rem) !important;
+    padding-right: clamp(0.85rem, 4vw, 1.2rem) !important;
+  }
+
+  .header-container {
+    gap: 0.45rem !important;
+    padding: 0.65rem 0.75rem !important;
+  }
+
+  .search-container {
+    flex: 1 1 46vw !important;
+    width: auto !important;
+    min-width: 130px !important;
+    max-width: 48vw !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    padding: 0.18rem 0.42rem 0.18rem 0.62rem !important;
+    border-radius: 999px !important;
+  }
+
+  .search-input {
+    height: 24px !important;
+    min-height: 24px !important;
+    font-size: 0.78rem !important;
+    padding: 0 0.25rem 0 0.45rem !important;
+    transform: none !important;
+  }
+
+  .search-btn {
+    width: 1.55rem !important;
+    min-width: 1.55rem !important;
+    height: 1.55rem !important;
+    transform: none !important;
+  }
+
+  .search-btn svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .mobile-menu {
+    display: flex !important;
+    top: 56px !important;
+    left: 50% !important;
+    width: min(calc(100vw - 1.25rem), 390px) !important;
+    max-height: calc(100vh - 72px) !important;
+    padding: 1rem 1rem 1.6rem !important;
+    margin: 0 auto 1rem !important;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(-18px) scale(0.98) !important;
+    transition: opacity 360ms ease, transform 360ms ease, visibility 360ms ease !important;
+  }
+
+  .mobile-menu.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0) scale(1) !important;
+  }
+
+  .blog-list {
+    width: 100% !important;
+    max-width: 100% !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    justify-items: center !important;
+    gap: 1.2rem !important;
+    padding: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .blog-post {
+    width: min(100%, 430px) !important;
+    max-width: calc(100vw - 1.5rem) !important;
+    min-width: 0 !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    padding: clamp(1rem, 4vw, 1.35rem) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    overflow: hidden !important;
+  }
+
+  .blog-post > div:has(.lazy-image),
+  .blog-post > div:has(video),
+  .blog-post > * {
+    max-width: 100% !important;
+  }
+
+  .blog-post > div:has(.lazy-image),
+  .blog-post > div:has(video) {
+    width: 100% !important;
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .blog-post .lazy-image,
+  .blog-post video {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: clamp(190px, 58vw, 280px) !important;
+    min-height: 190px !important;
+    flex: 0 0 auto !important;
+    background-size: contain !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    background-origin: content-box !important;
+    background-clip: content-box !important;
+  }
+
+  .blog-post h3,
+  .blog-post p,
+  .blog-meta,
+  .blog-excerpt,
+  .post-actions {
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  .post-actions {
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+  }
+
+  .contact-section {
+    padding: 3rem 0 !important;
+  }
+
+  .two-col-grid,
+  .about-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 1.4rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .two-col-grid > *,
+  .about-grid > *,
+  .contact-form {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: clamp(1.15rem, 4vw, 1.6rem) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .about-grid > div:first-child {
+    order: 1 !important;
+  }
+
+  .about-grid > div:last-child {
+    order: 2 !important;
+    width: 100% !important;
+    min-height: clamp(240px, 70vw, 360px) !important;
+    height: auto !important;
+  }
+
+  .contact-form .form-group,
+  .contact-form label,
+  .contact-form small,
+  .contact-form .form-input,
+  .contact-form .form-textarea,
+  .contact-form .form-select {
+    width: 100% !important;
+    max-width: 100% !important;
+    text-align: center !important;
+  }
+
+  #fileUploadArea,
+  #editFileUploadArea {
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100% !important;
+  }
+
+  .file-upload-square,
+  .edit-file-upload-square {
+    width: 100% !important;
+    min-height: 120px !important;
+    padding: 1.2rem !important;
+  }
+
+  .checkout-card,
+  main.container > div:has(h2),
+  main.container > div:has(h3),
+  main.container > div:has(strong) {
+    width: min(100%, 430px) !important;
+    max-width: calc(100vw - 1.5rem) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: center !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  main.container > div:has(strong) {
+    transform: none !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .container {
+    padding-left: 0.7rem !important;
+    padding-right: 0.7rem !important;
+  }
+
+  .blog-post,
+  .contact-form,
+  .two-col-grid > *,
+  .about-grid > *,
+  .checkout-card,
+  main.container > div {
+    max-width: calc(100vw - 1rem) !important;
+    border-width: 3px !important;
+    outline-offset: -9px !important;
+  }
+
+  .blog-post .lazy-image,
+  .blog-post video {
+    height: clamp(180px, 62vw, 240px) !important;
+    min-height: 180px !important;
+    padding: 8px !important;
+  }
+
+  .search-container {
+    min-width: 118px !important;
+    max-width: 46vw !important;
+  }
+}
