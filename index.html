@@ -706,7 +706,7 @@
           const img = (p.image||'').trim();
           let imgUrl = img;
           if(img && !img.startsWith('http') && !img.startsWith('/')) imgUrl = '/uploads/' + encodeURIComponent(img);
-          const bg = imgUrl ? `style="background-image:url('${imgUrl}');background-size:cover;background-position:center"` : '';
+          const bg = imgUrl ? `style="background-image:url('${imgUrl}') !important;background-size:cover;background-position:center"` : '';
           const link = p.url || 'portfolio.html';
           return `<div class="portfolio-item"><div class="portfolio-image" ${bg}></div><h3>${p.title||''}</h3><p>${p.description||''}</p><a href="${link}" class="view-link">View Project →</a></div>`;
         }).join('');
