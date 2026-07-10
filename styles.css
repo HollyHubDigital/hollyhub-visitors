@@ -1771,6 +1771,9 @@ section.visible {
 
   .payment-method-img-compact {
     max-height: 45px;
+  }
+}
+
 /* ===== BEAUTIFUL GLASSMORPHISM THEME OVERRIDE ===== */
 :root {
   --primary-bg: #fff9fa;
@@ -2177,6 +2180,8 @@ a:hover {
 
   .payment-methods-section h4 {
     font-size: 0.95rem;
+  }
+
   .search-container {
     padding: 0.35rem 0.55rem;
   }
