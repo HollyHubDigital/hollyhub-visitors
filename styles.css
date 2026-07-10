@@ -2878,3 +2878,139 @@ main.container > div > * {
     color: var(--ink-strong) !important;
   }
 }
+
+/* ===== GLASSMORPHISM REFINEMENT PASS ===== */
+.sticky-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10000 !important;
+  width: 100% !important;
+}
+
+.hero-content h1 {
+  color: #FD1843 !important;
+  background: none !important;
+  -webkit-text-fill-color: #FD1843 !important;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.85), 0 14px 34px rgba(253, 24, 67, 0.22) !important;
+}
+
+.feature-number,
+.feature-item .feature-number {
+  color: #FD1843 !important;
+  opacity: 1 !important;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.76), 0 12px 28px rgba(253, 24, 67, 0.2) !important;
+}
+
+.hero-content,
+.service-card,
+.feature-item,
+.pricing-card,
+.portfolio-item,
+.testimonial-card,
+.faq-item,
+.blog-post,
+.cta-section,
+.stat,
+.payment-method-item,
+.search-modal-content,
+.mobile-menu,
+.footer,
+.contact-form,
+.login-card,
+.signup-card,
+.checkout-card,
+.success-card,
+.cancel-card,
+.two-col-grid > *,
+.about-grid > *,
+.skills-section > div,
+.timeline-section > div,
+main.container > div,
+section .container > div[style*="background"],
+section .container > div[style*="border"],
+main div[style*="background"],
+main div[style*="border"] {
+  box-sizing: border-box !important;
+  border-width: 4px !important;
+  outline-width: 2px !important;
+  outline-offset: -14px !important;
+  padding: clamp(1.75rem, 3.2vw, 3rem) !important;
+  background-clip: padding-box !important;
+}
+
+.portfolio-item {
+  padding: 0 !important;
+}
+
+.portfolio-item h3,
+.portfolio-item p,
+.portfolio-item .view-link {
+  padding-left: clamp(1.75rem, 3vw, 2.5rem) !important;
+  padding-right: clamp(1.75rem, 3vw, 2.5rem) !important;
+}
+
+.contact-form,
+.checkout-card,
+main.container > div,
+.contact-form .form-group,
+.checkout-card .form-group,
+section .container > div[style*="background"] > *,
+section .container > div[style*="border"] > *,
+main div[style*="background"] > *,
+main div[style*="border"] > * {
+  padding-left: clamp(0.6rem, 1.6vw, 1.2rem) !important;
+  padding-right: clamp(0.6rem, 1.6vw, 1.2rem) !important;
+}
+
+.form-input,
+.form-textarea,
+.form-select,
+.admin-input,
+.search-container,
+.language-select {
+  border-width: 3px !important;
+  outline-width: 2px !important;
+  outline-offset: -9px !important;
+  padding: 1rem 1.25rem !important;
+}
+
+.form-textarea {
+  padding-top: 1.2rem !important;
+  padding-bottom: 1.2rem !important;
+}
+
+.stat {
+  padding: clamp(2rem, 3vw, 2.75rem) clamp(1.4rem, 2vw, 2rem) !important;
+  outline-offset: -14px !important;
+}
+
+.sticky-header.header-scrolled .brand,
+.sticky-header.header-scrolled .logo-link,
+.sticky-header.header-scrolled .nav-link,
+.sticky-header.header-scrolled .btn-login,
+.sticky-header.header-scrolled .search-input,
+.sticky-header.header-scrolled .search-btn,
+.sticky-header.header-scrolled .header-actions a,
+.sticky-header.header-scrolled .brand span:not(.brandkit) {
+  color: #fff9fa !important;
+  -webkit-text-fill-color: #fff9fa !important;
+}
+
+@media (max-width: 768px) {
+  .hero-content,
+  .service-card,
+  .feature-item,
+  .pricing-card,
+  .testimonial-card,
+  .faq-item,
+  .blog-post,
+  .cta-section,
+  .stat,
+  .payment-method-item,
+  .contact-form,
+  .checkout-card,
+  main.container > div {
+    padding: clamp(1.35rem, 5vw, 2rem) !important;
+    outline-offset: -10px !important;
+  }
+}
