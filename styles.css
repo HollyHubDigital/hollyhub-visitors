@@ -3751,3 +3751,160 @@ section:has(.section-title) div[style*="grid-template-columns"] > div:has(h4) di
     padding: 0.25rem 0.34rem !important;
   }
 }
+
+/* ===== FINAL MOBILE HEADER STICKY + FULL BRAND FIX ===== */
+@media (max-width: 768px) {
+  .sticky-header {
+    position: sticky !important;
+    position: -webkit-sticky !important;
+    top: 0 !important;
+    z-index: 2147483000 !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  .header-container {
+    min-height: 44px !important;
+    height: 44px !important;
+    max-height: 44px !important;
+    padding: 0.28rem 0.48rem !important;
+    gap: 0.22rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+    overflow: visible !important;
+  }
+
+  .header-logo {
+    flex: 0 0 auto !important;
+    min-width: max-content !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+
+  .logo-link {
+    gap: 0.28rem !important;
+    min-width: max-content !important;
+    white-space: nowrap !important;
+  }
+
+  .logo-img {
+    width: 26px !important;
+    height: 26px !important;
+    flex: 0 0 26px !important;
+  }
+
+  .brand,
+  .header-logo .brand {
+    display: inline-flex !important;
+    align-items: center !important;
+    max-width: none !important;
+    width: auto !important;
+    min-width: max-content !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+    font-size: clamp(0.72rem, 3.2vw, 0.9rem) !important;
+    letter-spacing: 0 !important;
+    line-height: 1 !important;
+  }
+
+  .search-container {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    min-width: 78px !important;
+    max-width: 116px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
+    padding: 0.1rem 0.24rem 0.1rem 0.42rem !important;
+    border-width: 2px !important;
+    outline-width: 1px !important;
+    outline-offset: -5px !important;
+  }
+
+  .search-input {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 20px !important;
+    min-height: 20px !important;
+    font-size: 0.68rem !important;
+    padding: 0 0.12rem !important;
+  }
+
+  .search-btn {
+    width: 1.25rem !important;
+    min-width: 1.25rem !important;
+    height: 1.25rem !important;
+    padding: 0 !important;
+  }
+
+  .search-btn svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  .header-actions {
+    flex: 0 0 auto !important;
+    gap: 0.08rem !important;
+    margin: 0 !important;
+  }
+
+  .header-actions .btn-logout,
+  .header-actions .btn-logout.header-logout {
+    padding: 0.22rem 0.3rem !important;
+    font-size: 0.58rem !important;
+    min-width: auto !important;
+    max-width: 46px !important;
+    line-height: 1 !important;
+  }
+
+  .hamburger-btn {
+    display: flex !important;
+    flex: 0 0 30px !important;
+    width: 30px !important;
+    min-width: 30px !important;
+    height: 30px !important;
+    padding: 0.28rem !important;
+    margin: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .hamburger-btn span {
+    width: 20px !important;
+    height: 2px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .logo-img {
+    width: 24px !important;
+    height: 24px !important;
+    flex-basis: 24px !important;
+  }
+
+  .brand,
+  .header-logo .brand {
+    font-size: 0.7rem !important;
+  }
+
+  .search-container {
+    min-width: 68px !important;
+    max-width: 92px !important;
+  }
+
+  .header-actions .btn-logout,
+  .header-actions .btn-logout.header-logout {
+    max-width: 38px !important;
+    font-size: 0.54rem !important;
+    padding: 0.2rem 0.24rem !important;
+  }
+
+  .hamburger-btn {
+    flex-basis: 28px !important;
+    width: 28px !important;
+    min-width: 28px !important;
+  }
+}
