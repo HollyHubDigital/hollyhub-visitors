@@ -296,7 +296,7 @@
 							const d = document.createElement('div'); d.style.marginBottom='0.75rem';
 							let content = c.content;
 							if(content.length>300){ const short = content.slice(0,300)+'...'; d.innerHTML = `<strong style="color:var(--primary-accent)">${c.author}</strong> <span style="opacity:0.7">• ${new Date(c.createdAt).toLocaleString()}</span><div class="comment-body">${short}</div><div class="show-more">Show more</div>`; const sm = d.querySelector('.show-more'); const bodyDiv = d.querySelector('.comment-body'); sm.addEventListener('click', ()=>{ if(sm.textContent.includes('more')){ bodyDiv.textContent = content; sm.textContent='Hide'; } else { bodyDiv.textContent = short; sm.textContent='Show more'; } }); } else { d.innerHTML = `<strong style="color:var(--primary-accent)">${c.author}</strong> <span style="opacity:0.7">• ${new Date(c.createdAt).toLocaleString()}</span><div class="comment-body">${content}</div>`; }
-							if(adminToken){
+							{
 								const wrap = document.createElement('div'); wrap.style.marginTop='6px'; wrap.style.display='flex'; wrap.style.gap='8px';
 								const del = document.createElement('button'); del.textContent='Delete'; del.className='btn-danger'; del.style.padding='4px 8px'; del.style.fontSize='0.9em';
 								del.addEventListener('click', async ()=>{
@@ -311,7 +311,7 @@
 								const mute = document.createElement('button'); mute.textContent = c.muted ? 'Unmute' : 'Mute'; mute.className='btn-secondary'; mute.style.padding='4px 8px'; mute.style.fontSize='0.9em';
 								mute.addEventListener('click', async ()=>{
 									try{
-										const mr = await fetch('/api/blog/comment/mute', { method:'POST', headers: { 'Content-Type':'application/json', Authorization: 'Bearer '+adminToken }, body: JSON.stringify({ id: c.id, mute: !c.muted }) });
+										const mr = await fetch('/api/blog/comment/mute', { method:'POST', headers: { 'Content-Type':'application/json', Authorization: 'Bearer '+(adminToken || '') }, body: JSON.stringify({ id: c.id, mute: !c.muted }) });
 										if(!mr.ok) throw new Error(await mr.text());
 										const newCs = await loadComments({ forModal: true });
 										renderModalComments(newCs);
