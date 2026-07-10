@@ -413,13 +413,7 @@ window.addEventListener('scroll', () => {
   const currentScrollPosition = window.pageYOffset;
   
   if (header) {
-    if (currentScrollPosition > 100) {
-      header.style.background = 'rgba(0, 0, 0, 0.98)';
-      header.style.boxShadow = '0 2px 10px rgba(255, 0, 0, 0.2)';
-    } else {
-      header.style.background = 'rgba(0, 0, 0, 0.95)';
-      header.style.boxShadow = 'none';
-    }
+    header.classList.toggle('header-scrolled', currentScrollPosition > 100);
   }
   
   lastScrollPosition = currentScrollPosition;
