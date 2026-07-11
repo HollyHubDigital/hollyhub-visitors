@@ -4147,3 +4147,24 @@ section:has(.section-title) div[style*="grid-template-columns"] > div:has(h4) di
     top: 42px !important;
   }
 }
+
+/* ===== FINAL MOBILE MENU BLACK GLASS BACKGROUND ===== */
+@media (max-width: 768px) {
+  .mobile-menu,
+  .mobile-menu.active {
+    background: rgba(7, 3, 5, 0.9) !important;
+    border: 2px solid rgba(253, 24, 67, 0.5) !important;
+    outline: 1px solid rgba(255, 249, 250, 0.18) !important;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34), 0 0 28px rgba(253, 24, 67, 0.16) !important;
+    backdrop-filter: blur(22px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(160%) !important;
+  }
+
+  .mobile-menu .mobile-nav-link,
+  .mobile-menu .btn-login,
+  .mobile-menu .btn-signup,
+  .mobile-menu .btn-logout {
+    color: #fff9fa !important;
+    -webkit-text-fill-color: #fff9fa !important;
+  }
+}
