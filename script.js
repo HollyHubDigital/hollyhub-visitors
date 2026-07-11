@@ -475,11 +475,12 @@ const updateAuthUI = () => {
   const token = getAuthToken();
   const loginBtns = Array.from(document.querySelectorAll('.btn-login, .btn-signup'));
   const headerActions = document.querySelector('.header-actions');
+  const mobileAuth = document.querySelector('.mobile-auth');
 
   if (token) {
     // LOGGED IN: Hide login buttons, show logout
-    loginBtns.forEach(b => { 
-      if(b) b.style.setProperty('display', 'none', 'important'); 
+    loginBtns.forEach(b => {
+      if (b) b.style.setProperty('display', 'none', 'important');
     });
 
     // Create/show header logout
@@ -496,7 +497,6 @@ const updateAuthUI = () => {
     }
 
     // Create/show mobile logout
-    let mobileAuth = document.querySelector('.mobile-auth');
     let mobileLogout = mobileAuth ? mobileAuth.querySelector('.btn-logout.mobile-logout') : null;
     if (!mobileLogout && mobileAuth) {
       mobileLogout = document.createElement('button');
@@ -509,8 +509,37 @@ const updateAuthUI = () => {
     if (mobileLogout) {
       mobileLogout.style.setProperty('display', 'block', 'important');
     }
+  } else {
+    // LOGGED OUT: remove generated logout buttons and restore the header/login state
+    document.querySelectorAll('.btn-logout.header-logout, .btn-logout.mobile-logout').forEach(btn => {
+      if (btn) btn.remove();
+    });
+
+    const headerLogin = document.querySelector('.header-actions .btn-login');
+    const headerSignup = document.querySelector('.header-actions .btn-signup');
+
+    if (headerLogin) {
+      headerLogin.style.removeProperty('display');
+      headerLogin.style.setProperty('display', 'inline-block', 'important');
+    }
+
+    if (headerSignup) {
+      headerSignup.style.setProperty('display', 'none', 'important');
+    }
+
+    if (mobileAuth) {
+      const mobileLogin = mobileAuth.querySelector('.btn-login');
+      const mobileSignup = mobileAuth.querySelector('.btn-signup');
+
+      if (mobileLogin) {
+        mobileLogin.style.removeProperty('display');
+      }
+
+      if (mobileSignup) {
+        mobileSignup.style.removeProperty('display');
+      }
+    }
   }
-  // If NOT logged in, DO NOTHING - let CSS handle ALL visibility
 };
 
 const getAuthToken = () => {
@@ -527,6 +556,7 @@ const logout = () => {
   localStorage.removeItem('contactFormUserEmail');
   // Ensure generic token key is also removed to prevent stale login state
   localStorage.removeItem('token');
+  try{ updateAuthUI(); }catch(e){}
   window.location.href = 'index.html';
   showNotification('Logged out successfully');
 };
@@ -545,12 +575,8 @@ try{
 }catch(e){}
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Check if user is logged in
-  const token = getAuthToken();
-  if (token) {
-    // User is logged in - update header UI
-    updateAuthUI();
-  }
+  // Sync the header auth control with the current login state
+  updateAuthUI();
 
   // Add notification styles if not present
   if (!document.querySelector('style[data-notifications]')) {
