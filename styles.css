@@ -4168,3 +4168,39 @@ section:has(.section-title) div[style*="grid-template-columns"] > div:has(h4) di
     -webkit-text-fill-color: #fff9fa !important;
   }
 }
+
+/* ===== FINAL MOBILE MENU CENTERING + LOGOUT BUTTON ===== */
+@media (max-width: 768px) {
+  .mobile-menu,
+  .mobile-menu.active {
+    left: 50% !important;
+    right: auto !important;
+    width: calc(100vw - 1.5rem) !important;
+    max-width: 420px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    transform: translateX(-50%) translateY(-10px) scale(0.98) !important;
+  }
+
+  .mobile-menu.active {
+    transform: translateX(-50%) translateY(0) scale(1) !important;
+  }
+
+  .mobile-menu .btn-logout,
+  .mobile-auth .btn-logout {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: min(100%, 220px) !important;
+    min-height: 42px !important;
+    margin: 0.75rem auto 0 !important;
+    border-radius: 999px !important;
+    background: linear-gradient(135deg, #FD1843, #b90f31) !important;
+    border: 2px solid rgba(255, 249, 250, 0.72) !important;
+    color: #fff9fa !important;
+    -webkit-text-fill-color: #fff9fa !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.03em !important;
+    box-shadow: 0 12px 28px rgba(253, 24, 67, 0.28) !important;
+  }
+}
