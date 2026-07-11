@@ -512,16 +512,17 @@ body .goog-te-gadget-simple {
 
 .header-actions .btn-login {
   color: var(--primary-accent);
-  border: 1px solid var(--primary-accent);
-  padding: 0.5rem 1.5rem;
-  border-radius: 5px;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0;
   font-weight: 600;
   background: transparent;
   transition: var(--transition);
 }
 
 .header-actions .btn-login:hover {
-  background: rgba(255, 0, 0, 0.1);
+  background: transparent;
+  color: var(--primary-accent);
 }
 
 .btn-login {
