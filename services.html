@@ -153,6 +153,53 @@
       <h2 class="section-title">Complete Service Offerings</h2>
       <p class="section-subtitle">Professional solutions for every stage of your digital journey</p>
 
+      <!-- Campaign Ads Setup Service -->
+      <div class="service-detail-card campaign-ads-card">
+        <div class="service-detail-header">
+          <div class="service-detail-icon">📢</div>
+          <div>
+            <h3>Campaign Ads Setup</h3>
+            <p class="service-detail-meta">Paid Ads • Growth • Targeted Reach</p>
+          </div>
+        </div>
+        <div class="service-detail-content">
+          <p>Launch high-converting ad campaigns across premium networks with strategy, targeting, and creative setup tailored for your growth goals.</p>
+          <div class="campaign-ads-grid">
+            <div class="campaign-ads-item">
+              <h4>InsideAds</h4>
+              <p>Promote your business with InsideAds on Telegram channels to reach targeted audiences and drive more sales.</p>
+              <img src="/public/assets/InsideAds.gif" alt="InsideAds campaign preview" class="campaign-media" loading="lazy" />
+              <a href="contact.html?service=campaign-ads" class="btn btn-primary campaign-order-btn">ORDER</a>
+            </div>
+            <div class="campaign-ads-item">
+              <h4>TikTok Ads</h4>
+              <p>Launch targeted TikTok ad campaigns that connect your brand with the right audience</p>
+              <img src="/public/assets/Tiktok-Ads.gif" alt="TikTok Ads campaign preview" class="campaign-media" loading="lazy" />
+              <a href="contact.html?service=tiktok-ads" class="btn btn-primary campaign-order-btn">ORDER</a>
+            </div>
+            <div class="campaign-ads-item">
+              <h4>Propeller Ads</h4>
+              <p>Scale your reach with high-volume traffic and performance-driven campaigns across premium placements.</p>
+              <div class="insideads-subgrid">
+                <div class="insideads-item">
+                  <h5>Push Ads</h5>
+                  <p>Short personalized messages delivered to your target audience</p>
+                </div>
+                <div class="insideads-item">
+                  <h5>In-Page Push Ads</h5>
+                  <p>Browser-based notifications for all platforms and devices</p>
+                </div>
+                <div class="insideads-item">
+                  <h5>Popunder</h5>
+                  <p>Full-page and eye-catching format with around 750M+ impressions daily</p>
+                </div>
+              </div>
+              <a href="contact.html?service=propeller-ads" class="btn btn-primary campaign-order-btn">ORDER</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Web Development Service -->
       <div class="service-detail-card">
         <div class="service-detail-header">
@@ -455,6 +502,82 @@
       box-shadow: 0 15px 40px rgba(255, 0, 0, 0.2);
     }
 
+    .campaign-ads-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 0, 0, 0.12) 100%);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 12px 12px 30px rgba(0, 0, 0, 0.18), -10px -10px 24px rgba(255, 255, 255, 0.06);
+    }
+
+    .campaign-ads-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+
+    .campaign-ads-item {
+      background: rgba(255, 255, 255, 0.09);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 18px;
+      padding: 1.15rem;
+      box-shadow: inset 2px 2px 6px rgba(255, 255, 255, 0.05), inset -2px -2px 8px rgba(0, 0, 0, 0.12);
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .campaign-ads-item h4 {
+      color: var(--primary-accent);
+      margin: 0;
+    }
+
+    .campaign-ads-item p {
+      margin: 0;
+      line-height: 1.6;
+      opacity: 0.88;
+    }
+
+    .campaign-order-btn {
+      margin-top: auto;
+      align-self: flex-start;
+    }
+
+    .insideads-subgrid {
+      display: grid;
+      gap: 0.65rem;
+      margin-top: 0.2rem;
+    }
+
+    .insideads-item {
+      padding: 0.75rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 2px solid rgba(255, 0, 0, 0.35);
+      box-shadow: inset 1px 1px 3px rgba(255, 255, 255, 0.05), inset -1px -1px 3px rgba(0, 0, 0, 0.12);
+    }
+
+    .campaign-media {
+      width: 100%;
+      border-radius: 12px;
+      display: block;
+      margin-top: 0.2rem;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      object-fit: cover;
+      min-height: 140px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .insideads-item h5 {
+      margin: 0 0 0.35rem;
+      color: var(--secondary-accent);
+      font-size: 0.95rem;
+    }
+
+    .insideads-item p {
+      font-size: 0.9rem;
+    }
+
     .service-detail-header {
       display: flex;
       gap: 2rem;
@@ -579,6 +702,18 @@
       }
 
       .feature-list {
+        grid-template-columns: 1fr;
+      }
+
+      .campaign-ads-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .campaign-media {
+        min-height: 120px;
+      }
+
+      .insideads-subgrid {
         grid-template-columns: 1fr;
       }
     }

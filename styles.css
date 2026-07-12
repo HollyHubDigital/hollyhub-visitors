@@ -539,6 +539,13 @@ body .goog-te-gadget-simple {
   transition: var(--transition);
 }
 
+.header-actions .btn-login,
+.header-actions .btn-login:visited,
+.header-actions .btn-login:hover,
+.header-actions .btn-login:focus {
+  color: #FD1843 !important;
+}
+
 .btn-login:hover {
   background-color: var(--text-light);
   color: var(--primary-bg);
@@ -634,6 +641,10 @@ body .goog-te-gadget-simple {
 
 /* Responsive header: ensure search and hamburger fit on one line */
 @media (max-width: 900px) {
+  .header-actions .btn-login {
+    color: #FD1843 !important;
+  }
+
   .header-container {
     padding: 0.6rem 1rem;
     gap: 0.6rem;
