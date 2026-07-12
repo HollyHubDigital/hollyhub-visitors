@@ -511,7 +511,7 @@ body .goog-te-gadget-simple {
 }
 
 .header-actions .btn-login {
-  color: #FD1843;
+  color: #FD1843 !important;
   border: none;
   padding: 0.35rem 0.75rem;
   border-radius: 0;
