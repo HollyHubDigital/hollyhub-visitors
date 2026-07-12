@@ -511,13 +511,18 @@ body .goog-te-gadget-simple {
 }
 
 .header-actions .btn-login {
-  color: var(--primary-accent);
+  color: #FD1843;
   border: none;
-  padding: 0.5rem 0.75rem;
+  padding: 0.35rem 0.75rem;
   border-radius: 0;
   font-weight: 600;
   background: transparent;
   transition: var(--transition);
+  min-height: auto;
+  height: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .header-actions .btn-login:hover {
