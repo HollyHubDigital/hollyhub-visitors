@@ -19,6 +19,7 @@ module.exports = async (req, res) => {
 
       // Frontend payment (PUBLIC - only public key, not secret)
       paystackPublicKey: process.env.PAYSTACK_PUBLIC_KEY || '',
+      gtcoPublicKey: process.env.GTCO_PUBLIC_KEY || '',
 
       // Frontend email marketing (PUBLIC)
       klaviyoPublicKey: process.env.KLAVIYO_PUBLIC_KEY || '',

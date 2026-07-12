@@ -5,6 +5,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const amountInput = document.getElementById('amount');
   const descInput = document.getElementById('description');
   const msg = document.getElementById('checkoutMsg');
+  let gtcoPublicKey = '';
+
+  async function loadPublicConfig() {
+    try {
+      const res = await fetch('/api/public-config');
+      if (!res.ok) return '';
+      const config = await res.json();
+      if (config && typeof config.gtcoPublicKey === 'string') {
+        gtcoPublicKey = config.gtcoPublicKey;
+      }
+      return gtcoPublicKey;
+    } catch (error) {
+      console.warn('[Checkout] Failed to load public config:', error);
+      return '';
+    }
+  }
 
   // Function to update project payment status after successful payment
   async function updateProjectPaymentStatus(projectId, paymentStatus = 'pending') {
@@ -286,7 +302,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }catch(e){/*ignore*/}
 
   // Squad Payment Function
-  function SquadPay(email, amountInKobo, currency = "NGN") {
+  async function SquadPay(email, amountInKobo, currency = "NGN") {
+    const squadKey = gtcoPublicKey || await loadPublicConfig();
+    if (!squadKey) {
+      throw new Error('GTCO public key is not configured. Set GTCO_PUBLIC_KEY in Vercel.');
+    }
+
     // Check if squad is loaded, if not wait a bit
     const checkSquad = () => {
       if (typeof squad === 'undefined') {
@@ -312,7 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           setTimeout(() => { window.location.href = '/success.html'; }, 1500);
         },
-        key: "YOUR_LIVE_SQUAD_KEY_HERE", // Replace with your live key from Squad Dashboard
+        key: squadKey,
         email: email,
         amount: amountInKobo,
         currency_code: currency
@@ -366,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         msg.textContent = `Processing ≈ ₦${ngnAmount.toFixed(2)} NGN...`;
         
-        SquadPay(userEmail, amountInKobo, "NGN");
+        await SquadPay(userEmail, amountInKobo, "NGN");
         
       } catch (e) {
         console.error('Squad payment error:', e);
