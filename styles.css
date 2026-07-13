@@ -599,23 +599,37 @@ body .goog-te-gadget-simple {
 
 /* Mobile Menu */
 .mobile-menu {
-  display: none;
+  display: grid;
   position: absolute;
   top: 60px;
   right: 0;
-  background-color: rgba(0, 0, 0, 0.98);
-  backdrop-filter: blur(10px);
+  background: #000000;
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
   width: 100%;
   max-width: 400px;
   z-index: 1000;
-  border-radius: 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
   overflow: hidden;
-  animation: slideDown 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-8px) scale(0.98);
+  transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s ease;
+  animation: none;
 }
 
 .mobile-menu.active {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 0.85rem;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
 }
 
 /* Ensure any close button inside/related to the mobile menu sits above the panel */
@@ -685,23 +699,58 @@ body .goog-te-gadget-simple {
 }
 
 .mobile-nav-link {
-  display: block;
-  padding: 1rem 1.5rem;
-  color: var(--text-light);
-  border-bottom: 1px solid var(--border-color);
-  transition: var(--transition);
-  margin-left: 20px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 0.5rem;
+  min-height: 112px;
+  padding: 0.85rem 0.65rem;
+  margin-left: 0;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+  text-align: center;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-.mobile-nav-link:hover {
-  background-color: rgba(255, 0, 0, 0.1);
-  color: var(--primary-accent);
+.mobile-nav-link:hover,
+.mobile-nav-link:focus-visible {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
+  color: #0f172a;
+}
+
+.mobile-nav-link .mobile-nav-icon-wrap {
+  display: grid;
+  place-items: center;
+  width: 100%;
+}
+
+.mobile-nav-link img {
+  width: 44px;
+  height: 44px;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.mobile-nav-link .mobile-nav-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .mobile-auth {
-  padding: 1rem;
+  grid-column: 1 / -1;
+  padding: 0;
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .mobile-auth .btn-login,
@@ -3227,6 +3276,15 @@ section:has(.section-title) div[style*="grid-template-columns"] > div:has(h4) di
     left: 50% !important;
     right: auto !important;
     width: min(calc(100vw - 1.5rem), 390px) !important;
+    min-height: 320px !important;
+    max-height: min(72vh, 560px) !important;
+    overflow-y: auto !important;
+  }
+
+  .mobile-menu.active {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.75rem !important;
+    align-content: start !important;
   }
 
   .portfolio-image,
@@ -3426,11 +3484,12 @@ section:has(.section-title) div[style*="grid-template-columns"] > div:has(h4) di
   }
 
   .mobile-menu {
-    display: flex !important;
+    display: grid !important;
     top: 56px !important;
     left: 50% !important;
     width: min(calc(100vw - 1.25rem), 390px) !important;
-    max-height: calc(100vh - 72px) !important;
+    min-height: 320px !important;
+    max-height: min(72vh, 560px) !important;
     padding: 1rem 1rem 1.6rem !important;
     margin: 0 auto 1rem !important;
     opacity: 0;
@@ -3441,6 +3500,9 @@ section:has(.section-title) div[style*="grid-template-columns"] > div:has(h4) di
   }
 
   .mobile-menu.active {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.75rem !important;
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
@@ -4190,24 +4252,21 @@ section:has(.section-title) div[style*="grid-template-columns"] > div:has(h4) di
   }
 }
 
-/* ===== FINAL MOBILE MENU BLACK GLASS BACKGROUND ===== */
+/* ===== FINAL MOBILE MENU LIGHT CLAYMORPHISM BACKGROUND ===== */
 @media (max-width: 768px) {
   .mobile-menu,
   .mobile-menu.active {
-    background: rgba(7, 3, 5, 0.9) !important;
-    border: 2px solid rgba(253, 24, 67, 0.5) !important;
-    outline: 1px solid rgba(255, 249, 250, 0.18) !important;
-    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34), 0 0 28px rgba(253, 24, 67, 0.16) !important;
-    backdrop-filter: blur(22px) saturate(160%) !important;
-    -webkit-backdrop-filter: blur(22px) saturate(160%) !important;
+    background: #000000 !important;
+    border: 1px solid rgba(15, 23, 42, 0.12) !important;
+    outline: none !important;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.16) !important;
+    backdrop-filter: blur(18px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(150%) !important;
   }
 
-  .mobile-menu .mobile-nav-link,
-  .mobile-menu .btn-login,
-  .mobile-menu .btn-signup,
-  .mobile-menu .btn-logout {
-    color: #fff9fa !important;
-    -webkit-text-fill-color: #fff9fa !important;
+  .mobile-menu .mobile-nav-link {
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
   }
 }
 

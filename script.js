@@ -17,11 +17,38 @@ if (hamburgerBtn && mobileMenu) {
     mobileMenu.classList.toggle('active');
   });
 
-  // Close menu when link is clicked
-  document.querySelectorAll('.mobile-nav-link').forEach(link => {
-    link.addEventListener('click', () => {
+  document.querySelectorAll('.mobile-menu .mobile-nav-link').forEach(link => {
+    const label = (link.textContent || '').trim().toUpperCase();
+    let iconName = 'home.svg';
+
+    if (label.includes('CONTACT')) iconName = 'contact.svg';
+    else if (label.includes('SERVICES')) iconName = 'service.png';
+    else if (label.includes('MARKETING')) iconName = 'marketing1.png';
+    else if (label.includes('PORTFOLIO')) iconName = 'portfolio.svg';
+    else if (label.includes('BLOG')) iconName = 'blog.png';
+    else if (label.includes('PROJECT')) iconName = 'project-plan.svg';
+    else if (label.includes('TERMS')) iconName = 'terms.png';
+    else if (label.includes('ABOUT')) iconName = 'portfolio.svg';
+
+    link.classList.add('mobile-nav-card');
+    link.innerHTML = `
+      <span class="mobile-nav-icon-wrap">
+        <img src="/public/assets/${iconName}" alt="" loading="lazy" onerror="this.style.display='none'" />
+      </span>
+      <span class="mobile-nav-label">${label}</span>
+    `;
+
+    link.addEventListener('click', (event) => {
+      const href = link.getAttribute('href');
+      event.preventDefault();
       hamburgerBtn.classList.remove('active');
       mobileMenu.classList.remove('active');
+
+      if (href && href !== '#') {
+        setTimeout(() => {
+          window.location.href = href;
+        }, 120);
+      }
     });
   });
 
