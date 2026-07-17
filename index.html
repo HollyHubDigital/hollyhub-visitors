@@ -32,7 +32,7 @@
   <link rel="apple-touch-icon" href="holly-favicon.png" />
   <title>Holly - Professional Web Developer & Digital Marketer | Book Services</title>
 </head>
-<body>
+<body class="homepage">
   <!-- STICKY HEADER -->
   <header class="sticky-header" id="header">
     <div class="header-container">
@@ -140,6 +140,25 @@
       </div>
     </nav>
   </header>
+
+  <nav class="mobile-tab-bar" id="mobileTabBar" aria-label="Mobile service shortcuts">
+    <a href="contact.html?service=tiktok-ads" class="mobile-tab-item">
+      <img src="/public/assets/Tiktok.png" alt="TikTok Ads" />
+      <span>TikTok Ads</span>
+    </a>
+    <a href="contact.html?service=propeller-ads" class="mobile-tab-item">
+      <img src="/public/assets/Propeller.png" alt="Propeller Ads" />
+      <span>Propeller</span>
+    </a>
+    <a href="contact.html?service=insideads" class="mobile-tab-item">
+      <img src="/public/assets/Insideads.png" alt="Inside Ads" />
+      <span>Inside Ads</span>
+    </a>
+    <a href="contact.html?service=web-design" class="mobile-tab-item">
+      <img src="/public/assets/Webdesign.png" alt="Web Design" />
+      <span>Web Design</span>
+    </a>
+  </nav>
 
   <!-- Hidden Google Translate container (moved out of header to prevent layout interference) -->
   <div id="google_translate_element" style="display:none"></div>
@@ -1357,6 +1376,52 @@
       
       console.log('[Modal] Tawk z-index restored to normal');
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const tabBar = document.getElementById('mobileTabBar');
+      if (!tabBar) return;
+
+      const isMobileViewport = window.matchMedia('(min-width: 356px) and (max-width: 780px)').matches;
+      const isDesktopViewport = window.matchMedia('(min-width: 781px)').matches;
+
+      if (!isMobileViewport && !isDesktopViewport) {
+        tabBar.classList.remove('is-visible');
+        document.body.classList.remove('tab-bar-visible');
+        return;
+      }
+
+      const updateTabBarVisibility = () => {
+        const shouldShow = window.scrollY <= 24;
+        const isDesktopViewport = window.matchMedia('(min-width: 781px)').matches;
+
+        if (isDesktopViewport) {
+          const header = document.querySelector('.sticky-header');
+          const headerBottom = header ? header.getBoundingClientRect().bottom + 24 : 24;
+          const barHeight = tabBar.offsetHeight || 280;
+          const viewportHeight = window.innerHeight;
+          const bottomGap = 24;
+          const maxTop = Math.max(bottomGap, viewportHeight - barHeight - bottomGap);
+          const safeTop = Math.min(Math.max(headerBottom, viewportHeight * 0.5), maxTop);
+
+          tabBar.style.top = `${safeTop}px`;
+          tabBar.style.bottom = 'auto';
+          tabBar.style.left = 'auto';
+          tabBar.style.right = '1rem';
+        } else {
+          tabBar.style.top = '';
+          tabBar.style.bottom = '';
+          tabBar.style.left = '';
+          tabBar.style.right = '';
+        }
+
+        tabBar.classList.toggle('is-visible', shouldShow);
+        document.body.classList.toggle('tab-bar-visible', shouldShow);
+      };
+
+      updateTabBarVisibility();
+      window.addEventListener('scroll', updateTabBarVisibility, { passive: true });
+      window.addEventListener('resize', updateTabBarVisibility);
+    });
 
     // Initialize on page load (lazy-loaded)
     if (document.readyState === 'loading') {

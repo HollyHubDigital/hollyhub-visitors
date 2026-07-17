@@ -11,8 +11,22 @@ const showNotification = (message, type = 'success') => {
 const hamburgerBtn = document.getElementById('hamburger');
 const mobileMenu = document.getElementById('mobile-menu');
 
+function closeMobileMenu() {
+  if (hamburgerBtn) hamburgerBtn.classList.remove('active');
+  if (mobileMenu) mobileMenu.classList.remove('active');
+}
+
+function isMobileMenuEnabled() {
+  return window.innerWidth <= 900;
+}
+
 if (hamburgerBtn && mobileMenu) {
   hamburgerBtn.addEventListener('click', () => {
+    if (!isMobileMenuEnabled()) {
+      closeMobileMenu();
+      return;
+    }
+
     hamburgerBtn.classList.toggle('active');
     mobileMenu.classList.toggle('active');
   });
@@ -41,8 +55,7 @@ if (hamburgerBtn && mobileMenu) {
     link.addEventListener('click', (event) => {
       const href = link.getAttribute('href');
       event.preventDefault();
-      hamburgerBtn.classList.remove('active');
-      mobileMenu.classList.remove('active');
+      closeMobileMenu();
 
       if (href && href !== '#') {
         setTimeout(() => {
@@ -55,8 +68,13 @@ if (hamburgerBtn && mobileMenu) {
   // Close menu when clicking outside
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.sticky-header')) {
-      hamburgerBtn.classList.remove('active');
-      mobileMenu.classList.remove('active');
+      closeMobileMenu();
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (!isMobileMenuEnabled()) {
+      closeMobileMenu();
     }
   });
 }

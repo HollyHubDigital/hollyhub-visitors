@@ -6,8 +6,28 @@
   --text-light: #FFFFFF;
   --text-dark: #1a1a1a;
   --border-color: #333333;
+  --surface: #111111;
+  --surface-2: #1a1a1a;
+  --text-primary: #FFFFFF;
   --shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   --transition: all 0.3s ease;
+  --mobile-tab-bar-bg: linear-gradient(180deg, rgba(10,10,10,0.98), rgba(0,0,0,0.98));
+  --mobile-tab-bar-text: #FFF9FA;
+  --mobile-widget-offset: 0px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary-bg: #171717;
+    --surface: #171717;
+    --surface-2: #1F1F1F;
+    --text-primary: #FFF9FA;
+    --text-light: #FFF9FA;
+    --text-dark: #171717;
+    --border-color: rgba(255, 249, 250, 0.16);
+    --mobile-tab-bar-bg: linear-gradient(180deg, rgba(23,23,23,0.98), rgba(10,10,10,0.98));
+    --mobile-tab-bar-text: #FFF9FA;
+  }
 }
 
 * {
@@ -24,9 +44,32 @@ html {
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background-color: var(--primary-bg);
-  color: var(--text-light);
+  color: var(--text-primary);
   line-height: 1.6;
   overflow-x: hidden;
+}
+
+body.homepage .contact-section,
+body.homepage .feature-item,
+body.homepage .service-card,
+body.homepage .portfolio-item,
+body.homepage .testimonial-card,
+body.homepage .faq-item,
+body.homepage .blog-post,
+body.homepage .stat,
+body.homepage .search-modal-content,
+body.homepage .footer,
+body.homepage .contact-form,
+body.homepage .checkout-card,
+body.homepage .two-col-grid > *,
+body.homepage .about-grid > *,
+body.homepage main.container > div {
+  background-color: var(--surface);
+  color: var(--text-primary);
+}
+
+body.homepage .hero {
+  background: transparent;
 }
 
 /* Typography */
@@ -603,7 +646,7 @@ body .goog-te-gadget-simple {
   position: absolute;
   top: 60px;
   right: 0;
-  background: #000000;
+  background: var(--mobile-tab-bar-bg);
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
   width: 100%;
@@ -675,6 +718,40 @@ body .goog-te-gadget-simple {
   .header-actions .btn-logout { display: none !important; }
   .header-logo, .search-container, .header-actions, .hamburger-btn { flex-shrink: 1; }
   .brand { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+
+@media (min-width: 769px) and (max-width: 900px) {
+  .sticky-header,
+  .header-container {
+    overflow: visible !important;
+  }
+
+  .mobile-menu {
+    top: calc(100% + 0.45rem) !important;
+    right: 0 !important;
+    left: auto !important;
+    transform: translateY(-8px) scale(0.98) !important;
+    display: none;
+  }
+
+  .mobile-menu.active {
+    display: grid !important;
+    transform: translateY(0) scale(1) !important;
+  }
+}
+
+@media (min-width: 770px) and (max-width: 800px) {
+  .sticky-header,
+  .header-container,
+  .mobile-menu,
+  .mobile-menu.active {
+    z-index: 13002 !important;
+  }
+
+  .mobile-menu,
+  .mobile-menu.active {
+    z-index: 13003 !important;
+  }
 }
 
 /* Ensure logout in mobile menu is visible and styled like other mobile auth buttons */
@@ -757,6 +834,191 @@ body .goog-te-gadget-simple {
 .mobile-auth .btn-signup {
   flex: 1;
   text-align: center;
+}
+
+.mobile-tab-bar {
+  display: none;
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  margin-bottom: 0;
+  transform: translateX(-50%) translateY(12px);
+  width: min(96vw, 720px);
+  max-width: calc(100vw - 1.2rem);
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 0.45rem;
+  padding: 0.55rem;
+  border-radius: 0;
+  background: rgba(255, 249, 250, 0.2);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid rgba(253, 24, 67, 0.2);
+  box-shadow: 0 16px 40px rgba(253, 24, 67, 0.16);
+  z-index: 12000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.mobile-tab-bar.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+.mobile-tab-item {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.22rem;
+  min-height: 68px;
+  padding: 0.35rem 0.24rem;
+  border-radius: 999px;
+  color: #111111 !important;
+  text-align: center;
+  text-decoration: none;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.mobile-tab-item span,
+.mobile-tab-item:hover span,
+.mobile-tab-item:focus-visible span {
+  color: #FD1843 !important;
+}
+
+.mobile-tab-item img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  display: block;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.mobile-tab-item:hover,
+.mobile-tab-item:focus-visible {
+  background: rgba(255, 0, 0, 0.16);
+  color: #111111;
+}
+
+.mobile-tab-bar + #google_translate_element {
+  display: none;
+}
+
+.gt-widget-toggle,
+.tawk-min-container,
+.tawk-max-container,
+.tawk-toggle,
+iframe[src*="embed.tawk.to"],
+#tawkMessengerFrame {
+  transition: transform 0.2s ease;
+  transform: translateY(0);
+}
+
+body.tab-bar-visible .gt-widget-toggle,
+body.tab-bar-visible .tawk-min-container,
+body.tab-bar-visible .tawk-max-container,
+body.tab-bar-visible .tawk-toggle,
+body.tab-bar-visible iframe[src*="embed.tawk.to"],
+body.tab-bar-visible #tawkMessengerFrame {
+  transform: translateY(-96px);
+}
+
+@media (min-width: 356px) and (max-width: 780px) {
+  .mobile-tab-bar {
+    display: flex;
+  }
+}
+
+@media (min-width: 781px) {
+  .mobile-tab-bar {
+    display: flex;
+    left: auto;
+    right: 1rem;
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%) translateX(16px);
+    width: auto;
+    max-width: min(180px, calc(100vw - 2rem));
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0.55rem;
+    padding: 0.6rem;
+    border-radius: 999px;
+  }
+
+  .mobile-tab-bar.is-visible {
+    transform: translateY(0) translateX(0);
+  }
+
+  .mobile-tab-item {
+    min-height: 76px;
+    padding: 0.45rem 0.3rem;
+    gap: 0.28rem;
+  }
+
+  .mobile-tab-item img {
+    width: 32px;
+    height: 32px;
+  }
+
+  body.tab-bar-visible .gt-widget-toggle,
+  body.tab-bar-visible .tawk-min-container,
+  body.tab-bar-visible .tawk-max-container,
+  body.tab-bar-visible .tawk-toggle,
+  body.tab-bar-visible iframe[src*="embed.tawk.to"],
+  body.tab-bar-visible #tawkMessengerFrame {
+    pointer-events: none !important;
+    opacity: 0.55;
+    transform: translateX(-96px) translateY(0);
+  }
+}
+
+@media (max-width: 355px) {
+  .mobile-tab-bar {
+    display: none;
+  }
+}
+
+.project-description-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.project-description-body {
+  opacity: 0.9;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.project-description-toggle {
+  align-self: flex-start;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--secondary-accent);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.project-description-toggle:hover {
+  color: var(--primary-accent);
+}
+
+@media (max-width: 600px) {
+  .project-description-body {
+    font-size: 0.95rem;
+  }
 }
 
 /* Search Modal */
@@ -4253,7 +4515,7 @@ section:has(.section-title) div[style*="grid-template-columns"] > div:has(h4) di
 }
 
 /* ===== FINAL MOBILE MENU LIGHT CLAYMORPHISM BACKGROUND ===== */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .mobile-menu,
   .mobile-menu.active {
     background: #000000 !important;
@@ -4271,7 +4533,7 @@ section:has(.section-title) div[style*="grid-template-columns"] > div:has(h4) di
 }
 
 /* ===== FINAL MOBILE MENU CENTERING + LOGOUT BUTTON ===== */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .mobile-menu,
   .mobile-menu.active {
     left: 50% !important;
@@ -4285,6 +4547,21 @@ section:has(.section-title) div[style*="grid-template-columns"] > div:has(h4) di
 
   .mobile-menu.active {
     transform: translateX(-50%) translateY(0) scale(1) !important;
+  }
+}
+
+@media (min-width: 901px) {
+  .mobile-menu,
+  .mobile-menu.active {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transform: translateY(-8px) scale(0.98) !important;
+    left: auto !important;
+    right: 0 !important;
+    width: auto !important;
+    max-width: none !important;
   }
 
   .mobile-menu .btn-logout,
@@ -4304,4 +4581,77 @@ section:has(.section-title) div[style*="grid-template-columns"] > div:has(h4) di
     letter-spacing: 0.03em !important;
     box-shadow: 0 12px 28px rgba(253, 24, 67, 0.28) !important;
   }
+}
+
+/* ===== DESKTOP HEADER FIX ===== */
+@media (min-width: 769px) {
+  body {
+    padding-top: 25px !important; /* Adjust based on your actual header height */
+  }
+
+  .sticky-header {
+    height: auto;
+    max-height: 85px; /* or whatever your desired max is */
+  }
+
+  .header-container {
+    padding: 1.1rem 2rem !important;
+    min-height: 78px;
+    max-height: 85px;
+    align-items: center;
+  }
+
+  /* Prevent any child from forcing extra height */
+  .desktop-nav,
+  .header-actions,
+  .search-container {
+    align-items: center;
+  }
+
+  /* Optional: force no-wrap and constrain */
+  .header-container {
+    flex-wrap: nowrap !important;
+  }
+}
+
+/* ===== HEADER BORDER-RADIUS (Liquid Glass Style) ===== */
+.sticky-header {
+  border-radius: 0 0 28px 28px !important;
+  overflow: visible !important;
+}
+
+.header-container {
+  border-radius: 0 0 24px 24px !important;
+  overflow: visible !important;
+}
+
+/* Desktop-only refinement */
+@media (min-width: 769px) {
+  .sticky-header {
+    border-radius: 0 0 32px 32px !important;
+  }
+  
+  .header-container {
+    border-radius: 0 0 28px 28px !important;
+  }
+}
+
+/* Make sure content inside doesn't get clipped awkwardly */
+.sticky-header * {
+  border-radius: inherit;
+}
+
+/* Optional: subtle inner glow for glass effect */
+.sticky-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    transparent 40%
+  );
+  pointer-events: none;
+  z-index: 1;
 }

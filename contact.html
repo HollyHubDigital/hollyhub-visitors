@@ -35,7 +35,7 @@
     console.log('[Contact] API Base URL configured:', window.API_BASE_URL);
   </script>
 </head>
-<body>
+<body class="contact-page">
   <header class="sticky-header" id="header">
     <div class="header-container">
       <div class="header-logo">
@@ -129,6 +129,25 @@
       </div>
     </nav>
   </header>
+
+  <nav class="mobile-tab-bar" id="mobileTabBar" aria-label="Mobile service shortcuts">
+    <a href="contact.html?service=tiktok-ads" class="mobile-tab-item">
+      <img src="/public/assets/Tiktok.png" alt="TikTok Ads" />
+      <span>TikTok Ads</span>
+    </a>
+    <a href="contact.html?service=propeller-ads" class="mobile-tab-item">
+      <img src="/public/assets/Propeller.png" alt="Propeller Ads" />
+      <span>Propeller Ads</span>
+    </a>
+    <a href="contact.html?service=insideads" class="mobile-tab-item">
+      <img src="/public/assets/Insideads.png" alt="Inside Ads" />
+      <span>Inside Ads</span>
+    </a>
+    <a href="contact.html?service=web-design" class="mobile-tab-item">
+      <img src="/public/assets/Webdesign.png" alt="Web Design" />
+      <span>Web Design</span>
+    </a>
+  </nav>
 
   <!-- SEARCH RESULTS MODAL -->
   <div id="searchModal" class="search-modal">
@@ -356,6 +375,7 @@
   </footer>
 
   <script src="script.js"></script>
+  <script src="contact-description-utils.js"></script>
   <script>
     // Check authentication on page load
     document.addEventListener('DOMContentLoaded', function() {
@@ -433,7 +453,85 @@
     })();
   </script>
   <script>
-    // Define functions at global scope so they can be called from HTML
+    let currentProjectsData = [];
+
+    function renderProjectsList(projects) {
+      currentProjectsData = Array.isArray(projects) ? projects : [];
+      const section = document.getElementById('userProjectsSection');
+      const list = document.getElementById('userProjectsList');
+
+      if (!section || !list) return;
+
+      if (!currentProjectsData.length) {
+        section.style.display = 'none';
+        list.innerHTML = '';
+        return;
+      }
+
+      section.style.display = 'block';
+      const sortedProjects = [...currentProjectsData].sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+      list.innerHTML = sortedProjects.map(p => {
+        const descriptionMarkup = typeof window.buildProjectDescriptionMarkup === 'function'
+          ? window.buildProjectDescriptionMarkup(p.description || '', p.id, window.innerWidth)
+          : `<div style="opacity:0.8;">${(p.description || '').replace(/\n/g, '<br />')}</div>`;
+
+        return `
+          <div style="border:1px solid var(--border-color); border-radius:12px; padding:1.5rem; background:rgba(255,255,255,0.02);">
+            <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:1rem;">
+              <div style="flex:1;">
+                <div style="font-weight:600; color:var(--primary-accent); font-size:1.1rem;">${p.projectType}</div>
+                <div style="opacity:0.8; font-size:0.9rem; margin-top:0.5rem;"><strong>📋 Project ID:</strong> <code style="background:rgba(255,255,255,0.05); padding:0.3rem 0.6rem; border-radius:4px; font-family:monospace;">${p.id}</code></div>
+                <div style="opacity:0.8; font-size:0.9rem; margin-top:0.4rem;">📅 ${new Date(p.uploadedAt).toLocaleDateString()}</div>
+              </div>
+              <button class="btn-secondary" onclick="openEditProjectModal('${p.id}')" style="padding:0.6rem 1rem; font-size:0.9rem;">Edit Project</button>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.05); padding:0.75rem; border-radius:8px; margin-bottom:1rem; font-size:0.9rem;">
+              ${descriptionMarkup}
+            </div>
+
+            <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;">
+              <span style="display:inline-block; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; ${p.status === 'finished' ? 'background:rgba(0,255,0,0.2); color:#0f0;' : 'background:rgba(255,165,0,0.2); color:#ffcc00;'}">
+                ${p.status === 'finished' ? 'Delivered' : 'Pending Project'}
+              </span>
+              <div style="position:relative; display:inline-block;">
+                <button onclick="openChatModal('${p.id}', '${p.userEmail}', 'user')" style="position:relative; padding:0.5rem; border-radius:6px; font-weight:600; font-size:0.9rem; background:none; color:var(--secondary-accent); border:none; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:0.5rem;">
+                  <img src="https://cdn.jsdelivr.net/gh/HollyHubDigital/hollyhub-visitors@main/public/assets/chat-icon.png" alt="Chat" style="width:32px; height:32px;" />
+                </button>
+                <span class="chat-notification-badge" data-project-id="${p.id}" style="position:absolute; top:-8px; right:-8px; background:var(--primary-accent); color:white; border-radius:50%; width:24px; height:24px; display:none; align-items:center; justify-content:center; font-weight:bold; font-size:0.8rem; border:2px solid #1a1a1a;"></span>
+              </div>
+              ${p.payment === 'verified' ? 
+                `<span style="display:inline-block; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; background:rgba(0,255,0,0.2); color:#0f0;">Paid</span>` 
+                : `<button onclick="goToCheckout('${p.id}')" style="padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; background:linear-gradient(135deg, #22c55e, #16a34a); color:white; border:none; cursor:pointer; transition:all 0.2s;">💳 Make Payment</button>`
+              }
+            </div>
+
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              ${p.files.map((f, idx) => `
+                <a href="https://raw.githubusercontent.com/HollyHubDigital/hollyhub-visitors/main/public/uploads/${f.filename}" target="_blank" class="btn-secondary" style="padding:0.5rem 0.8rem; font-size:0.9rem; text-decoration:none; display:inline-block;">📄 File ${idx + 1}</a>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      list.querySelectorAll('.project-description-toggle').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+          const wrapper = toggle.closest('.project-description-text');
+          const body = wrapper?.querySelector('.project-description-body');
+          if (!body) return;
+
+          const isExpanded = body.dataset.expanded === 'true';
+          const nextExpanded = !isExpanded;
+          body.dataset.expanded = String(nextExpanded);
+          body.innerHTML = nextExpanded ? body.dataset.fullText : body.dataset.previewText;
+          toggle.dataset.expanded = String(nextExpanded);
+          toggle.setAttribute('aria-expanded', String(nextExpanded));
+          toggle.textContent = nextExpanded ? 'Show less' : 'Show more';
+        });
+      });
+    }
+
     function resetSquare(square) {
       const icon = square.querySelector('.file-icon');
       const label = square.querySelector('.file-name');
@@ -544,45 +642,7 @@
         }
 
         console.log('[loadUserProjects] Displaying', projects.length, 'projects');
-        section.style.display = 'block';
-        list.innerHTML = projects.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)).map(p => `
-          <div style="border:1px solid var(--border-color); border-radius:12px; padding:1.5rem; background:rgba(255,255,255,0.02);">
-            <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:1rem;">
-              <div style="flex:1;">
-                <div style="font-weight:600; color:var(--primary-accent); font-size:1.1rem;">${p.projectType}</div>
-                <div style="opacity:0.8; font-size:0.9rem; margin-top:0.5rem;"><strong>📋 Project ID:</strong> <code style="background:rgba(255,255,255,0.05); padding:0.3rem 0.6rem; border-radius:4px; font-family:monospace;">${p.id}</code></div>
-                <div style="opacity:0.8; font-size:0.9rem; margin-top:0.4rem;">📅 ${new Date(p.uploadedAt).toLocaleDateString()}</div>
-              </div>
-              <button class="btn-secondary" onclick="openEditProjectModal('${p.id}')" style="padding:0.6rem 1rem; font-size:0.9rem;">Edit Project</button>
-            </div>
-
-            <div style="background:rgba(255,255,255,0.05); padding:0.75rem; border-radius:8px; margin-bottom:1rem; font-size:0.9rem;">
-              <div style="opacity:0.8;">${p.description}</div>
-            </div>
-
-            <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;">
-              <span style="display:inline-block; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; ${p.status === 'finished' ? 'background:rgba(0,255,0,0.2); color:#0f0;' : 'background:rgba(255,165,0,0.2); color:#ffcc00;'}">
-                ${p.status === 'finished' ? 'Delivered' : 'Pending Project'}
-              </span>
-              <div style="position:relative; display:inline-block;">
-                <button onclick="openChatModal('${p.id}', '${p.userEmail}', 'user')" style="position:relative; padding:0.5rem; border-radius:6px; font-weight:600; font-size:0.9rem; background:none; color:var(--secondary-accent); border:none; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:0.5rem;">
-                  <img src="https://cdn.jsdelivr.net/gh/HollyHubDigital/hollyhub-visitors@main/public/assets/chat-icon.png" alt="Chat" style="width:32px; height:32px;" />
-                </button>
-                <span class="chat-notification-badge" data-project-id="${p.id}" style="position:absolute; top:-8px; right:-8px; background:var(--primary-accent); color:white; border-radius:50%; width:24px; height:24px; display:none; align-items:center; justify-content:center; font-weight:bold; font-size:0.8rem; border:2px solid #1a1a1a;"></span>
-              </div>
-              ${p.payment === 'verified' ? 
-                `<span style="display:inline-block; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; background:rgba(0,255,0,0.2); color:#0f0;">Paid</span>` 
-                : `<button onclick="goToCheckout('${p.id}')" style="padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; background:linear-gradient(135deg, #22c55e, #16a34a); color:white; border:none; cursor:pointer; transition:all 0.2s;">💳 Make Payment</button>`
-              }
-            </div>
-
-            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-              ${p.files.map((f, idx) => `
-                <a href="https://raw.githubusercontent.com/HollyHubDigital/hollyhub-visitors/main/public/uploads/${f.filename}" target="_blank" class="btn-secondary" style="padding:0.5rem 0.8rem; font-size:0.9rem; text-decoration:none; display:inline-block;">📄 File ${idx + 1}</a>
-              `).join('')}
-            </div>
-          </div>
-        `).join('');
+        renderProjectsList(projects);
       } catch (error) {
         console.error('Failed to load projects:', error);
       }
@@ -894,6 +954,12 @@
           input.value = '';
           resetSquare(square);
           updateFileCountDisplay();
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        if (currentProjectsData.length) {
+          renderProjectsList(currentProjectsData);
         }
       });
 
@@ -1291,6 +1357,80 @@
     });
   </script>
   <script src="app-loader.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const tabBar = document.getElementById('mobileTabBar');
+      if (!tabBar) return;
+
+      const isMobileViewport = window.matchMedia('(min-width: 356px) and (max-width: 780px)').matches;
+      const isDesktopViewport = window.matchMedia('(min-width: 781px)').matches;
+
+      if (!isMobileViewport && !isDesktopViewport) {
+        tabBar.classList.remove('is-visible');
+        document.body.classList.remove('tab-bar-visible');
+        return;
+      }
+
+      const updateTabBarVisibility = () => {
+        const shouldShow = window.scrollY <= 24;
+        const isDesktopViewport = window.matchMedia('(min-width: 781px)').matches;
+
+        if (isDesktopViewport) {
+          const header = document.querySelector('.sticky-header');
+          const headerBottom = header ? header.getBoundingClientRect().bottom + 24 : 24;
+          const barHeight = tabBar.offsetHeight || 280;
+          const viewportHeight = window.innerHeight;
+          const bottomGap = 24;
+          const maxTop = Math.max(bottomGap, viewportHeight - barHeight - bottomGap);
+          const safeTop = Math.min(Math.max(headerBottom, viewportHeight * 0.5), maxTop);
+
+          tabBar.style.top = `${safeTop}px`;
+          tabBar.style.bottom = 'auto';
+          tabBar.style.left = 'auto';
+          tabBar.style.right = '1rem';
+        } else {
+          tabBar.style.top = '';
+          tabBar.style.bottom = '';
+          tabBar.style.left = '';
+          tabBar.style.right = '';
+        }
+
+        tabBar.classList.toggle('is-visible', shouldShow);
+        document.body.classList.toggle('tab-bar-visible', shouldShow);
+      };
+
+      updateTabBarVisibility();
+      window.addEventListener('scroll', updateTabBarVisibility, { passive: true });
+      window.addEventListener('resize', updateTabBarVisibility);
+    });
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const params = new URLSearchParams(window.location.search);
+      const serviceParam = params.get('service');
+      const serviceSelect = document.querySelector('select[name="service"]');
+      if (!serviceSelect) return;
+
+      const map = {
+        'tiktok-ads': 'tiktok-ads',
+        'propeller-ads': 'propeller-ads',
+        'insideads': 'insideads',
+        'inside-ads': 'insideads',
+        'web-design': 'web-dev',
+        'webdevelopment': 'web-dev',
+        'web-dev': 'web-dev',
+        'web-app': 'web-app'
+      };
+
+      const value = map[serviceParam] || serviceParam;
+      if (value) {
+        const option = Array.from(serviceSelect.options).find((opt) => opt.value === value);
+        if (option) {
+          serviceSelect.value = value;
+        }
+      }
+    });
+  </script>
   <!-- Google Translate Initialization -->
   <script>
     function googleTranslateElementInit() {
