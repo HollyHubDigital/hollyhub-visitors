@@ -713,48 +713,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// ===== TAWK.TO HELPER FUNCTIONS =====
-const sendToTawk = (message, visitorEmail = '', visitorName = '') => {
-  return new Promise((resolve) => {
-    if (typeof Tawk_API === 'undefined') {
-      console.warn('[Tawk] Tawk.to not loaded yet');
-      resolve(false);
-      return;
-    }
-
-    try {
-      // Set visitor info first (email and name)
-      if (visitorEmail || visitorName) {
-        window.Tawk_API = window.Tawk_API || {};
-        if (visitorEmail) {
-          try {
-            Tawk_API.setVisitorEmail(visitorEmail);
-            console.log('[Tawk] Visitor email set:', visitorEmail);
-          } catch (e) {
-            console.warn('[Tawk] setVisitorEmail not available, using custom property');
-          }
-        }
-        if (visitorName) {
-          try {
-            Tawk_API.setVisitorName(visitorName);
-            console.log('[Tawk] Visitor name set:', visitorName);
-          } catch (e) {
-            console.warn('[Tawk] setVisitorName not available');
-          }
-        }
-      }
-
-      // Store message context for Tawk to use
-      window.tawkMessageContext = message;
-      console.log('[Tawk] Message context stored:', message);
-      resolve(true);
-    } catch (e) {
-      console.error('[Tawk] Error in sendToTawk:', e && e.message);
-      resolve(false);
-    }
-  });
-};
-
 // ===== EXPORT FUNCTIONS FOR GLOBAL USE =====
 window.pageUtils = {
   showNotification,
@@ -763,6 +721,5 @@ window.pageUtils = {
   logout,
   isAdmin,
   getAuthToken,
-  setAuthToken,
-  sendToTawk
+  setAuthToken
 };

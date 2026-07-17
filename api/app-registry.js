@@ -402,39 +402,6 @@ const appRegistry = {
     helpUrl: 'https://app.intercom.com/'
   },
 
-  tawkto: {
-    id: 'tawkto',
-    name: 'tawk.to Live Chat',
-    category: 'messaging',
-    description: 'Embed tawk.to live chat widget',
-    icon: '💬',
-    required: false,
-    configFields: [
-      { name: 'propertyId', label: 'tawk.to Property ID', type: 'text', placeholder: 'e.g. 5f12345678901234567890abc', required: true }
-    ],
-    scriptInjection: (config) => {
-      if (!config.propertyId) return '';
-      return `<!-- tawk.to Live Chat -->
-    <script type="text/javascript">
-    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-    (function(){
-    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-    s1.async=true;
-    var _tawkSrc = '${config.propertyId}';
-    // Allow either "propertyId" or a combined "propertyId/widgetId" value
-    if (_tawkSrc.indexOf('/') === -1) {
-      _tawkSrc = _tawkSrc + '/default';
-    }
-    s1.src = 'https://embed.tawk.to/' + _tawkSrc;
-    s1.charset='UTF-8';
-    s0.parentNode.insertBefore(s1,s0);
-    })();
-    </script>`;
-    },
-    version: '1.0.0',
-    helpUrl: 'https://www.tawk.to'
-  },
-
   privy: {
     id: 'privy',
     name: 'Privy Popups & Emails',

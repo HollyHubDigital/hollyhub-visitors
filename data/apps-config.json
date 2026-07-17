@@ -13,9 +13,6 @@
     "googleAnalytics": {
       "gaId": "G-N5NZW9GSTP"
     },
-    "tawkto": {
-      "propertyId": "6992799f3a5ba51c3b88d08c/1jhi2m6n0"
-    },
     "paystack": {
       "publicKey": "pk_xxxx_your_public_key_here",
       "fxRate": 1000

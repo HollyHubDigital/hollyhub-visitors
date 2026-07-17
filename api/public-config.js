@@ -24,9 +24,6 @@ module.exports = async (req, res) => {
       // Frontend email marketing (PUBLIC)
       klaviyoPublicKey: process.env.KLAVIYO_PUBLIC_KEY || '',
 
-      // Frontend customer support (PUBLIC)
-      tawktoPropertyId: process.env.TAWKTO_PROPERTY_ID || '',
-
       // Frontend popups (PUBLIC)
       privySiteId: process.env.PRIVY_SITE_ID || '',
 
@@ -59,9 +56,6 @@ module.exports = async (req, res) => {
         }
         if (enabled.klaviyo && !publicConfig.klaviyoPublicKey) {
           publicConfig.klaviyoPublicKey = enabled.klaviyo.publicKey;
-        }
-        if (enabled.tawkto && !publicConfig.tawktoPropertyId) {
-          publicConfig.tawktoPropertyId = enabled.tawkto.propertyId;
         }
         if (enabled.privy && !publicConfig.privySiteId) {
           publicConfig.privySiteId = enabled.privy.siteId;

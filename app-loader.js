@@ -203,9 +203,6 @@
         case 'yotpo':
           this.initYotpo(config);
           break;
-        case 'tawkto':
-          this.initTawkto(config);
-          break;
         case 'sumo':
           this.initSumo(config);
           break;
@@ -679,26 +676,6 @@
       script.src = 'https://cdn.yotpo.com/loader.js';
       document.head.appendChild(script);
       this.log('Yotpo loaded with apiKey:', config.apiKey.trim().substring(0, 8) + '...');
-    },
-
-    initTawkto(config) {
-      if (!config.propertyId) return;
-      let tawkSrc = config.propertyId.trim();
-      // Allow either "propertyId" or a combined "propertyId/widgetId" value
-      if (tawkSrc.indexOf('/') === -1) {
-        tawkSrc = tawkSrc + '/default';
-      }
-      
-      window.Tawk_API = window.Tawk_API || {};
-      window.Tawk_LoadStart = new Date();
-      
-      const script = document.createElement('script');
-      script.async = true;
-      script.type = 'text/javascript';
-      script.charset = 'UTF-8';
-      script.src = `https://embed.tawk.to/${tawkSrc}`;
-      document.head.appendChild(script);
-      this.log('Tawk.to loaded with propertyId:', config.propertyId.substring(0, 12) + '...');
     },
 
     initSumo(config) {

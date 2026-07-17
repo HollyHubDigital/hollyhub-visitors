@@ -913,22 +913,12 @@ body .goog-te-gadget-simple {
   display: none;
 }
 
-.gt-widget-toggle,
-.tawk-min-container,
-.tawk-max-container,
-.tawk-toggle,
-iframe[src*="embed.tawk.to"],
-#tawkMessengerFrame {
+.gt-widget-toggle {
   transition: transform 0.2s ease;
   transform: translateY(0);
 }
 
-body.tab-bar-visible .gt-widget-toggle,
-body.tab-bar-visible .tawk-min-container,
-body.tab-bar-visible .tawk-max-container,
-body.tab-bar-visible .tawk-toggle,
-body.tab-bar-visible iframe[src*="embed.tawk.to"],
-body.tab-bar-visible #tawkMessengerFrame {
+body.tab-bar-visible .gt-widget-toggle {
   transform: translateY(-96px);
 }
 
@@ -971,12 +961,7 @@ body.tab-bar-visible #tawkMessengerFrame {
     height: 32px;
   }
 
-  body.tab-bar-visible .gt-widget-toggle,
-  body.tab-bar-visible .tawk-min-container,
-  body.tab-bar-visible .tawk-max-container,
-  body.tab-bar-visible .tawk-toggle,
-  body.tab-bar-visible iframe[src*="embed.tawk.to"],
-  body.tab-bar-visible #tawkMessengerFrame {
+  body.tab-bar-visible .gt-widget-toggle {
     pointer-events: none !important;
     opacity: 0.55;
     transform: translateX(-96px) translateY(0);
